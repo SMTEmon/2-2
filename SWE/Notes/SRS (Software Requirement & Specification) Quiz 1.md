@@ -183,14 +183,18 @@ External NFR (Legal/Privacy):
 
 The client doesn't need to understand load calculations. The builder can't work from "I want 3 bedrooms." Both documents are necessary, for different people.
 
-|Aspect|User Requirements|System Requirements|
-|---|---|---|
-|**Who reads it**|Client, manager, non-technical stakeholders|Developers, architects, testers|
-|**Written in**|Natural language + simple diagrams|Detailed, precise technical description|
-|**Source**|Directly from stakeholders|Derived and expanded from user requirements|
-|**Length per point**|Max 1–2 sentences|Multiple sub-points per user requirement|
-|**Jargon**|None — must be understandable without technical background|Allowed — written for developers|
-|**Ambiguity**|Some acceptable|Must be eliminated|
+| Aspect               | User Requirements                                          | System Requirements                         |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------------- |
+| **Who reads it**     | Client, manager, non-technical stakeholders                | Developers, architects, testers             |
+| **Written in**       | Natural language + simple diagrams                         | Detailed, precise technical description     |
+| **Source**           | Directly from stakeholders                                 | Derived and expanded from user requirements |
+| **Length per point** | Max 1–2 sentences                                          | Multiple sub-points per user requirement    |
+| **Jargon**           | None — must be understandable without technical background | Allowed — written for developers            |
+| **Ambiguity**        | Some acceptable                                            | Must be eliminated                          |
+
+**Jargon** - specialized words, phrases, and technical terms used by specific professions, industries, or groups
+
+
 
 **Numbering convention:**
 
@@ -290,6 +294,7 @@ It is a spiral — you do not finish elicitation before starting specification. 
 ---
 
 ## Elicitation
+- the strategic process of drawing out information, opinions, or data from people, often without making them feel interrogated
 
 ### Steps:
 
@@ -306,13 +311,13 @@ It is a spiral — you do not finish elicitation before starting specification. 
 
 ### Why Elicitation is Hard:
 
-|Problem|Example|
-|---|---|
-|Stakeholders can't articulate needs|"I just want it to be better than the old system"|
-|Domain jargon barriers|A librarian says "all acquisitions must be catalogued before shelving" — obvious to them, invisible to the analyst|
-|Conflicting needs|Doctors want quick access to all records; privacy law says restrict access|
-|Political factors|A manager requests features that expand their department's influence|
-|Changing environment|New privacy legislation passed mid-project changes requirements|
+| Problem                             | Example                                                                                                            |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Stakeholders can't articulate needs | "I just want it to be better than the old system"                                                                  |
+| Domain jargon barriers              | A librarian says "all acquisitions must be catalogued before shelving" — obvious to them, invisible to the analyst |
+| Conflicting needs                   | Doctors want quick access to all records; privacy law says restrict access                                         |
+| Political factors                   | A manager requests features that expand their department's influence                                               |
+| Changing environment                | New privacy legislation passed mid-project changes requirements                                                    |
 
 ### Elicitation Techniques
 
