@@ -80,7 +80,7 @@ NFR
 
 ## User Requirements vs System Requirements
 
-||User Requirements|System Requirements|
+| |User Requirements|System Requirements|
 |---|---|---|
 |**Audience**|Non-technical / managers|Developers|
 |**Language**|Natural language, diagrams|Detailed technical blueprint|
