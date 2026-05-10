@@ -1,3 +1,5 @@
+- Basically Sort by counting
+
 [Counting Sort](https://www.geeksforgeeks.org/dsa/counting-sort/)
 
 [Stable Sort](https://www.geeksforgeeks.org/dsa/stable-and-unstable-sorting-algorithms/)
@@ -10,4 +12,4 @@
   why do we need to traverse the original array from end to start?
   
   why not just use the original count array for that?
-- Ans-> The main reason is **stability**. Traversing from the end ensures that elements with the same value keep their original relative order in the sorted array.
+	- Ans-> The main reason is **stability**. Traversing from the end ensures that elements with the same value keep their original relative order in the sorted array.

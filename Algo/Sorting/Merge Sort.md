@@ -1,3 +1,5 @@
+- Basically sort by dividing the problem and merging (while sorting)
+
 - Calculating Mid
 	- (lo + hi) / 2 -> Can go out of bounds for input > 10^9
 		- the (lo + hi) can overflow
