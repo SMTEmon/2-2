@@ -10,11 +10,12 @@
 
 **Cost of fixing a bug by SDLC phase:**
 
-|Phase|Relative Cost|
-|---|---|
-|Requirement Analysis|$1|
-|Testing|$100|
-|Deployment & Maintenance|$1000|
+| Phase                    | Relative Cost |
+| ------------------------ | ------------- |
+| Requirement Analysis     | $1            |
+| Testing                  | $100          |
+| Deployment & Maintenance | $1000         |
+|                          |               |
 
 A mistake caught at requirements costs $1. The same mistake found after deployment costs $1000. This is why getting requirements right early is critical.
 
