@@ -1,6 +1,5 @@
 ---
 Lecturer: MUA
-Source: Handwritten Class Note of 3 Weeks
 ---
 ***
 
