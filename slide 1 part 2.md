@@ -460,6 +460,9 @@ When you insert `int4range(1, 10, '[]')` — which logically means "integers 1 t
 
 **Why?** Integers are _discrete_ — you can list every one of them: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10. There is no integer between 10 and 11. So "all integers from 1 to 10 inclusive" is **mathematically identical** to "all integers starting at 1, up to but not including 11." PostgreSQL standardises to the `[)` form (inclusive start, exclusive end) to make index operations faster and consistent.
 
+> [!info]
+> Half-open intervals like \([1, 11)\) are mathematically superior because they **eliminate boundary overlap ambiguity, preserve zero-length intervals, and allow immediate partition math** without needing to know the data's precision.
+
 ```sql
 -- Demonstrate canonical form
 SELECT int4range(1, 10, '[]');   -- Output: [1,11)   ← rewritten!
@@ -477,6 +480,13 @@ SELECT numrange(1.0, 10.0, '[]');  -- Output: [1.0,10.0]  ← stays as-is
 > If the exam asks: "You insert `numrange(1.0, 10.0, '[]')`. What is stored?" Answer: `[1.0, 10.0]` — unchanged. Continuous types are NOT rewritten.
 > 
 > The rule only applies to **discrete** types (integer ranges).
+
+> [!info]
+>1. The Additivity Property (Perfect Partitioning)
+> If you slice a large range into smaller pieces, the sum of the pieces must perfectly equal the whole without gaps or double-counting. Half-open intervals are the only format where the upper bound of one piece is the exact lower bound of the next.
+> $$ [A,B) \cup [B,C) = [A,C) $$
+> - **How it works:** If you schedule a meeting from $1:00\text{ PM}$ to $2:00\text{ PM}$ $[1, 2)$ and another from $2:00\text{ PM}$ to $3:00\text{ PM}$ $[2, 3)$, they touch exactly at $2:00\text{ PM}$.
+> - **The Failure of Closed $[A, B]$:** If you write $[1, 2]$ and $[2, 3]$, the point $2:00\text{ PM}$ exists in **both** ranges, creating an overlap collision. If you try to fix it by writing $[1, 1:59]$ and $[2, 3]$, you create a gap where $1:59.01$ to $1:59.59$ disappears.
 
 ### Range Operators
 
