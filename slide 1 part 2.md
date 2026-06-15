@@ -561,6 +561,34 @@ VALUES ('Lab-B', 'Karim', '[2026-06-10 10:00, 2026-06-10 12:00)');
 -- ✓ Succeeds — different room (Lab-B), so no conflict even with overlapping time
 ```
 
+
+# PostgreSQL Range Types & Exclusion Constraints
+
+> [!info] Summary of Room Booking Constraints
+> Here is a complete overview of how PostgreSQL implements room booking protection using GiST indexes and exclusion constraints.
+>
+> ### 1. Complete Consolidated Code
+> ```sql 
+> -- Step 2: Required extension to allow '=' operator on TEXT inside GiST index
+> CREATE EXTENSION IF NOT EXISTS btree_gist;
+> 
+> -- Step 3: Combined Exclusion Constraint (Implicit AND via the Comma)
+> ALTER TABLE room_bookings
+> ADD CONSTRAINT no_double_booking
+> EXCLUDE USING GIST (
+>     room_name WITH =,    -- Element 1: Must be the SAME room
+>     time_slot WITH &&    -- Element 2: Must OVERLAP in time
+> );                       -- The comma between elements forces an AND relationship
+> ```
+>
+> ### 2. Key Insights & Takeaways
+> * **The Purpose of the GiST Index:** Standard B-Tree indexes cannot handle the "overlaps" (`&&`) operator for ranges. A GiST index organizes time blocks spatially, allowing PostgreSQL to quickly search for overlaps without scanning the whole table.
+> * **Why the Index Needs `time_slot`:** If you index `room_name` alone, the constraint will fail to compile because it lacks a proper data structure to validate time range conflicts.
+> * **The Comma Means `AND`:** Inside the `EXCLUDE` block, separating criteria with a comma (`,`) tells PostgreSQL that a conflict only happens if **all** conditions match simultaneously ($\text{Same Room} \land \text{Overlapping Time}$).
+> * **How to achieve `OR` logic:** PostgreSQL syntax does not support an `OR` keyword inside a single exclusion constraint. To enforce `OR` logic (e.g., rejecting an insert if *either* the room name exists *or* the time overlaps anywhere else), you must declare them as **two entirely separate constraints**.
+
+
+
 **Why this is better than application-level checks:** Without an exclusion constraint, you would need to: (1) query for conflicts, (2) check the result in code, (3) insert if clear. But between steps 2 and 3, another user could insert the same slot — a **race condition**. The exclusion constraint is atomic — the check and the insert happen in one operation at the database level.
 
 > **Exam Tip:** Questions may ask "what index type do you need for an exclusion constraint on a range column?" Answer: **GiST**. B-Tree does not support overlap checks.
@@ -728,7 +756,7 @@ VALUES ('Dr. Khan', '01712345678', 'CSE', -5000);
 
 This comparison is the most commonly tested conceptual difference:
 
-||Composite Type|Domain Type|
+| |Composite Type|Domain Type|
 |---|---|---|
 |**What it does**|**Groups** multiple fields together into one type|**Restricts** a single base type with a rule|
 |**Analogy**|C++ `struct` or Python `dataclass`|An `int` that only accepts values 1–100|
