@@ -5,6 +5,7 @@ tags:
   - fundamentals
 aliases:
   - IPv4 Octets
+date: 2026-06-11
 ---
 
 | Class       | Leading Bits | First Octet Range | Default Subnet Mask | Purpose                                  |
