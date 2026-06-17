@@ -24,7 +24,7 @@ Network applications are the core reason computer networks exist. They run on **
 > - Reliable data transfer (no loss).
 > - Connection-oriented (handshake required).
 > - Flow control & Congestion control.
-> - *Does NOT provide:* Timing or minimum throughput guarantees.
+> - *Does NOT provide:* Timing or minimum throughput guarantees. (TCP prioritizes data integrity and reliability over delivery speed.)
 > 
 > **UDP Service:**
 > - Unreliable data transfer (loss tolerant).
