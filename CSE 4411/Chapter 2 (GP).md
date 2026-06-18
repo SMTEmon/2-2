@@ -62,7 +62,7 @@ HTTP messages are written in ASCII. The lines are separated by a Carriage Return
 Since HTTP is stateless, **Cookies** are used to maintain sessions (e.g., shopping carts, targeted ads).
 **4 Components of Cookies:**
 1. `Set-cookie:` header line in the HTTP *response*.
-2. `Cookie:` header line in the HTTP *request*.
+2. `Cookie:` header line in the HTTP *request*. 
 3. A cookie file kept on the user's end system.
 4. A back-end database at the Web site.
 
