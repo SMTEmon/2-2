@@ -362,6 +362,20 @@ Before exchanging data, TCP performs a handshake to agree on parameters (like st
 >     Note over Server: The application processes an<br/>unintended, outdated command!
 > ```
 > 
+> <details>
+> <summary><b>Wait, why did the client send data before the connection was ACKed?</b></summary>
+> 
+> It didn't! The diagram simplifies the "Original session" for readability. In reality, the client didn't break the rules. Those "delayed" packets are actually **delayed duplicates** created by network timeouts:
+> 
+> 1. Client sends `SYN`. It gets delayed.
+> 2. Client times out, retransmits `SYN`, gets an `OK` from the server.
+> 3. Client sends `Data`. It gets delayed.
+> 4. Client times out, retransmits `Data`. The server processes it, and they close the connection.
+> 
+> The original delayed `SYN` and delayed `Data` packets are still floating around in the network. Hours later, when they finally arrive, the server is tricked into thinking it's a brand new connection request followed by brand new data.
+> 
+> </details>
+> 
 > **Result:** The server accepts stale data as part of a brand-new valid conversation. The application could execute an old command — leading to catastrophic logical errors.
 > 
 > ---
