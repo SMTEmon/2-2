@@ -272,6 +272,30 @@ Flow control prevents the sender from overflowing the receiver's application buf
 *   `rwnd` = `RcvBuffer` - `[LastByteRcvd - LastByteRead]`
 *   The sender limits its unacknowledged data (in-flight data) to the `rwnd` value.
 
+> [!example] The Water Bucket Analogy
+> Imagine the receiver has a bucket (`RcvBuffer`) that holds 1000 bytes of data. 
+> *   The sender is a hose pouring data into the bucket. `LastByteRcvd` tracks the total amount poured in so far.
+> *   The application is someone scooping data out of the bucket to process it. `LastByteRead` tracks the total amount scooped out so far.
+> 
+> The formula `[LastByteRcvd - LastByteRead]` represents **how much data is currently sitting in the bucket** (data that has arrived from the network but hasn't been read by the application yet).
+> 
+> So, `rwnd = 1000 - [data currently in the bucket]`. 
+> 
+> **Example Walkthrough:**
+> 1. The receiver allocates a 1000-byte buffer (`RcvBuffer` = 1000).
+> 2. The sender transmits 400 bytes. The receiver gets them.
+>    * `LastByteRcvd` = 400
+>    * The application hasn't read anything yet (`LastByteRead` = 0).
+>    * Data in bucket = 400 - 0 = 400 bytes.
+>    * `rwnd` = 1000 - 400 = **600 bytes**. The receiver tells the sender "I have 600 bytes of free space."
+> 3. The application finally wakes up and reads 150 bytes from the buffer.
+>    * `LastByteRcvd` = 400 (unchanged)
+>    * `LastByteRead` = 150
+>    * Data in bucket = 400 - 150 = 250 bytes.
+>    * `rwnd` = 1000 - 250 = **750 bytes**. The receiver tells the sender "I now have 750 bytes of free space."
+> 
+> **Edge Case:** What if `rwnd` hits 0? The sender stops sending data. However, to prevent a deadlock (where the sender waits forever because it missed the receiver's update that space opened up), the sender will periodically send a 1-byte "probe" segment to prompt the receiver to reply with its current `rwnd`.
+
 ### TCP Connection Management
 Before exchanging data, TCP performs a handshake to agree on parameters (like starting sequence numbers).
 
