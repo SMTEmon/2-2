@@ -452,3 +452,6 @@ sequenceDiagram
 
 > [!note] The `TIME_WAIT` State
 > The client waits for a specific duration after sending the final ACK. This is to ensure that if its final ACK is lost, it is still around to catch the retransmitted `FIN` from the server and reply again.
+
+> [!note] The `LAST_ACK` State
+> The server enters this state after it has sent its own `FIN` and is waiting for the final `ACK` from the client. Once the server receives that final `ACK`, it transitions to the `CLOSED` state and completely releases all resources. If the final `ACK` gets lost, the server will eventually time out and retransmit its `FIN` (which the client in `TIME_WAIT` will catch and acknowledge again).
