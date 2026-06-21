@@ -53,10 +53,10 @@ UDP is a "bare-bones", "no-frills" Internet transport protocol. It provides a **
 4.  **No congestion control:** UDP sends data as fast as the application generates it, which is ideal for time-sensitive applications (like streaming or VoIP) that prefer minor data loss over delayed packets.
 
 ### UDP Segment Structure
-| Source Port (16 bits) | Destination Port (16 bits) |
-| :--- | :--- |
-| **Length (16 bits)** | **Checksum (16 bits)** |
-| \multicolumn{2}{|c|}{**Application Data (Payload)**} |
+| Source Port (16 bits)          | Destination Port (16 bits) |
+| :----------------------------- | :------------------------- |
+| **Length (16 bits)**           | **Checksum (16 bits)**     |
+| **Application Data (Payload)** | *(Variable length)*        |
 
 ### UDP Checksum
 The checksum is used for basic error detection (e.g., flipped bits during transmission).
