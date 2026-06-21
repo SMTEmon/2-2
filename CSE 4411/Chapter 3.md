@@ -28,6 +28,11 @@ Since a single host can run multiple network applications simultaneously, the tr
 *   **Multiplexing (Sender):** Gathering data from multiple application sockets, encapsulating it with transport headers, and passing it to the network layer.
 *   **Demultiplexing (Receiver):** Reading the transport header of incoming segments to direct the data to the correct receiving socket.
 
+> [!example] Multiplexing/Demultiplexing in Action
+> Imagine a computer running a web browser (Firefox) and a media streamer (Netflix) simultaneously. 
+> * **Multiplexing:** The transport layer takes the HTTP request from Firefox and the streaming data request from Netflix, adds a transport header to each (containing their unique source ports), and hands them to the network layer to be sent out over the same connection.
+> * **Demultiplexing:** When responses arrive, the transport layer reads the destination port in the header. Data destined for port 80/443 might go to Firefox, while data for another specific port goes to Netflix.
+
 ### How Demultiplexing Works
 Host devices receive IP datagrams, extract the transport-layer segment, and use **Port Numbers** to direct the data.
 *   Port numbers are 16-bit integers.
@@ -51,6 +56,12 @@ UDP is a "bare-bones", "no-frills" Internet transport protocol. It provides a **
 2.  **Simple:** No connection state needs to be maintained at the sender or receiver.
 3.  **Small header size:** UDP adds only 8 bytes of overhead (TCP adds 20 bytes).
 4.  **No congestion control:** UDP sends data as fast as the application generates it, which is ideal for time-sensitive applications (like streaming or VoIP) that prefer minor data loss over delayed packets.
+
+**Common UDP Use Cases:**
+*   Streaming multimedia applications (loss tolerant, rate sensitive).
+*   DNS (Domain Name System).
+*   SNMP (Simple Network Management Protocol).
+*   HTTP/3 (which adds reliability and congestion control on top of UDP at the application layer).
 
 ### UDP Segment Structure
 | Source Port (16 bits)          | Destination Port (16 bits) |
@@ -156,6 +167,28 @@ Stop-and-wait protocols (like rdt 3.0) have terrible performance.
 $$ U_{sender} = \frac{L/R}{RTT + L/R} $$
 *(Where $U_{sender}$ is utilization, $L$ is packet length, $R$ is link transmission rate, and $RTT$ is round-trip time).*
 
+> [!tip] **Intuition: Why does this formula work?**
+> Utilization is just: **"what fraction of time are you actually busy?"**
+> $$U_{sender} = \frac{\text{busy time}}{\text{total cycle time}} = \frac{L/R}{L/R + RTT}$$
+> One "cycle" of stop-and-wait looks like this:
+> ```
+> Time ──────────────────────────────────────────────►
+> 
+> |◄── L/R ──►|◄──────────── RTT ────────────────►|
+> [ SENDING  ]  [        doing nothing...          ]
+>              packet traveling ──►  ACK traveling ◄──
+> ```
+> - **L/R** — time spent pushing bits onto the wire. This is the **only time you're working**.
+> - **RTT** — idle time waiting for the packet to arrive and the ACK to come back.
+> - One full cycle = `L/R + RTT`, but you were only busy for `L/R`.
+> 
+> **Example:** If `L/R = 0.008ms` and `RTT = 30ms`:
+> $$U_{sender} = \frac{0.008}{30 + 0.008} \approx 0.00027 = 0.027\%$$
+> You're using the link **0.027%** of the time — the rest is idle waiting. It's like spending 1 second writing a letter, then waiting 30 minutes for a reply before writing the next one.
+
+> [!tip] **Intuition: How does Pipelining help?**
+> Instead of sending one packet and waiting, you send **multiple packets back-to-back**. While you're waiting for the first ACK, packets 2 and 3 are already on their way — so you keep the "pipe" full instead of leaving it empty. The tradeoff: you need more sequence numbers (to tell packets apart) and buffers (to hold unACKed packets for possible resend).
+
 To fix this, we use **Pipelining**: allowing the sender to transmit multiple packets without waiting for individual ACKs. This requires larger sequence numbers and buffering at the sender/receiver.
 
 #### Go-Back-N (GBN) vs. Selective Repeat (SR)
@@ -203,6 +236,12 @@ TCP implements a hybrid approach to reliability (resembling both GBN and SR).
 *   **Retransmission Scenarios:** TCP will retransmit data if the timer expires. However, if multiple packets are sent and one ACK is lost, a later cumulative ACK can prevent a timeout (e.g., if ACK 100 is lost but ACK 120 arrives before the timeout, TCP knows everything up to 120 was received).
 *   **Fast Retransmit:** Timeouts can be long. If a sender receives **3 duplicate ACKs** for the same data, it assumes the packet immediately following was lost and retransmits it instantly, *before* the timer expires.
 
+> [!info] TCP Receiver ACK Generation Policy
+> *   **In-order arrival (expected seq #):** Delayed ACK. Wait up to 500ms for next segment. If none, send ACK.
+> *   **In-order arrival (one ACK pending):** Immediately send a single cumulative ACK for both segments.
+> *   **Out-of-order arrival (gap detected):** Immediately send duplicate ACK, indicating seq # of next expected byte.
+> *   **Arrival filling a gap:** Immediately send ACK if the segment starts at the lower end of the gap.
+
 ### TCP Flow Control
 Flow control prevents the sender from overflowing the receiver's application buffer.
 *   The receiver advertises its available buffer space in the `rwnd` (Receive Window) field of the TCP header.
@@ -211,6 +250,9 @@ Flow control prevents the sender from overflowing the receiver's application buf
 
 ### TCP Connection Management
 Before exchanging data, TCP performs a handshake to agree on parameters (like starting sequence numbers).
+
+> [!question] Why not a 2-way handshake?
+> A 2-way handshake ("Let's talk" $\rightarrow$ "OK") can fail due to variable network delays and message reordering. For example, a delayed connection request could arrive long after the client has given up, causing the server to open a "half-open connection" and potentially accept old, duplicated data. A 3-way handshake prevents this.
 
 #### Three-Way Handshake
 ```mermaid
