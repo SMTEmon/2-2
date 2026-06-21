@@ -241,6 +241,30 @@ TCP implements a hybrid approach to reliability (resembling both GBN and SR).
 > *   **In-order arrival (one ACK pending):** Immediately send a single cumulative ACK for both segments.
 > *   **Out-of-order arrival (gap detected):** Immediately send duplicate ACK, indicating seq # of next expected byte.
 > *   **Arrival filling a gap:** Immediately send ACK if the segment starts at the lower end of the gap.
+> 
+> <details>
+> <summary><b>Deep Dive: Understanding the ACK Scenarios with Examples</b></summary>
+> 
+> The overall philosophy: **when things are fine, be lazy (save bandwidth). When something's wrong, be loud and immediate.**
+> 
+> **1. In-order arrival, nothing pending $\rightarrow$ Delayed ACK**
+> *   *Scenario:* Segment 100 arrives (exactly what you expected).
+> *   *Action:* TCP thinks, "Cool, got it. But maybe the next segment is right behind it. Let me wait up to 500ms before ACKing — if the next one arrives, I can ACK both at once and save bandwidth." Starts a timer.
+> *   *Analogy:* It's like getting a text from a friend — you wait a beat to see if they send a follow-up before replying.
+> 
+> **2. In-order arrival, one ACK already pending $\rightarrow$ Immediate cumulative ACK**
+> *   *Scenario:* You were already waiting (from scenario 1), and now segment 200 arrives too.
+> *   *Action:* TCP immediately sends `ACK 300` (meaning "I have everything up to byte 299"). One ACK covers **both** segments.
+> 
+> **3. Out-of-order arrival (gap) $\rightarrow$ Immediate duplicate ACK**
+> *   *Scenario:* You expected segment 100, but segment 300 arrived instead. Bytes 100–299 are missing.
+> *   *Action:* TCP immediately sends `ACK 100` (duplicate ACK) — "I still need byte 100!". This is TCP's way of telling the sender **"you skipped something."** (3 duplicate ACKs trigger fast retransmit).
+> 
+> **4. Gap-filling segment arrives $\rightarrow$ Immediate ACK**
+> *   *Scenario:* Segment 100 finally arrives, filling the gap.
+> *   *Action:* TCP immediately sends `ACK 400` (because now bytes 100–399 are contiguous). No waiting, TCP wants the sender to know ASAP that the gap is resolved.
+> 
+> </details>
 
 ### TCP Flow Control
 Flow control prevents the sender from overflowing the receiver's application buffer.
