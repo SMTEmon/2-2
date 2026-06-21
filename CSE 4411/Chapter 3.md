@@ -301,6 +301,101 @@ Before exchanging data, TCP performs a handshake to agree on parameters (like st
 
 > [!question] Why not a 2-way handshake?
 > A 2-way handshake ("Let's talk" $\rightarrow$ "OK") can fail due to variable network delays and message reordering. For example, a delayed connection request could arrive long after the client has given up, causing the server to open a "half-open connection" and potentially accept old, duplicated data. A 3-way handshake prevents this.
+> 
+> <details>
+> <summary><b>Deep Dive: Why Exactly Does a 2-Way Handshake Fail?</b></summary>
+> 
+> The core problem: in a 2-way handshake, the server considers the connection **established** the moment it sends its "OK" reply. It immediately allocates memory (buffers) and variables. This creates severe vulnerabilities when packets are delayed or duplicated.
+> 
+> **Edge Case 1: The "Half-Open" Connection (Resource Wasting)**
+> 
+> A client's connection request gets stuck in a congested router. The client times out and retries — the second attempt succeeds, data is exchanged, and the connection closes. Later, that first delayed request finally arrives at the server.
+> 
+> ```mermaid
+> sequenceDiagram
+>     participant Client
+>     participant Server
+> 
+>     Note over Client,Server: Connection Attempt 1
+>     Client->>Server: SYN (seq=x) [Gets delayed in network]
+>     Note over Client: Client times out waiting for reply
+>     
+>     Note over Client,Server: Connection Attempt 2 (Success)
+>     Client->>Server: SYN (seq=y)
+>     Server-->>Client: OK (ack=y+1)
+>     Note over Client,Server: ...Data exchanged, connection closed...
+>     
+>     Note over Client,Server: The Ghost of Attempt 1 Arrives
+>     Server->>Server: Receives delayed SYN (seq=x)
+>     Server-->>Client: OK (ack=x+1)
+>     Note right of Server: Server thinks connection is OPEN!<br/>Allocates memory, waits for data.
+>     
+>     Note left of Client: Client didn't request this.<br/>Ignores the server's reply.
+>     Note over Server: Server is stuck holding a "half-open"<br/>connection indefinitely.
+> ```
+> 
+> **Result:** The server wastes RAM and processing power on a dead connection. If thousands of delayed requests arrive (or are maliciously crafted), the server runs out of resources and crashes.
+> 
+> ---
+> 
+> **Edge Case 2: The "Phantom Data" Problem (Data Corruption)**
+> 
+> Even more dangerous — what if both a connection request AND a data packet from an old session were delayed?
+> 
+> ```mermaid
+> sequenceDiagram
+>     participant Client
+>     participant Server
+> 
+>     Note over Client,Server: Original session (long ago)
+>     Client->>Server: SYN (seq=x) [DELAYED]
+>     Client->>Server: Data: "Buy 1000 shares" [DELAYED]
+>     Note over Client: Client times out, reconnects,<br/>finishes business, goes to sleep.
+>     
+>     Note over Client,Server: Hours later...
+>     Server->>Server: Receives delayed SYN (seq=x)
+>     Server-->>Client: OK (ack=x+1)
+>     Note right of Server: Server opens connection!
+>     
+>     Server->>Server: Receives delayed Data packet
+>     Note right of Server: Server accepts data:<br/>"Buy 1000 shares"
+>     Note over Server: The application processes an<br/>unintended, outdated command!
+> ```
+> 
+> **Result:** The server accepts stale data as part of a brand-new valid conversation. The application could execute an old command — leading to catastrophic logical errors.
+> 
+> ---
+> 
+> **How the 3-Way Handshake Fixes Both Cases**
+> 
+> With a 3-way handshake, the server stays in a **provisional state** (`SYN_RCVD`) after sending the `SYNACK`. It does NOT hand the connection to the application until the client sends the final `ACK`.
+> 
+> When the client receives a `SYNACK` for a connection it doesn't remember starting, it replies with a **`RST` (Reset)** — telling the server to abort.
+> 
+> ```mermaid
+> sequenceDiagram
+>     participant Client
+>     participant Server
+> 
+>     Note over Server: Hours later...
+>     Server->>Server: Receives delayed SYN (seq=x)
+>     Server-->>Client: SYNACK (ack=x+1)
+>     Note right of Server: State: SYN_RCVD<br/>(waiting for confirmation)
+>     
+>     Note left of Client: I didn't send a SYN<br/>with seq=x recently!
+>     Client->>Server: RST (Reset Connection)
+>     
+>     Note right of Server: Server aborts.<br/>No resources wasted,<br/>no phantom data accepted.
+> ```
+> 
+> **Summary of 2-Way Handshake Disadvantages:**
+> 1. Server **cannot distinguish** between a fresh request and an old, delayed duplicate.
+> 2. **Resource Exhaustion** — servers allocate memory for "dead" connections.
+> 3. **Data Integrity Failures** — old data segments can be mistakenly accepted as new data.
+> 
+> The 3rd step (the final ACK) is the client saying: *"Yes, I actually meant to send that request just now, and I agree to the sequence numbers we're using."*
+> 
+> </details>
 
 #### Three-Way Handshake
 ```mermaid
