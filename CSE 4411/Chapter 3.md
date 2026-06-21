@@ -224,7 +224,7 @@ Timeouts must be longer than the RTT, but RTT fluctuates. TCP uses an Exponentia
 $$ EstimatedRTT = (1 - \alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT $$
 *(Typical value for $\alpha$ is 0.125 -> (1/8) )*  
 
-TCP also calculates the safety margin (variance in RTT):
+TCP also calculates the safety margin (variance in RTT): (DevRTT -> Jitter)
 $$ DevRTT = (1 - \beta) \cdot DevRTT + \beta \cdot |SampleRTT - EstimatedRTT| $$
 *(Typical value for $\beta$ is 0.25)*
 
