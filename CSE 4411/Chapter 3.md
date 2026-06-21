@@ -214,7 +214,7 @@ TCP provides a robust, reliable data transfer service over the unreliable IP net
 
 ### TCP Segment Structure
 *   **Sequence Number:** The byte-stream number of the *first byte* in the segment's data.
-*   **Acknowledgement Number:** The sequence number of the *next byte* the receiver expects to get (TCP uses cumulative ACKs).
+*   **Acknowledgement Number:** The sequence number of the ***next byte* the receiver expects to get** (TCP uses cumulative ACKs).
 *   **Receive Window:** Used for flow control (indicates how many bytes the receiver is willing to accept).
 *   **Flags:** `ACK` (acknowledgment is valid), `RST` (reset connection), `SYN` (setup connection), `FIN` (teardown connection).
 
@@ -222,7 +222,7 @@ TCP provides a robust, reliable data transfer service over the unreliable IP net
 Timeouts must be longer than the RTT, but RTT fluctuates. TCP uses an Exponential Weighted Moving Average (EWMA) to smooth out RTT estimations:
 
 $$ EstimatedRTT = (1 - \alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT $$
-*(Typical value for $\alpha$ is 0.125)*
+*(Typical value for $\alpha$ is 0.125 -> (1/8) )*  
 
 TCP also calculates the safety margin (variance in RTT):
 $$ DevRTT = (1 - \beta) \cdot DevRTT + \beta \cdot |SampleRTT - EstimatedRTT| $$
