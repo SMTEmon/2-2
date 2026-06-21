@@ -63,6 +63,70 @@ The checksum is used for basic error detection (e.g., flipped bits during transm
 *   **Sender:** Treats the segment contents as a sequence of 16-bit integers. It adds these integers together. If there is a carry-out from the most significant bit, it is wrapped around and added to the result. The final sum is inverted (1's complement) and placed in the checksum field.
 *   **Receiver:** Adds all the 16-bit words (including the checksum). If no errors occurred, the sum should be all `1`s. If any `0`s are present, an error is detected.
 
+> [!example]- Walkthrough: UDP Checksum Calculation Example
+> Suppose we want to calculate the checksum for three 16-bit words:
+> 
+> *   **Word 1:** `0110011001100000` (Hex: `6660`)
+> *   **Word 2:** `0101010101010101` (Hex: `5555`)
+> *   **Word 3:** `1000111100001100` (Hex: `8F0C`)
+> 
+> #### 1. Sender Side Calculation
+> 
+> First, we add the first two words:
+> ```text
+>   0110 0110 0110 0000  (Word 1)
+> + 0101 0101 0101 0101  (Word 2)
+> ---------------------
+>   1011 1011 1011 0101  (Sum: 0xBBB5)
+> ```
+> 
+> Next, we add the third word to that sum:
+> ```text
+>   1011 1011 1011 0101  (Running Sum)
+> + 1000 1111 0000 1100  (Word 3)
+> ---------------------
+>  10100 1010 1100 0001  (Sum: 0x14AC1)
+> ```
+> 
+> Since we got a carry-out of `1` (which exceeds the 16-bit limit), we wrap it around and add it to the LSB (least significant bit):
+> ```text
+>   0100 1010 1100 0001  (16-bit Sum)
+> +                   1  (Wrapped Carry-out)
+> ---------------------
+>   0100 1010 1100 0010  (Final Sum: 0x4AC2)
+> ```
+> 
+> Finally, we invert all the bits (1's complement) to obtain the checksum:
+> ```text
+>   0100 1010 1100 0010  (Final Sum)
+>   ↓ (Inverting all bits)
+>   1011 0101 0011 1101  (Checksum: 0xB53D)
+> ```
+> The sender transmits this checksum (`0xB53D`) along with the data words.
+> 
+> #### 2. Receiver Side Verification
+> 
+> The receiver adds all three data words and the received checksum:
+> ```text
+>   0110 0110 0110 0000  (Word 1)
+>   0101 0101 0101 0101  (Word 2)
+>   1000 1111 0000 1100  (Word 3)
+> + 1011 0101 0011 1101  (Checksum)
+> ---------------------
+>  11111 1111 1111 1110  (Sum: 0x1FFFE)
+> ```
+> 
+> Wrapping around the carry-out of `1`:
+> ```text
+>   1111 1111 1111 1110  (16-bit Sum)
+> +                   1  (Wrapped Carry-out)
+> ---------------------
+>   1111 1111 1111 1111  (Result: all 1s)
+> ```
+> 
+> Since the final sum is all `1`s, the receiver concludes that no single-bit transmission errors occurred.
+
+
 > [!warning] Weak Protection
 > UDP checksums provide very weak protection. If two separate bits flip in a way that cancels each other out mathematically, the checksum will remain unchanged, and the error will go undetected.
 
