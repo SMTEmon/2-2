@@ -192,13 +192,13 @@ $$ U_{sender} = \frac{L/R}{RTT + L/R} $$
 To fix this, we use **Pipelining**: allowing the sender to transmit multiple packets without waiting for individual ACKs. This requires larger sequence numbers and buffering at the sender/receiver.
 
 #### Go-Back-N (GBN) vs. Selective Repeat (SR)
-| Feature | Go-Back-N (GBN) | Selective Repeat (SR) |
-| :--- | :--- | :--- |
-| **Window** | Sender maintains a window of $N$ unACKed packets. | Sender maintains window of $N$. Receiver also maintains a window. |
-| **ACK Type** | **Cumulative ACKs**: ACK $n$ means *all* packets up to $n$ are received. | **Individual ACKs**: ACKs explicitly target one specific packet. |
-| **Timer** | Single timer for the oldest unACKed packet. | Separate logical timer for *each* unACKed packet. |
-| **On Timeout** | Retransmits the missing packet AND all subsequent packets in the window. | Retransmits ONLY the specifically lost/timeout packet. |
-| **Out-of-Order** | Receiver discards out-of-order packets. | Receiver buffers out-of-order packets. |
+| Feature          | Go-Back-N (GBN) (followed in class (mostly))                             | Selective Repeat (SR)                                             |
+| :--------------- | :----------------------------------------------------------------------- | :---------------------------------------------------------------- |
+| **Window**       | Sender maintains a window of $N$ unACKed packets.                        | Sender maintains window of $N$. Receiver also maintains a window. |
+| **ACK Type**     | **Cumulative ACKs**: ACK $n$ means *all* packets up to $n$ are received. | **Individual ACKs**: ACKs explicitly target one specific packet.  |
+| **Timer**        | Single timer for the oldest unACKed packet.                              | Separate logical timer for *each* unACKed packet.                 |
+| **On Timeout**   | Retransmits the missing packet AND all subsequent packets in the window. | Retransmits ONLY the specifically lost/timeout packet.            |
+| **Out-of-Order** | Receiver discards out-of-order packets.                                  | Receiver buffers out-of-order packets.                            |
 
 ---
 
