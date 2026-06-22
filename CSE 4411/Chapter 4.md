@@ -81,6 +81,32 @@ Why has such a "terrible" service model been so successful?
 * **Distributed Services:** CDNs and replicated datacenters bring content closer to the user, masking delay and loss.
 * **Elasticity:** Transport-layer congestion control (TCP) adapts to the network state.
 
+> [!abstract]- ⚠️ Off-Topic: Alternative Network Service Models (QoS, DiffServ, IntServ, ATM)
+> **Aliases:** QoS Models, DiffServ, IntServ, ATM
+> **Tags:** #networking/layer3 #qos #service-models
+> 
+> # Alternative Network Service Models
+> 
+> > [!summary] TL;DR
+> > While the Internet defaults to a Best-Effort model (no guarantees), these alternative models were designed to provide Quality of Service (QoS).
+> 
+> ## The Big Three Alternatives
+> 
+> ### Differentiated Services (DiffServ)
+> - **How it works:** "Soft" QoS. Routers mark packet headers to categorize traffic (e.g., VoIP gets priority over background downloads).
+> - **Real-World Use:** High. Widely used by ISPs and corporate networks to manage traffic congestion.
+> 
+> ### Integrated Services (IntServ)
+> - **How it works:** "Hard" QoS. Uses RSVP to explicitly reserve bandwidth and memory across every single router on a path for a specific data stream.
+> - **Real-World Use:** Low/Niche. Too resource-heavy to scale on the global Internet; restricted to highly controlled private/military networks.
+> 
+> ### Asynchronous Transfer Mode (ATM)
+> - **How it works:** A totally different architecture from IP. Sends data in fixed 53-byte "cells" to mathematically guarantee Constant Bit Rates (CBR).
+> - **Real-World Use:** Obsolete. Formerly the telecom backbone of the 90s, now entirely replaced by high-speed Ethernet and IP networks.
+> 
+> > [!info] Modern Hybrids
+> > Because the Internet's Best-Effort model won, engineers built tools on top of it to mimic guaranteed services. Today, [[MPLS]] (virtual circuits over IP) and [[5G Network Slicing]] provide ATM-like reliability over modern infrastructure.
+
 ---
 
 ## 4. Destination-Based Forwarding & Longest Prefix Match
@@ -168,8 +194,8 @@ The IPv4 datagram consists of a header and a data payload. The standard header s
 
 > [!bug] Datagram Overhead
 > An application-layer message transmitted over TCP/IP carries a minimum of **40 bytes of overhead**: 
-> * 20 bytes of TCP Header
-> * 20 bytes of IPv4 Header
+> * 20 bytes of TCP Header (In Transport Layer)
+> * 20 bytes of IPv4 Header (In Network Layer  32 * 5 bits -> 4 * 5 Bytes)
 
 ---
 
