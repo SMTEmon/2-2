@@ -1,6 +1,3 @@
-# Chapter 1-4 Practice Questions & Answers
-
-
 ## Chapter 1: Introduction to Computer Networking
 
 > [!question]- Q: Briefly explain the service model of each layer of the Internet Protocol stack.
