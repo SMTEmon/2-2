@@ -455,3 +455,96 @@ sequenceDiagram
 
 > [!note] The `LAST_ACK` State
 > The server enters this state after it has sent its own `FIN` and is waiting for the final `ACK` from the client. Once the server receives that final `ACK`, it transitions to the `CLOSED` state and completely releases all resources. If the final `ACK` gets lost, the server will eventually time out and retransmit its `FIN` (which the client in `TIME_WAIT` will catch and acknowledge again).
+
+---
+
+## 📚 Quick Exam Review
+
+### Definitions Table
+| Term | Definition |
+| :--- | :--- |
+| **Multiplexing** | Gathering data from multiple sockets, encapsulating with headers, passing to network layer. |
+| **Demultiplexing** | Directing received segments to correct sockets using port numbers. |
+| **UDP** | Connectionless, best-effort transport protocol; fast, no setup delay, 8-byte header. |
+| **TCP** | Connection-oriented, reliable, in-order byte stream with flow and congestion control. |
+| **GBN (Go-Back-N)** | Pipelining protocol: Timeout causes retransmission of missing packet *and all subsequent packets* in window. Uses cumulative ACKs. |
+| **Selective Repeat (SR)** | Pipelining protocol: Timeout causes retransmission of *only* the specific lost packet. Uses individual ACKs. |
+| **Cumulative ACK** | Acknowledges receipt of *all* packets up to the specified sequence number. |
+| **Fast Retransmit** | Sender retransmits a segment instantly upon receiving **3 duplicate ACKs**, before the timeout. |
+| **Flow Control** | Prevents sender from overflowing receiver's buffer (using `rwnd`). |
+| **UDP Socket ID** | 2-Tuple: `(Dest IP, Dest Port)` |
+| **TCP Socket ID** | 4-Tuple: `(Src IP, Src Port, Dest IP, Dest Port)` |
+
+### Important Formulas Table
+| Concept | Formula | Notes |
+| :--- | :--- | :--- |
+| **Sender Utilization (Stop & Wait)** | $U_{sender} = \frac{L/R}{RTT + L/R}$ | $L/R$ is transmission time. Represents fraction of time sender is busy. |
+| **Estimated RTT (EWMA)** | $EstimatedRTT = (1 - \alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT$ | Typically $\alpha = 0.125$ (1/8). Smooths out RTT fluctuations. |
+| **RTT Deviation (Jitter)** | $DevRTT = (1 - \beta) \cdot DevRTT + \beta \cdot \|SampleRTT - EstimatedRTT\|$ | Typically $\beta = 0.25$ (1/4). |
+| **TCP Timeout Interval** | $TimeoutInterval = EstimatedRTT + 4 \cdot DevRTT$ | Calculates wait time before retransmission. |
+| **TCP Receive Window (`rwnd`)** | $rwnd = RcvBuffer - [LastByteRcvd - LastByteRead]$ | Measures available buffer space for Flow Control. |
+
+### 🧠 Stuff to Remember (Glance Sheet)
+*   **Header Sizes:** UDP = **8 bytes**, TCP = **20 bytes** (minimum).
+*   **Well-Known Ports:** $0 - 1023$ (HTTP: 80, HTTPS: 443).
+*   **UDP Checksum:** Treats data as 16-bit words. Adds them up, wraps any carry-out to the LSB. Checksum is the **1's complement** (inverted bits) of the sum. Receiver checks if total sum equals all `1`s. Very weak error protection.
+*   **RDT Protocol Evolution:**
+    *   **2.0:** Handles bit errors (adds Checksum, ACK/NAK).
+    *   **2.1:** Handles corrupted ACKs (adds Sequence Numbers 0/1).
+    *   **2.2:** NAK-free (uses Duplicate ACKs instead).
+    *   **3.0:** Handles packet loss (adds Countdown Timer).
+*   **TCP Connections:**
+    *   **Setup:** 3-Way Handshake (`SYN` $\rightarrow$ `SYNACK` $\rightarrow$ `ACK`). Prevents half-open connections from delayed duplicates.
+    *   **Teardown:** 4-Way process using `FIN` and `ACK`. Client enters **`TIME_WAIT`** state to ensure its final `ACK` is received.
+*   **TCP ACK Generation Rules:**
+    1.  In-order, no gaps $\rightarrow$ **Delayed ACK** (wait 500ms).
+    2.  In-order, one ACK pending $\rightarrow$ **Immediate Cumulative ACK**.
+    3.  Out-of-order (gap detected) $\rightarrow$ **Immediate Duplicate ACK** (leads to fast retransmit).
+    4.  Gap filled $\rightarrow$ **Immediate ACK**.
+
+### 📦 Segment Structures (Visualized)
+
+#### UDP Segment Structure (8 Bytes Overhead)
+<table>
+  <tr>
+    <td align="center" width="50%"><b>Source Port Number</b><br>(16 bits)</td>
+    <td align="center" width="50%"><b>Destination Port Number</b><br>(16 bits)</td>
+  </tr>
+  <tr>
+    <td align="center"><b>Length</b><br>(16 bits)</td>
+    <td align="center"><b>Checksum</b><br>(16 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><br><b>Application Data (Payload)</b><br><i>(Variable Length)</i><br><br></td>
+  </tr>
+</table>
+
+#### TCP Segment Structure (20 Bytes Minimum Overhead)
+<table>
+  <tr>
+    <td align="center" colspan="4" width="50%"><b>Source Port Number</b> (16 bits)</td>
+    <td align="center" colspan="4" width="50%"><b>Destination Port Number</b> (16 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="8"><b>Sequence Number</b> (32 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="8"><b>Acknowledgment Number</b> (32 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="1"><b>Header Len</b><br>(4 bits)</td>
+    <td align="center" colspan="1"><b>Not Used</b><br>(6 bits)</td>
+    <td align="center" colspan="2"><b>Flags</b><br><small>(URG, ACK, PSH, RST, SYN, FIN)</small><br>(6 bits)</td>
+    <td align="center" colspan="4"><b>Receive Window</b><br>(16 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="4"><b>Checksum</b> (16 bits)</td>
+    <td align="center" colspan="4"><b>Urgent Data Pointer</b> (16 bits)</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="8"><b>Options</b> <i>(Variable Length, usually empty)</i></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="8"><br><b>Application Data (Payload)</b><br><i>(Variable Length)</i><br><br></td>
+  </tr>
+</table>
