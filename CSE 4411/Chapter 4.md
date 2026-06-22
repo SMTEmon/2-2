@@ -281,3 +281,45 @@ The `/x` notation is also called the subnet mask. For example, a `/24` subnet ma
 > [!note] Classless Routing and RIPv2
 > * **Why RIP Version 2?** RIPv1 only supports classful routing. RIPv2 is required for VLSM because it supports classless routing and includes subnet mask data in its updates.
 > * **Why disable auto-summary?** By default, RIP summarizes routes to their classful boundaries. Using the `no auto-summary` command ensures each subnet is advertised with its exact mask, allowing accurate routing between discontiguous networks.
+
+---
+
+## 7. Exam Quick Reference: Definitions & Formulas
+
+### Definitions Table
+
+| Term | Definition |
+| --- | --- |
+| **Data Plane** | Local, per-router function determining how a datagram arriving on an input port is forwarded to an output port. (Forwarding) |
+| **Control Plane** | Network-wide logic determining how a datagram is routed among routers along the end-to-end path. (Routing) |
+| **Forwarding** | Moving a packet from a router's input link to the appropriate output link (hardware, nanoseconds). |
+| **Routing** | Determining the end-to-end route taken by packets from source to destination (software, seconds). |
+| **SDN** | Software-Defined Networking; logic is centralized in a Remote Controller that computes/distributes forwarding tables to routers. |
+| **Best-Effort Service** | The Internet's service model providing NO guarantees on delivery, timing, order, or bandwidth. |
+| **DiffServ** | Differentiated Services; "Soft" QoS using packet marking for traffic categorization. |
+| **IntServ** | Integrated Services; "Hard" QoS using RSVP to explicitly reserve resources. |
+| **ATM** | Asynchronous Transfer Mode; Obsolete architecture using fixed 53-byte cells for Constant Bit Rates. |
+| **LPM** | Longest Prefix Matching; routing rule to forward based on the longest matching address prefix. |
+| **TCAM** | Ternary Content Addressable Memory; hardware used to perform LPM in one clock cycle. |
+| **Subnet** | A network of device interfaces that can physically reach each other without passing through a router. |
+| **CIDR** | Classless InterDomain Routing; generalizes subnet addressing using `a.b.c.d/x` format. |
+| **VLSM** | Variable Length Subnet Masking; allows subnets of different sizes within the same network block. |
+| **Route Aggregation** | Summarizing multiple smaller prefixes into a single larger prefix to shrink global routing tables. |
+
+### Important Formulas & Stuff to Remember
+
+| Category               | Formula / Key Point                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Number of Subnets**  | $2^{\Delta}$ (where $\Delta$ = number of borrowed bits)                                                             |
+| **Hosts per Subnet**   | $2^{\text{host bits}} - 2$ (Subtracts Network & Broadcast addresses)                                                |
+| **CIDR Format**        | `a.b.c.d/x` (where $x$ = network prefix bits, $32-x$ = host bits)                                                   |
+| **IPv4 Header Size**   | Minimum **20 bytes**. (Typically **40 bytes** total overhead when combined with a TCP header).                      |
+| **TTL (Time-to-Live)** | Decremented by 1 at each router hop. Packet dropped if TTL reaches 0 (prevents infinite routing loops).             |
+| **Subnet Mask Rule**   | Interfaces on the same subnet share the exact same network prefix bits.                                             |
+| **RIPv2 Requirement**  | Supports VLSM and classless routing. `no auto-summary` prevents classful summarization and allows accurate routing. |
+|                        |                                                                                                                     |
+
+---
+
+> [!seealso] Related Notes
+> * [[Classful Addressing]] - For a detailed visual breakdown of IPv4 octets and legacy class-based networking.
