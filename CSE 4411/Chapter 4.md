@@ -248,3 +248,36 @@ The `/x` notation is also called the subnet mask. For example, a `/24` subnet ma
 > Because of CIDR, an ISP can advertise a single aggregated prefix to the global internet. 
 > For example, an ISP owns `200.23.16.0/20`. It can divide this block into 8 smaller blocks (Organizations 0 through 7) starting from `200.23.16.0/23` up to `200.23.30.0/23`. 
 > To the outside Internet, the ISP just says: *"Send me anything beginning with `200.23.16.0/20`"*, drastically shrinking the size of global routing tables.
+
+### 6.3 Variable Length Subnet Masking (VLSM) & Formulas
+
+> [!important] Subnetting Formulas
+> * **Number of subnets:** $2^{\Delta}$, where $\Delta$ is the number of borrowed bits.
+> * **Hosts per subnet:** $2^{\text{host bits}} - 2$ (the first address is the network address and the last is the broadcast address).
+
+**VLSM Design Example (From Lab)**
+*(Based on the `204.15.5.0/24` address block)*
+
+**Host Requirements:**
+
+| Subnet | Required Hosts |
+| ------ | -------------- |
+| net A  | 14             |
+| net B  | 28             |
+| net C  | 2              |
+| net D  | 7              |
+| net E  | 28             |
+
+**Resulting VLSM Plan:**
+
+| Subnet | Network Mask | Usable Hosts Range |
+| ------ | ------------ | ------------------ |
+| net B | `204.15.5.0 /27` (255.255.255.224) | 204.15.5.1 - 204.15.5.30 |
+| net E | `204.15.5.32 /27` | 204.15.5.33 - 204.15.5.62 |
+| net A | `204.15.5.64 /28` (255.255.255.240) | 204.15.5.65 - 204.15.5.78 |
+| net D | `204.15.5.80 /28` | 204.15.5.81 - 204.15.5.94 |
+| net C | `204.15.5.96 /30` (255.255.255.252) | 204.15.5.97 - 204.15.5.98 |
+
+> [!note] Classless Routing and RIPv2
+> * **Why RIP Version 2?** RIPv1 only supports classful routing. RIPv2 is required for VLSM because it supports classless routing and includes subnet mask data in its updates.
+> * **Why disable auto-summary?** By default, RIP summarizes routes to their classful boundaries. Using the `no auto-summary` command ensures each subnet is advertised with its exact mask, allowing accurate routing between discontiguous networks.
