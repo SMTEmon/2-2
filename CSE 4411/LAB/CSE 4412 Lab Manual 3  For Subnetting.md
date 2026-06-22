@@ -1,4 +1,3 @@
-# CSE 4412 Lab Manual
 
 > [!info] Lab Overview
 > The lab focuses on using Cisco Packet Tracer for graphical network simulation and Python for network automation, data analysis, and scripting.
