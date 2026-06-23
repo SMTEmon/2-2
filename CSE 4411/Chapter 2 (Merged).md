@@ -103,19 +103,15 @@ Since HTTP is stateless, **Cookies** are used to maintain sessions (e.g., shoppi
 Web caches satisfy client requests without involving the origin server, reducing response time and bandwidth.
 - **Conditional GET:** Cache sends `If-modified-since: <date>`. Origin replies with `HTTP/1.1 304 Not Modified` and empty body if unchanged.
 
-<details>
-<summary><b>View Caching Math Example</b></summary>
-
-**Scenario:** 
-- Access link rate = 1.54 Mbps. Object size = 100K bits. Request rate = 15/sec.
-- Access link traffic intensity = $(15 \times 100\text{K}) / 1.54\text{M} = 0.97$.
-- *Problem:* 0.97 utilization causes massive queueing delay.
-
-**Solution:** Install a local Web cache with a 0.4 hit rate.
-- *New access link utilization:* $0.6 \times 0.97 = 0.58$ (queueing delay drops significantly).
-- *New average delay:* $0.6 \times (\text{Delay origin}) + 0.4 \times (\text{Delay cache}) \approx 1.2\text{ s}$.
-
-</details>
+> [!example]- View Caching Math Example
+> **Scenario:** 
+> - Access link rate = 1.54 Mbps. Object size = 100K bits. Request rate = 15/sec.
+> - Access link traffic intensity = $(15 \times 100\text{K}) / 1.54\text{M} = 0.97$.
+> - *Problem:* 0.97 utilization causes massive queueing delay.
+> 
+> **Solution:** Install a local Web cache with a 0.4 hit rate.
+> - *New access link utilization:* $0.6 \times 0.97 = 0.58$ (queueing delay drops significantly).
+> - *New average delay:* $0.6 \times (\text{Delay origin}) + 0.4 \times (\text{Delay cache}) \approx 1.2\text{ s}$.
 
 ### 2.5 HTTP Evolution
 - **HTTP/1.1 HOL Blocking:** A large object blocks smaller objects (Head-of-Line Blocking) over the same TCP connection.
@@ -196,80 +192,68 @@ A **socket** is the interface between the application and transport layers.
 - **No connection** between client and server.
 - Sender explicitly attaches destination IP and port to each packet.
 
-<details>
-<summary><b>View Python UDP Example</b></summary>
-
-*Client (`UDPClient.py`):*
-```python
-from socket import *
-clientSocket = socket(AF_INET, SOCK_DGRAM) #udp socket
-clientSocket.sendto(message.encode(), (serverName, serverPort))
-modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
-clientSocket.close()
-```
-
-*Server (`UDPServer.py`):*
-```python
-from socket import *
-serverSocket = socket(AF_INET, SOCK_DGRAM)
-serverSocket.bind(('', 12000)) #bind to specific port
-while True:
-    message, clientAddress = serverSocket.recvfrom(2048)
-    #process message...
-    serverSocket.sendto(modifiedMessage.encode(), clientAddress)
-```
-
-</details>
+> [!example]- View Python UDP Example
+> *Client (`UDPClient.py`):*
+> ```python
+> from socket import *
+> clientSocket = socket(AF_INET, SOCK_DGRAM) #udp socket
+> clientSocket.sendto(message.encode(), (serverName, serverPort))
+> modifiedMessage, serverAddress = clientSocket.recvfrom(2048)
+> clientSocket.close()
+> ```
+> 
+> *Server (`UDPServer.py`):*
+> ```python
+> from socket import *
+> serverSocket = socket(AF_INET, SOCK_DGRAM)
+> serverSocket.bind(('', 12000)) #bind to specific port
+> while True:
+>     message, clientAddress = serverSocket.recvfrom(2048)
+>     #process message...
+>     serverSocket.sendto(modifiedMessage.encode(), clientAddress)
+> ```
 
 ### 5.2 Socket Programming with TCP
 - **Connection-oriented:** Handshake required before sending data.
 - Server TCP creates a **new, dedicated socket** for each contacting client.
 
-<details>
-<summary><b>View Python TCP Example</b></summary>
-
-*Client (`TCPClient.py`):*
-```python
-from socket import *
-clientSocket = socket(AF_INET, SOCK_STREAM) #tcp socket
-clientSocket.connect((serverName, serverPort)) #3-way handshake
-clientSocket.send(sentence.encode()) #drops bytes into the pipe, no ip/port needed here
-modifiedSentence = clientSocket.recv(1024)
-clientSocket.close()
-```
-
-*Server (`TCPServer.py`):*
-```python
-from socket import *
-serverSocket = socket(AF_INET, SOCK_STREAM)
-serverSocket.bind(('', 12000))
-serverSocket.listen(1) #listening (welcoming socket)
-
-while True:
-    connectionSocket, addr = serverSocket.accept() #dedicated socket for client
-    sentence = connectionSocket.recv(1024).decode()
-    #process message...
-    connectionSocket.send(capitalizedSentence.encode())
-    connectionSocket.close() #closes this specific client's socket
-```
-
-</details>
+> [!example]- View Python TCP Example
+> *Client (`TCPClient.py`):*
+> ```python
+> from socket import *
+> clientSocket = socket(AF_INET, SOCK_STREAM) #tcp socket
+> clientSocket.connect((serverName, serverPort)) #3-way handshake
+> clientSocket.send(sentence.encode()) #drops bytes into the pipe, no ip/port needed here
+> modifiedSentence = clientSocket.recv(1024)
+> clientSocket.close()
+> ```
+> 
+> *Server (`TCPServer.py`):*
+> ```python
+> from socket import *
+> serverSocket = socket(AF_INET, SOCK_STREAM)
+> serverSocket.bind(('', 12000))
+> serverSocket.listen(1) #listening (welcoming socket)
+> 
+> while True:
+>     connectionSocket, addr = serverSocket.accept() #dedicated socket for client
+>     sentence = connectionSocket.recv(1024).decode()
+>     #process message...
+>     connectionSocket.send(capitalizedSentence.encode())
+>     connectionSocket.close() #closes this specific client's socket
+> ```
 
 ### 5.3 Timeouts and Error Handling
 Prevent processes from waiting forever if a packet is lost.
 
-<details>
-<summary><b>View Error Handling Example</b></summary>
-
-```python
-connectionSocket.settimeout(10) #set 10 second timeout
-try:
-    message = connectionSocket.recv(1024)
-except timeout:
-    print("No data received within 10 seconds.")
-```
-
-</details>
+> [!example]- View Error Handling Example
+> ```python
+> connectionSocket.settimeout(10) #set 10 second timeout
+> try:
+>     message = connectionSocket.recv(1024)
+> except timeout:
+>     print("No data received within 10 seconds.")
+> ```
 
 ---
 
