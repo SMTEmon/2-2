@@ -518,8 +518,38 @@ SELECT * FROM networking_sample;
 |Lexicographic sort (`"10.0.0.10"` before `"10.0.0.2"`)|Numeric sort — correct IP ordering|
 |String storage is larger|Binary storage — more compact, especially for IPv6|
 
-**Subnet search with `<<` (contained by):**
+##### Network Address Operators
 
+> [!example] `<<` (Contained by)
+> Returns true if the network or address on the left is strictly contained within the right.
+> ```sql
+> SELECT inet '192.168.1.5' << cidr '192.168.1.0/24'; -- TRUE
+> SELECT cidr '10.1.0.0/16' << cidr '10.0.0.0/8';     -- TRUE
+> ```
+
+> [!example] `<<=` (Contained by or equals)
+> ```sql
+> SELECT inet '192.168.1.5' <<= inet '192.168.1.5';   -- TRUE
+> ```
+
+> [!example] `>>` (Contains)
+> Returns true if the subnet on the left strictly contains the right.
+> ```sql
+> SELECT cidr '10.0.0.0/8' >> inet '10.5.5.5';        -- TRUE
+> ```
+
+> [!example] `>>=` (Contains or equals)
+> ```sql
+> SELECT cidr '192.168.1.0/24' >>= cidr '192.168.1.0/24'; -- TRUE
+> ```
+
+> [!example] `&&` (Overlaps)
+> Returns true if there is any common address space between the two.
+> ```sql
+> SELECT cidr '192.168.1.0/24' && cidr '192.168.1.0/25'; -- TRUE
+> ```
+
+**Practical Usage:**
 ```sql
 SELECT * FROM access_logs
 WHERE client_ip << '172.16.0.0/12';
@@ -597,7 +627,13 @@ SELECT '[1, 10)'::int4range && '[10, 15]'::int4range;  -- false (10 excluded on 
 
 **Containment `@>`** — does range/element lie inside another?
 
-> [!tip] `X @> Y` means **Y is contained in X**. `X <@ Y` means **X is contained in Y**.
+> [!tip] Containment vs "Strictly Left/Right"
+> For **ranges**, `X @> Y` means **Y is contained in X** (like `>>` for IP addresses). `X <@ Y` means **X is contained in Y** (like `<<` for IP addresses).
+> 
+> ⚠️ **Important distinction:** Unlike IP networks (where `<<` means containment), for ranges, the `<<` and `>>` operators mean **"strictly left of"** and **"strictly right of"**.
+> ```sql
+> SELECT '[1, 5)'::int4range << '[10, 20)'::int4range; -- true (1..4 is entirely before 10..19)
+> ```
 
 ```sql
 SELECT '[1, 10)'::int4range @> 5;                     -- true
