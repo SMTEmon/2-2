@@ -350,3 +350,6 @@ BEGIN
     END LOOP;
 END;
 ```
+
+
+Follow -> https://practicepsql.vercel.app to practice
