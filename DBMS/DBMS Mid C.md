@@ -807,6 +807,20 @@ WHERE time_slot && '[2026-01-30 09:00:00, 2026-01-30 18:00:00)'::tsrange;
 
 ##### Exclusion Constraints
 
+> [!warning] Why is this so important? (The Race Condition)
+> You might wonder, "Why not just write a SELECT query in my Python/Java backend to check if the room is free, and if it is, INSERT the reservation?"
+> 
+> Because of **Race Conditions**. If two users try to book Room 101 for the exact same time, and they click "Book" at the exact same millisecond:
+> 
+> - **User A's** code checks the database: "Is it free?" -> Database says Yes.
+> - **User B's** code checks the database: "Is it free?" -> Database says Yes.
+> - **User A's** code inserts the reservation.
+> - **User B's** code inserts the reservation.
+> 
+> **Result: Double booking.**
+> 
+> By putting the rule directly into the database using this EXCLUDE constraint, PostgreSQL acts as the ultimate gatekeeper. It locks the table for a microsecond during the insert, guaranteeing that a double-booking is mathematically impossible, no matter how many people click "Book" at the same time.
+
 Prevent double-booking **at the table level** — the DB itself rejects conflicting inserts:
 
 ```sql
