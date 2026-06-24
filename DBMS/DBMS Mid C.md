@@ -590,14 +590,16 @@ FROM networking_sample;
 
 ##### Canonical Form (Discrete Types)
 
-PostgreSQL **normalises** discrete ranges to the form $[,)$ — lower inclusive, upper exclusive.
+PostgreSQL **normalises** discrete ranges to the form `[a, b)` — lower inclusive, upper exclusive.
 
 ```sql
 SELECT '[1, 10]'::int4range;   -- → [1,11)
 SELECT '(1, 10)'::int4range;   -- → [2,10)
 ```
 
-**Why?** For integers, $[1, 10]$ and $[1, 11)$ represent the same set: ${1,2,3,4,5,6,7,8,9,10}$
+**Why do this? (The real reason)**
+Because discrete bounds can be expressed in multiple ways (`[1, 10]`, `(0, 10]`, `[1, 11)`, and `(0, 11)` all represent the exact same set of integers: `1,2,3,4,5,6,7,8,9,10`), allowing multiple formats makes equality comparisons and indexing unnecessarily complicated. 
+By forcing all equivalent discrete ranges into a **single, consistent canonical form** (`[inclusive, exclusive)`), PostgreSQL can perform operations like `=` (equality checks), overlaps, and B-Tree/GiST indexing much faster. It just compares the normalized bounds directly.
 
 > [!note] Continuous types like `numrange` are **not** canonicalised:
 > 
@@ -605,7 +607,7 @@ SELECT '(1, 10)'::int4range;   -- → [2,10)
 > SELECT '[1.0, 10.0]'::numrange;  -- stays [1.0,10.0]
 > ```
 > 
-> Because between 10 and 11 there are infinitely many reals ($10.0001$, $10.5$, etc.).
+> Because between 10 and 11 there are infinitely many real numbers ($10.0001$, $10.5$, etc.), so `[1.0, 10.0]` and `[1.0, 11.0)` do **not** represent the same set of values. Therefore, PostgreSQL cannot normalize them.
 
 ##### Range Operators
 
