@@ -611,13 +611,19 @@ By forcing all equivalent discrete ranges into a **single, consistent canonical 
 
 ##### Range Operators
 
-**Equality / Comparison:**
+**Equality / Comparison (`<`, `>`, `=`)**
+
+> [!warning] How `<` and `>` work (Sorting, not Position)
+> The `<` operator does **not** mean "strictly left of". It is used for B-Tree sorting (`ORDER BY`). PostgreSQL determines sorting by **comparing the lower bounds first**. It only compares upper bounds if the lower bounds are exactly the same.
+> ```sql
+> -- TRUE because the lower bound 1 is less than 2, even though 9 extends past 8!
+> SELECT '[1, 9)'::int4range < '[2, 8)'::int4range; 
+> ```
 
 ```sql
 SELECT '[1, 10)'::int4range = '[1, 10)'::int4range;  -- true
 SELECT '[1, 10)'::int4range = '(1, 10)'::int4range;  -- false
 SELECT '[1, 5)'::int4range < '[2, 8)'::int4range;    -- true
-SELECT '[1, 5]'::int4range < '(2, 5)'::int4range;    -- true
 ```
 
 **Overlap `&&`** — do two ranges share any values?
@@ -627,12 +633,13 @@ SELECT '[1, 10]'::int4range && '[10, 15]'::int4range;  -- true  (10 is shared)
 SELECT '[1, 10)'::int4range && '[10, 15]'::int4range;  -- false (10 excluded on left)
 ```
 
-**Containment `@>`** — does range/element lie inside another?
+**Containment `@>` vs "Strictly Left/Right" `<<`**
 
-> [!tip] Containment vs "Strictly Left/Right"
-> For **ranges**, `X @> Y` means **Y is contained in X** (like `>>` for IP addresses). `X <@ Y` means **X is contained in Y** (like `<<` for IP addresses).
-> 
-> ⚠️ **Important distinction:** Unlike IP networks (where `<<` means containment), for ranges, the `<<` and `>>` operators mean **"strictly left of"** and **"strictly right of"**.
+> [!tip] `<<` means something different for Ranges!
+> Unlike IP addresses (where `<<` means contained by), for ranges:
+> - `@>` means **contains** and `<@` means **is contained by**.
+> - `<<` means **strictly left of** (no overlap, entirely before).
+> - `>>` means **strictly right of** (no overlap, entirely after).
 > ```sql
 > SELECT '[1, 5)'::int4range << '[10, 20)'::int4range; -- true (1..4 is entirely before 10..19)
 > ```
@@ -643,11 +650,18 @@ SELECT '[1, 20]'::int4range @> '[5, 12]'::int4range;  -- true
 SELECT '[1, 20]'::int4range <@ '[5, 12]'::int4range;  -- false
 ```
 
-**Adjacency `-|-`** — returns `true` only if there is NO overlap:
+**Adjacency `-|-`** — Are they right next to each other with NO gap and NO overlap?
+
+> [!warning] Adjacency can look weird for integers!
+> Because discrete types are canonicalized to `[inclusive, exclusive)`, ranges that look like they have a gap might actually be perfectly adjacent!
+> ```sql
+> -- TRUE! [1, 5] normalizes to [1, 6). The next integer is 6, so [1,6) and [6,11) are perfectly adjacent!
+> SELECT '[1, 5]'::int4range -|- '[6, 10]'::int4range; 
+> ```
 
 ```sql
-SELECT '[1, 5]'::int4range -|- '[5, 10]'::int4range;   -- false (5 overlaps)
-SELECT '[1, 5]'::int4range -|- '(5, 10]'::int4range;   -- true
+SELECT '[1, 5]'::int4range -|- '[5, 10]'::int4range;   -- false (5 overlaps, so not adjacent)
+SELECT '[1, 5)'::int4range -|- '[5, 10]'::int4range;   -- true (perfectly adjacent at 5)
 ```
 
 **Bound Extraction:**
