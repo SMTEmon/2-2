@@ -1842,6 +1842,9 @@ SELECT navigate_citizen_data();
 |`FETCH ABSOLUTE n`|Jump to row number `n`|
 |`MOVE FORWARD n`|Skip `n` rows forward (no data fetch)|
 
+> [!info] Default FETCH Direction
+> In PostgreSQL, if you write `FETCH` without specifying a direction, it automatically assumes you mean `NEXT`. It is the default behavior. So, writing `FETCH` and `FETCH NEXT` execute the exact same logic.
+
 ---
 
 ### 7.3 Cursor FOR Loop
