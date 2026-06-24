@@ -1734,11 +1734,11 @@ Must be manually managed. Gives full control over row processing and supports sc
 
 ```mermaid
 flowchart LR
-    A["DECLARE\ncursor + query"] --> B["OPEN\nexecute query,\nallocate memory"]
-    B --> C["FETCH\nget current row,\nadvance pointer"]
+    A["DECLARE<br>cursor + query"] --> B["OPEN<br>execute query,<br>allocate memory"]
+    B --> C["FETCH<br>get current row,<br>advance pointer"]
     C --> D{"More rows?"}
     D -- Yes --> C
-    D -- No --> E["CLOSE\nfree memory"]
+    D -- No --> E["CLOSE<br>free memory"]
 
     style A fill:#e3f2fd,stroke:#1565c0
     style B fill:#e8f5e9,stroke:#2e7d32
