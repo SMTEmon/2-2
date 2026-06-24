@@ -500,6 +500,15 @@ SELECT * FROM networking_sample;
 
 > [!note] When inserting a CIDR with `/32`, PostgreSQL automatically annotates it as a single-host address.
 
+> [!info]- How it works mathematically
+> **The Golden Rule of the `cidr` Data Type:** Any bits to the right of the subnet mask (the host bits) **MUST be zero.** It enforces that you are storing a true network address, not a specific device's address within a larger network.
+> 
+> * **A normal network (Valid):** `192.168.1.0/24`. The host bits (last 8 bits) are all zeros. Valid.
+> * **A host in a network (Invalid):** `192.168.1.5/24`. The host bits are `.5` (not zero). PostgreSQL throws an error (`invalid cidr value: "192.168.1.5/24" Detail: Value has bits set to right of mask`).
+> * **A `/32` address (Valid):** `192.168.1.5/32`. There are exactly zero host bits, so it is impossible for any host bits to be non-zero. It satisfies the `cidr` rule perfectly.
+> 
+> In networking theory, a `/32` is considered a "host route" or a "network of exactly one".
+
 ##### Why NOT store IPs as TEXT?
 
 |Problem with TEXT|Solution with INET/CIDR|
