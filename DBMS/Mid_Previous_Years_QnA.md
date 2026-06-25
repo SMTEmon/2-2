@@ -68,25 +68,40 @@
 > ```sql
 > create or replace function get_status (p_name IN varchar2 (20)) return number (6,2)
 > IS
-> ...
+> v_name varchar2(20);
+> BEGIN
+> select name into v_name from students where
+> name=p_name; p_name:='test';
+> END;
 > ```
 
 > [!info]- Answer
-> **Errors in the function signature:**
-> 1. In PostgreSQL PL/pgSQL, parameter types should not have length constraints specified in the signature. `varchar2(20)` is Oracle syntax and invalid in Postgres. It should be `varchar` or `text`.
-> 2. `return number(6,2)` is Oracle syntax. In PostgreSQL, it should be `RETURNS numeric(6,2)`. Note the keyword `RETURNS` instead of `return`, and `numeric` instead of `number`.
-> 3. `IS` is typically Oracle syntax; PostgreSQL uses `AS $$`.
-> 4. In PostgreSQL PL/pgSQL, the function body must be enclosed in `$$` (or quotes) and specify the `LANGUAGE plpgsql`.
+> Since we are following **PostgreSQL**, this snippet contains several Oracle-specific syntax errors alongside general logic errors:
 > 
-> **Corrected Signature (PostgreSQL):**
+> **Errors in the provided code:**
+> 1. **Oracle specific types and keywords:** 
+>    - `varchar2` is Oracle syntax. It should be `varchar`.
+>    - `return number(6,2)` is Oracle syntax. It should be `RETURNS numeric(6,2)`. Notice it must be `RETURNS` instead of `return`.
+>    - `IS` is Oracle syntax. In Postgres, we use `AS $$` before the body block.
+> 2. **Size constraints on parameters:** Postgres does not allow length constraints on function parameters. `varchar(20)` should just be `varchar`.
+> 3. **Modifying an IN parameter:** The parameter `p_name` is an `IN` parameter (which is the default in Postgres), making it read-only. `p_name:='test';` is invalid.
+> 4. **Missing RETURN statement:** The function is declared to return a value, but the execution body lacks a `RETURN <value>;` statement.
+> 5. **Missing Language Declaration:** Postgres requires the function body to be wrapped in quotes or `$$` and specify `LANGUAGE plpgsql`.
+> 
+> **Corrected Code (PostgreSQL):**
 > ```sql
 > CREATE OR REPLACE FUNCTION get_status(p_name IN varchar) 
 > RETURNS numeric(6,2) AS $$
 > DECLARE
->     -- variable declarations
+>     v_name varchar(20);
+>     v_status numeric(6,2) := 0.00; -- Example variable to hold return value
 > BEGIN
->     -- function body
->     ...
+>     SELECT name INTO v_name FROM students WHERE name = p_name;
+>     
+>     -- Removed assignment to read-only IN parameter p_name
+>     
+>     -- Ensure a value is returned
+>     RETURN v_status; 
 > END;
 > $$ LANGUAGE plpgsql;
 > ```
@@ -391,11 +406,12 @@
 
 > [!info]- Answer
 > *(Note: Same as 2023-2024 Question 2c)*
-> **Errors in the function signature:**
-> 1. In PostgreSQL PL/pgSQL, parameter types should not have length constraints specified in the signature. `varchar2(20)` is Oracle syntax and invalid in Postgres. It should be `varchar` or `text`.
-> 2. `return number(6,2)` is Oracle syntax. In PostgreSQL, it should be `RETURNS numeric(6,2)`. Note the keyword `RETURNS` instead of `return`, and `numeric` instead of `number`.
-> 3. `IS` is typically Oracle syntax; PostgreSQL uses `AS $$`.
-> 4. In PostgreSQL PL/pgSQL, the function body must be enclosed in `$$` (or quotes) and specify the `LANGUAGE plpgsql`.
+> Since we are following **PostgreSQL**, the snippet contains several Oracle-specific syntax errors and logic errors:
+> 1. **Oracle specific types and keywords:** `varchar2` should be `varchar`. `return number(6,2)` should be `RETURNS numeric(6,2)`. `IS` should be `AS $$`.
+> 2. **Size constraints on parameters:** `varchar(20)` should just be `varchar`.
+> 3. **Modifying an IN parameter:** The parameter `p_name` is read-only.
+> 4. **Missing RETURN statement:** The body lacks a `RETURN <value>;` statement.
+> 5. **Missing Language Declaration:** Requires `$$ LANGUAGE plpgsql;` at the end.
 
 > [!question] Question 1(b): `%TYPE` Advantage
 > State the main advantage of using `%TYPE` over basic declarations inside a PL/SQL sub-program.
