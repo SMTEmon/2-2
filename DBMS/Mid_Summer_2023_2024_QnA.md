@@ -32,7 +32,7 @@
 > );
 > ```
 
-> [!question] Question 1 b) ID Design (5 Marks)
+> [!error] Question 1 b) ID Design (5 Marks) - *Out of Syllabus*
 > Design and briefly explain a format for employee IDs intended for an automated Employee Salary Management system in a corporate office.
 
 > [!info]- Answer
@@ -45,7 +45,7 @@
 > 
 > *Example:* `IT-2023-0042` represents the 42nd employee hired in the IT department in 2023. This format is easily readable, helps in grouping employees by department/seniority, and integrates seamlessly into an automated salary system.
 
-> [!question] Question 1 c) Database Storage & DDLs (5 Marks)
+> [!error] Question 1 c) Database Storage & DDLs (5 Marks) - *Out of Syllabus*
 > * Explain if knowing the exact file location of database records is important.
 > * Issue the DDLs for four tables (T1, T2, T3, T4).
 > * **Constraint:** T1, T2, and T4 must be stored at `C:\MyData`, while T3 must be stored at `D:\MyData`. You may assume any attributes and datatypes.
@@ -69,7 +69,7 @@
 > CREATE TABLE T4 (id INT PRIMARY KEY, created_at DATE) TABLESPACE ts_c_drive;
 > ```
 
-> [!question] Question 2 a) Large Objects (5 Marks)
+> [!error] Question 2 a) Large Objects (5 Marks) - *Out of Syllabus*
 > Define "Large Object" and mention one specific application where it is used.
 
 > [!info]- Answer
