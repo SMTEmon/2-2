@@ -113,27 +113,34 @@
 > ```sql
 > create or replace function get_status (p_name IN varchar2 (20)) return number (6,2)
 > IS
-> ...
+> v_name varchar2(20);
+> BEGIN
+> select name into v_name from students where
+> name=p_name; p_name:='test';
+> END;
 > ```
 
 > [!info]- Answer
-> **Errors in the function signature:**
-> 1. In PostgreSQL PL/pgSQL, parameter types should not have length constraints specified in the signature. `varchar2(20)` is Oracle syntax and invalid in Postgres. It should be `varchar` or `text`.
-> 2. `return number(6,2)` is Oracle syntax. In PostgreSQL, it should be `RETURNS numeric(6,2)`. Note the keyword `RETURNS` instead of `return`, and `numeric` instead of `number`.
-> 3. `IS` is typically Oracle syntax; PostgreSQL uses `AS $$`.
-> 4. In PostgreSQL PL/pgSQL, the function body must be enclosed in `$$` (or quotes) and specify the `LANGUAGE plpgsql`.
+> **Errors in the provided PL/SQL code:**
+> 1. **Size constraint on parameter:** In PL/SQL, parameter types in the function signature cannot have a size constraint. `varchar2(20)` must be changed to `varchar2`.
+> 2. **Size constraint on return type:** Similarly, the return type cannot have precision/scale constraints. `return number(6,2)` must be changed to `return number`.
+> 3. **Modifying an IN parameter:** The parameter `p_name` is an `IN` parameter, making it read-only. Assigning a value to it (`p_name:='test';`) is invalid.
+> 4. **Missing RETURN statement:** The function is declared to return a number, but the execution body lacks a `RETURN` statement.
 > 
-> **Corrected Signature (PostgreSQL):**
+> **Corrected Code:**
 > ```sql
-> CREATE OR REPLACE FUNCTION get_status(p_name IN varchar) 
-> RETURNS numeric(6,2) AS $$
-> DECLARE
->     -- variable declarations
+> CREATE OR REPLACE FUNCTION get_status (p_name IN varchar2) RETURN number
+> IS
+>     v_name varchar2(20);
+>     v_status number := 0; -- Example variable to hold return value
 > BEGIN
->     -- function body
->     ...
+>     SELECT name INTO v_name FROM students WHERE name = p_name;
+>     
+>     -- Removed assignment to read-only IN parameter p_name
+>     
+>     -- Ensure a value is returned
+>     RETURN v_status; 
 > END;
-> $$ LANGUAGE plpgsql;
 > ```
 
 > [!question] Question 3 a) Table Creation (5 Marks)
