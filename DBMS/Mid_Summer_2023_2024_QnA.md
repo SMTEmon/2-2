@@ -152,17 +152,34 @@
 > ```
 
 > [!question] Question 3 a) Table Creation (5 Marks)
-> Create the necessary tables following standard database design principles for a Result Processing System where courses have codes, titles, credit hours (e.g., 3 credits = 300 marks), and types (Theory or Lab).
+> Create the necessary tables while maintaining standard database design principles.
+> *Context:* Students are admitted to various programs within departments. Each course is defined by its code, title, credit hour, and type (Theory or Lab). The credit hour determines the total possible marks; for instance, a 3-credit course is graded out of 300 marks.
 
 > [!info]- Answer
+> Based on the context provided, we need to introduce tables for Departments and Programs to maintain standard 3NF normalization.
+> 
 > ```sql
-> -- Table for Students
-> CREATE TABLE Students (
->     student_id INT PRIMARY KEY,
->     student_name VARCHAR(100) NOT NULL
+> -- Departments
+> CREATE TABLE Departments (
+>     dept_id SERIAL PRIMARY KEY,
+>     dept_name VARCHAR(100) NOT NULL UNIQUE
 > );
 > 
-> -- Table for Courses
+> -- Programs within Departments
+> CREATE TABLE Programs (
+>     program_id SERIAL PRIMARY KEY,
+>     program_name VARCHAR(100) NOT NULL,
+>     dept_id INT REFERENCES Departments(dept_id)
+> );
+> 
+> -- Students admitted to Programs
+> CREATE TABLE Students (
+>     student_id INT PRIMARY KEY,
+>     student_name VARCHAR(100) NOT NULL,
+>     program_id INT REFERENCES Programs(program_id)
+> );
+> 
+> -- Courses
 > CREATE TABLE Courses (
 >     course_id VARCHAR(10) PRIMARY KEY,
 >     title VARCHAR(100) NOT NULL,
@@ -170,13 +187,13 @@
 >     course_type VARCHAR(10) CHECK (course_type IN ('Theory', 'Lab'))
 > );
 > 
-> -- Table for Results
+> -- Results (Associates Students and Courses with Marks)
 > CREATE TABLE Results (
 >     result_id SERIAL PRIMARY KEY,
 >     student_id INT REFERENCES Students(student_id),
 >     course_id VARCHAR(10) REFERENCES Courses(course_id),
 >     total_marks_obtained NUMERIC(5,2) NOT NULL,
->     UNIQUE (student_id, course_id) -- A student has one result per course
+>     UNIQUE (student_id, course_id)
 > );
 > ```
 
