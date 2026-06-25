@@ -32,6 +32,53 @@
 > );
 > ```
 
+> [!question] Question 1 b) ID Design (5 Marks)
+> Design and briefly explain a format for employee IDs intended for an automated Employee Salary Management system in a corporate office.
+
+> [!info]- Answer
+> A good Employee ID format should be unique, scalable, and provide basic context without exposing sensitive information.
+> 
+> **Proposed Format:** `DEPT-YYYY-NNNN`
+> *   `DEPT`: A 2 to 4 letter department code (e.g., `HR`, `IT`, `FIN`).
+> *   `YYYY`: The year the employee joined the company.
+> *   `NNNN`: A 4-digit sequential number assigned uniquely within that year and department.
+> 
+> *Example:* `IT-2023-0042` represents the 42nd employee hired in the IT department in 2023. This format is easily readable, helps in grouping employees by department/seniority, and integrates seamlessly into an automated salary system.
+
+> [!question] Question 1 c) Database Storage & DDLs (5 Marks)
+> * Explain if knowing the exact file location of database records is important.
+> * Issue the DDLs for four tables (T1, T2, T3, T4).
+> * **Constraint:** T1, T2, and T4 must be stored at `C:\MyData`, while T3 must be stored at `D:\MyData`. You may assume any attributes and datatypes.
+
+> [!info]- Answer
+> **Importance of Exact File Location:**
+> For end-users and application developers, knowing the exact physical file location is **not important** due to *logical data independence*; the DBMS abstracts the physical storage details. However, for a Database Administrator (DBA), it is **crucial** for performance tuning (e.g., separating I/O heavy tables across different disks), backups, disaster recovery, and capacity planning.
+> 
+> **DDL Implementation:**
+> To store tables in specific directory paths, we use `TABLESPACE` (syntax applicable to databases like PostgreSQL or Oracle).
+> 
+> ```sql
+> -- Create Tablespaces mapping to physical directories
+> CREATE TABLESPACE ts_c_drive LOCATION 'C:\MyData';
+> CREATE TABLESPACE ts_d_drive LOCATION 'D:\MyData';
+> 
+> -- Create tables and assign them to the respective tablespaces
+> CREATE TABLE T1 (id INT PRIMARY KEY, name VARCHAR(50)) TABLESPACE ts_c_drive;
+> CREATE TABLE T2 (id INT PRIMARY KEY, description TEXT) TABLESPACE ts_c_drive;
+> CREATE TABLE T3 (id INT PRIMARY KEY, data_value NUMERIC) TABLESPACE ts_d_drive;
+> CREATE TABLE T4 (id INT PRIMARY KEY, created_at DATE) TABLESPACE ts_c_drive;
+> ```
+
+> [!question] Question 2 a) Large Objects (5 Marks)
+> Define "Large Object" and mention one specific application where it is used.
+
+> [!info]- Answer
+> **Definition:**
+> A Large Object (LOB) is a specialized data type used in databases to store massive amounts of unstructured data that exceed standard field size limits (often up to several gigabytes). Common LOB types include BLOB (Binary Large Object) for binary data and CLOB (Character Large Object) for large text data.
+> 
+> **Specific Application:**
+> A **Healthcare Management System** uses BLOBs to securely store large multimedia patient files, such as high-resolution MRI scans, X-rays, and ultrasound videos directly linked to a patient's medical record.
+
 > [!question] Question 2 b) Memory Efficiency (5 Marks)
 > Write PL/SQL code to demonstrate that `char` is more memory efficient than `varchar`.
 
