@@ -121,18 +121,25 @@
 > ```
 
 > [!info]- Answer
-> **Errors in the provided PL/SQL code:**
-> 1. **Size constraint on parameter:** In PL/SQL, parameter types in the function signature cannot have a size constraint. `varchar2(20)` must be changed to `varchar2`.
-> 2. **Size constraint on return type:** Similarly, the return type cannot have precision/scale constraints. `return number(6,2)` must be changed to `return number`.
-> 3. **Modifying an IN parameter:** The parameter `p_name` is an `IN` parameter, making it read-only. Assigning a value to it (`p_name:='test';`) is invalid.
-> 4. **Missing RETURN statement:** The function is declared to return a number, but the execution body lacks a `RETURN` statement.
+> Since we are following **PostgreSQL**, this snippet contains several Oracle-specific syntax errors alongside general logic errors:
 > 
-> **Corrected Code:**
+> **Errors in the provided code:**
+> 1. **Oracle specific types and keywords:** 
+>    - `varchar2` is Oracle syntax. It should be `varchar`.
+>    - `return number(6,2)` is Oracle syntax. It should be `RETURNS numeric(6,2)`. Notice it must be `RETURNS` instead of `return`.
+>    - `IS` is Oracle syntax. In Postgres, we use `AS $$` before the body block.
+> 2. **Size constraints on parameters:** Postgres does not allow length constraints on function parameters. `varchar(20)` should just be `varchar`.
+> 3. **Modifying an IN parameter:** The parameter `p_name` is an `IN` parameter (which is the default in Postgres), making it read-only. `p_name:='test';` is invalid.
+> 4. **Missing RETURN statement:** The function is declared to return a value, but the execution body lacks a `RETURN <value>;` statement.
+> 5. **Missing Language Declaration:** Postgres requires the function body to be wrapped in quotes or `$$` and specify `LANGUAGE plpgsql`.
+> 
+> **Corrected Code (PostgreSQL):**
 > ```sql
-> CREATE OR REPLACE FUNCTION get_status (p_name IN varchar2) RETURN number
-> IS
->     v_name varchar2(20);
->     v_status number := 0; -- Example variable to hold return value
+> CREATE OR REPLACE FUNCTION get_status(p_name IN varchar) 
+> RETURNS numeric(6,2) AS $$
+> DECLARE
+>     v_name varchar(20);
+>     v_status numeric(6,2) := 0.00; -- Example variable to hold return value
 > BEGIN
 >     SELECT name INTO v_name FROM students WHERE name = p_name;
 >     
@@ -141,6 +148,7 @@
 >     -- Ensure a value is returned
 >     RETURN v_status; 
 > END;
+> $$ LANGUAGE plpgsql;
 > ```
 
 > [!question] Question 3 a) Table Creation (5 Marks)
