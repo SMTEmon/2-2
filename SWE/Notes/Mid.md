@@ -69,11 +69,15 @@ User Requirement 2  →  System Req: 2.1, 2.2, 2.3 ...
 
 **User Requirement:**
 
-> The Mentcare system shall generate monthly management reports showing the cost of drugs prescribed by each clinic during that month.
+> 1. The Mentcare system shall generate monthly management reports showing the cost of drugs prescribed by each clinic during that month.
 
 **System Requirements:**
 
-> 1.1 On the last working day of each month, a summary of drugs prescribed, their cost and prescribing clinics shall be generated. 1.2 The system shall generate the report for printing after 17:30 on the last working day of the month. 1.3 A report shall be created for each clinic listing individual drug names, total prescriptions, doses prescribed, and total cost. 1.4 If drugs are available in different dose units (e.g. 10mg, 20mg), separate reports shall be created for each dose unit. 1.5 Access to drug cost reports shall be restricted to authorized users on a management access control list.
+> 1.1 On the last working day of each month, a summary of drugs prescribed, their cost and prescribing clinics shall be generated. 
+> 1.2 The system shall generate the report for printing after 17:30 on the last working day of the month. 
+> 1.3 A report shall be created for each clinic listing individual drug names, total prescriptions, doses prescribed, and total cost. 
+> 1.4 If drugs are available in different dose units (e.g. 10mg, 20mg), separate reports shall be created for each dose unit. 
+> 1.5 Access to drug cost reports shall be restricted to authorized users on a management access control list.
 
 ---
 
@@ -126,13 +130,13 @@ User Requirement 2  →  System Req: 2.1, 2.2, 2.3 ...
 
 ### Bad → Good Examples
 
-|Bad|Problem|Good|
-|---|---|---|
-|`The system will notify users.`|No type, no frequency|`The system shall send a push notification to the user within 5 seconds of an order status change.`|
-|`The report should be generated quickly.`|"quickly" is vague|`The system shall generate the report within 3 seconds of the user's request.`|
-|`The system shall reset passwords.`|Whose? How?|`The system shall allow students to reset their own passwords via email or phone verification.`|
-|`The system shall use MongoDB.`|Implementation detail, not FR|Remove — this belongs in design docs|
-|`The system shall have an attractive UI.`|Not testable|Perform a survey; ask clients which design they prefer|
+| Bad                                       | Problem                       | Good                                                                                                |
+| ----------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `The system will notify users.`           | No type, no frequency         | `The system shall send a push notification to the user within 5 seconds of an order status change.` |
+| `The report should be generated quickly.` | "quickly" is vague            | `The system shall generate the report within 3 seconds of the user's request.`                      |
+| `The system shall reset passwords.`       | Whose? How?                   | `The system shall allow students to reset their own passwords via email or phone verification.`     |
+| `The system shall use MongoDB.`           | Implementation detail, not FR | Remove — this belongs in design docs                                                                |
+| `The system shall have an attractive UI.` | Not testable                  | Perform a survey; ask clients which design they prefer                                              |
 
 ---
 
@@ -221,6 +225,10 @@ Unwanted Behavior:
 2. Helps developers understand boundaries
 3. Helps testers create test cases
 4. Helps customers accept/reject failures
+
+> [!tip] The Final Validation Pipeline
+> `Scope ➔ Requirements ➔ FR, NFR ➔ AC ➔ Write test cases based on AC ➔ Validate from user side`
+> Once validated from the user side, the requirements are considered completed with **no room for further discussions**.
 
 > [!important] AC Rule Include both **"must"** and **"must not"** conditions. Standard: **5–10 ACs per FR**. If more, break FR into two.
 
@@ -346,13 +354,14 @@ UML Diagram
 |---|---|---|
 |**Association**|Solid line `——`|Actor directly uses the use case (always)|
 |**Include**|Dashed arrow `- - ►` with `«include»`|One UC always invokes another UC|
-|**Extend**|Dashed arrow `◄ - -` with `«extend»`|Optional UC, not always invoked|
+|**Extend (Exclude)**|Dashed arrow `◄ - -` with `«extend»` (or `«exclude»`)|Optional UC, not always invoked|
 |**Generalization**|Solid arrow with hollow head `——►`|Inheritance between actors or UCs|
 
-> [!warning] Include vs Extend
+> [!warning] Include vs Extend (Exclude)
 > 
 > - **Include**: the base UC **always** calls the included UC (mandatory sub-step)
 > - **Extend**: the base UC **sometimes** calls the extending UC (optional/exception)
+> - ⚠️ **Terminology Alert**: Standard UML uses `«extend»`, but the class notes explicitly use **`«exclude»`** for this relationship. Be prepared to use `«exclude»` in diagrams if the professor expects it.
 
 ### Domain vs Sub-Domain
 
@@ -360,6 +369,10 @@ UML Diagram
 - **Sub-Domain:** A specific functional part of the domain
 - Create **separate Use Case Diagrams** for each sub-domain
 - Use unique IDs: `UC-01`, `UC-02`...
+
+**Examples:**
+- **Banking App:** Sub-domains could be Basic Functionalities (user auth), Loan, and Savings.
+- **IUT SIS:** Main System is SIS; a Sub-domain is Course Registration.
 
 ---
 
@@ -374,10 +387,10 @@ graph LR
     Bank -->|association| Login
 
     Login -.->|«include»| VerifyPassword
-    Login -.->|«extend»| DisplayLoginError
+    Login -.->|«exclude»| DisplayLoginError
 
     TransferFunds -.->|«include»| VerifySufficientFunds
-    CheckBalance -.->|«extend»| VerifySufficientFunds
+    CheckBalance -.->|«exclude»| VerifySufficientFunds
 
     MakePayment -->|generalization| PayFromChecking
     MakePayment -->|generalization| PayFromSavings
@@ -389,7 +402,7 @@ graph LR
 > **Notes:**
 > 
 > - `Verify Password` is **included** by Login — always runs
-> - `Display Login Error` is **extended** from Login — only when login fails
+> - `Display Login Error` is **excluded** (extended) from Login — only when login fails
 > - `Pay From Checking` and `Pay From Savings` are specializations (generalization) of `Make Payment`
 > - `Bank` is a **Secondary Actor** (right side) — assists primary actor Customer
 > - If Bank logs in → it becomes a Primary Actor
@@ -406,14 +419,14 @@ graph LR
     Student -->|association| ViewFinalStatus
 
     Login -.->|«include»| VerifyPasscode
-    Login -.->|«extend»| DisplayErrorLogin
+    Login -.->|«exclude»| DisplayErrorLogin
 
     RegisterCourses -.->|«include»| EligibleForCourse
-    RegisterCourses -.->|«extend»| RegisterWrongCourse
+    RegisterCourses -.->|«exclude»| RegisterWrongCourse
 
     RegisterWrongCourse -.->|«include»| UpdateCourseRegistrationStatus
     ViewFinalStatus -.->|«include»| UpdateCourseRegistrationStatus
-    ViewFinalStatus -.->|«extend»| CorrectWrongRegisteredCourses
+    ViewFinalStatus -.->|«exclude»| CorrectWrongRegisteredCourses
 
     Advisor -->|association| CheckStudentInfo
     Advisor -->|association| UpdateCourseRegistrationStatus
@@ -454,7 +467,8 @@ Explains how an actor interacts with the system to achieve a specific goal. **Ma
 
 # Part 5 · Activity Diagrams
 
-> Use Case Diagram → shows **what** actors can do Activity Diagram → shows **sequence** of how the whole system flows
+> Use Case Diagram → shows **what** actors can do 
+> Activity Diagram → shows **sequence** of how the whole system flows
 
 ### Purpose
 
@@ -668,6 +682,13 @@ RE Process (Incremental / Spiral)
 └── 3. Validation    → Verify specified requirements are correct & acceptable
 ```
 
+## Team Workflow & Roles
+
+1. **Business Analyst:** Deals with clients, identifies features, creates the SRS.
+2. **Design Team (UI/UX):** Hones the SRS and designs the interfaces.
+3. **Developers:** Write the code based on the designs and SRS.
+4. **QA Team (Quality Assurance):** Involved during the design process to design test cases. **QA is specifically responsible for identifying edge cases** and sharing them with developers.
+
 ## Elicitation Techniques (14 Techniques)
 
 |#|Phase|Technique|Primary Goal|
@@ -709,6 +730,10 @@ RE Process (Incremental / Spiral)
 |---|---|
 |**Active observation**|Follow every step; ask questions as you go|
 |**Participatory observation**|Shadow AND perform tasks yourself|
+
+> [!note] Case Study: Improving Existing Workflows
+> - **Nokia** used ethnography to observe real-life users and improve existing workflows (resulting in long-lasting batteries and button phones).
+> - **Apple** focused on aesthetics ("show-off"), better cameras, and removing button phones altogether, rather than just observing existing user workflows.
 
 ## 4 Specification Notations
 
