@@ -691,22 +691,22 @@ RE Process (Incremental / Spiral)
 
 ## Elicitation Techniques (14 Techniques)
 
-|#|Phase|Technique|Primary Goal|
-|---|---|---|---|
-|1|Pre-Work|Stakeholder Identification|Know WHO to talk to|
-|2|Pre-Work|Document Analysis|Understand what ALREADY EXISTS|
-|3|Context|Brainstorming|Open up possibilities, identify scope|
-|4|Context|JAD / Requirements Workshop|Align all stakeholders simultaneously|
-|5|Deep Elicitation|One-on-One Interviews|Extract detailed needs from key individuals|
-|6|Deep Elicitation|Focus Groups|Capture group consensus and conflicts|
-|7|Deep Elicitation|Surveys & Questionnaires|Gather broad input at scale|
-|8|Observation|Shadowing / Ethnography|See how work ACTUALLY happens|
-|9|Observation|Protocol Analysis|Capture hidden mental steps in a process|
-|10|Visual Methods|Prototyping & Wireframing|Make abstract requirements tangible|
-|11|Visual Methods|Use Case / User Story Mapping|Model every user–system interaction|
-|12|Analysis|Interface Analysis|Define how systems talk to each other|
-|13|Analysis|Gap Analysis|Expose what's missing vs. what's needed|
-|14|Validation|Requirements Review & Sign-Off|Confirm correctness before development|
+| #   | Phase            | Technique                      | Primary Goal                                |
+| --- | ---------------- | ------------------------------ | ------------------------------------------- |
+| 1   | Pre-Work         | Stakeholder Identification     | Know WHO to talk to                         |
+| 2   | Pre-Work         | Document Analysis              | Understand what ALREADY EXISTS              |
+| 3   | Context          | Brainstorming                  | Open up possibilities, identify scope       |
+| 4   | Context          | JAD / Requirements Workshop    | Align all stakeholders simultaneously       |
+| 5   | Deep Elicitation | One-on-One Interviews          | Extract detailed needs from key individuals |
+| 6   | Deep Elicitation | Focus Groups                   | Capture group consensus and conflicts       |
+| 7   | Deep Elicitation | Surveys & Questionnaires       | Gather broad input at scale                 |
+| 8   | Observation      | Shadowing / Ethnography        | See how work ACTUALLY happens               |
+| 9   | Observation      | Protocol Analysis              | Capture hidden mental steps in a process    |
+| 10  | Visual Methods   | Prototyping & Wireframing      | Make abstract requirements tangible         |
+| 11  | Visual Methods   | Use Case / User Story Mapping  | Model every user–system interaction         |
+| 12  | Analysis         | Interface Analysis             | Define how systems talk to each other       |
+| 13  | Analysis         | Gap Analysis                   | Expose what's missing vs. what's needed     |
+| 14  | Validation       | Requirements Review & Sign-Off | Confirm correctness before development      |
 
 ## Interview Question Types
 
