@@ -207,8 +207,8 @@ RadixSort(arr, base=10):
 | Pass | Sorted by digit |
 |------|-----------------|
 | Units | `[170, 102, 633, 233, 915, 036, 538]` |
-| Tens  | `[102, 633, 233, 036, 538, 170, 915]` |
-| Hundreds | `[036, 053, 089, 102, 170, 233, 633]` → **sorted** |
+| Tens  | `[102, 915, 633, 233, 036, 538, 170]` |
+| Hundreds | `[036, 102, 170, 233, 538, 633, 915]` → **sorted** |
 
 **Complexity Derivation**:
 - Each Counting Sort pass costs $O(n + b)$, where $b$ = base.

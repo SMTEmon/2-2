@@ -43,7 +43,7 @@
     }
 ```
 
-- Not a implace Sort (creates new array/ vector for result)
+- Not an in-place Sort (creates new array/ vector for result)
 - Time Complexity
 	- O(n) for merging -> going through each element 1 by 1
 	- O(log n) for recursion -> Recursing and creating halved tree on each step
