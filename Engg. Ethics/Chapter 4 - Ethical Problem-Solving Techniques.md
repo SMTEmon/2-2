@@ -1,3 +1,5 @@
+
+
 > 💡 **Core Philosophy:** Engineering is used to formulas (define variables $\rightarrow$ apply model $\rightarrow$ calculate answer). However, ethical problem-solving is **disciplined judgment, not formula calculation.** Ethical problems often involve incomplete facts, disputed concepts, and conflicting duties. Problem-solving tools don't produce automatic answers, but they make judgments clearer, more honest, and easier to defend.
 
 ---
