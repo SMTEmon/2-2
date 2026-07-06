@@ -42,11 +42,13 @@ For discrete random variables, the marginal probability function of one variable
 > The marginal distributions can be represented as their own separate tables:
 > 
 > **Marginal Distribution of $X$:**
+> 
 > | $x$ | $0$ | $1$ | $2$ | $3$ | Sum |
 > | :--- | :--- | :--- | :--- | :--- | :--- |
 > | **$g(x)$** | $1/8$ | $3/8$ | $3/8$ | $1/8$ | $1$ |
 > 
 > **Marginal Distribution of $Y$:**
+> 
 > | $y$ | $0$ | $1$ | Sum |
 > | :--- | :--- | :--- | :--- |
 > | **$h(y)$** | $4/8$ | $4/8$ | $1$ |
