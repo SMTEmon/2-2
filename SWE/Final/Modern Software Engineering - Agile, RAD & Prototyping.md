@@ -94,15 +94,43 @@ flowchart LR
     C -- No --> E[Product Backlog]
     D -->|Split Item| E
     E -->|Refinement & DoR| F[Sprint Backlog]
-    F --> G[Sprint Execution\n2-3 Weeks]
+    F --> G[Sprint Execution<br>2-3 Weeks]
     G --> H[Increment]
     H -->|Validate DoD| I[Release / Stakeholders]
     
     subgraph Daily Loop
-        G --> J[Daily Scrum\n15 mins max]
+        G --> J[Daily Scrum<br>15 mins max]
         J --> G
     end
 ```
+
+> [!abstract]- Detailed Step-by-Step Workflow Breakdown
+> 1. **Product Backlog (Master Wishlist):**
+>    - **What it is:** The centralized, prioritized master list of all features, user stories, bug fixes, and technical tasks owned by the Product Owner (PO).
+>    - **Analogy:** A restaurant's full menu of everything customers might order.
+> 
+> 2. **Refinement & Definition of Ready (DoR):**
+>    - **Refinement (Grooming):** PO and dev team clarify vague stories, break them down, and estimate effort (using Fibonacci/Planning Poker).
+>    - **Definition of Ready (DoR):** Entrance quality gate before a story can enter a sprint (clear acceptance criteria, estimated, no blockers).
+> 
+> 3. **Sprint Backlog (2-Week To-Do List):**
+>    - **What it is:** The small set of high-priority user stories pulled from the top of the Product Backlog that the development team commits to build in the upcoming 2-3 week sprint.
+> 
+> 4. **Sprint Execution (2-3 Weeks):**
+>    - **What it is:** A strictly timeboxed working phase (2-3 weeks) where developers write code, build features, and run unit tests without external scope interruptions.
+> 
+> 5. **Daily Loop (Daily Scrum / Standup):**
+>    - **What it is:** A daily $\le 15$-minute meeting where team members report: (1) what was done yesterday, (2) what will be done today, and (3) any blockers/impediments.
+> 
+> 6. **Increment (Working Software Piece):**
+>    - **What it is:** The tangible, additive, working software component produced at the end of the sprint execution.
+> 
+> 7. **Validate Definition of Done (DoD):**
+>    - **Definition of Done (DoD):** Exit quality gate checked before shipping (code reviewed, unit tests passed, backwards compatibility verified, acceptance criteria met).
+> 
+> 8. **Release / Stakeholders:**
+>    - **What it is:** Presenting the tested increment to clients/stakeholders in a Sprint Review demo. Feedback collected feeds directly back into the Product Backlog for the next iteration.
+
 
 ---
 
