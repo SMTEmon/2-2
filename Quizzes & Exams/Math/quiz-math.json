@@ -1,0 +1,19 @@
+{
+  "name": "Math Quiz",
+  "subject": "Mathematics",
+  "date": "August 2026",
+  "day_of_week": "Thursday",
+  "time_note": "During class time (NOT at 2 PM)",
+  "syllabus": [
+    "- Poisson Distribution",
+    "- Bernoulli/Binomial Distribution",
+    "- Correlation & Covariance",
+    "- Chebyshev's Theorem"
+  ],
+  "tracking": {
+    "status": "pending",
+    "last_reviewed": null,
+    "notes": ""
+  },
+  "links_to_notes": []
+}
