@@ -73,6 +73,33 @@ Worked examples:
 Goal: transfer a packet from an input link to the correct output link.
 **Switching rate** = the rate at which packets move from inputs to outputs, usually expressed as a multiple of the line rate $R$. For $N$ inputs, an ideal switching rate is $N \times R$.
 
+> [!question]- Deep Dive: Why is the ideal switching rate $N \times R$?
+> The multiplication by $N$ comes from the fact that **all $N$ input ports operate simultaneously in parallel**.
+> 
+> - **$R$ (Line Rate):** The speed of a single input link (e.g., $10\text{ Gbps}$).
+> - **$N$:** The total number of input links attached to the router.
+> - **$N \times R$:** The worst-case total volume of incoming traffic hitting the router at any given second.
+> 
+> ### Why $N \times R$ is necessary
+> If all $N$ input ports are receiving packets at their maximum line rate $R$ at the exact same time:
+> - **Input Port 1** receives $R$ bits/sec.
+> - **Input Port 2** receives $R$ bits/sec.
+> - ...
+> - **Input Port $N$** receives $R$ bits/sec.
+> 
+> Total incoming traffic = $R + R + \dots + R = N \times R$.
+> 
+> If the switching fabric had a switching rate of only $1 \times R$, it could only move the data of **one single input line** per second. The remaining $N - 1$ lines would spill over immediately, causing input queueing delays and packet loss.
+> 
+> An **ideal non-blocking switching fabric** runs at a switching rate of **$N \times R$** so it can clear all incoming packets from all input ports simultaneously without becoming the router's internal bottleneck.
+> 
+> > [!example]- Highway Intersection Analogy
+> > Imagine a highway interchange with $N = 4$ incoming lanes, where each lane allows $R = 100\text{ cars/min}$:
+> > - **Total incoming rate:** $4 \text{ lanes} \times 100 \text{ cars/min} = 400 \text{ cars/min}$.
+> > - **If fabric speed is $1 \times R$ ($100\text{ cars/min}$):** Only 1 lane moves, causing massive traffic jams behind the intersection.
+> > - **If fabric speed is $N \times R$ ($400\text{ cars/min}$):** All 4 lanes flow through smoothly without intersection bottlenecks.
+
+
 ```mermaid
 flowchart TB
     subgraph "1. Switching via memory"
