@@ -358,6 +358,43 @@ Discarded after                              Built iteratively        Used for w
 gathering feedback                           into final product       application UI
 ```
 
+> [!note]- Detailed Breakdown of Prototype Varieties
+> 1. **Throwaway (Rapid) Prototyping**:
+>    - **Concept**: Built quickly to explore ideas, clarify ambiguous requirements, or test technical feasibility.
+>    - **Outcome**: Completely discarded after feedback is gathered. The real system is re-written cleanly from scratch.
+>    - **Best For**: High-risk features or unclear user requirements.
+> 
+> 2. **Evolutionary Prototyping**:
+>    - **Concept**: A basic functional system is built and continuously refined through user feedback.
+>    - **Outcome**: The prototype directly **evolves into the final production product**.
+>    - **Best For**: Rapidly changing requirements, agile teams, and **Minimum Viable Products (MVPs)**.
+> 
+> 3. **Incremental Prototyping**:
+>    - **Concept**: The system is split into independent sub-components or modules.
+>    - **Outcome**: Each module is prototyped and tested separately before being merged into a single master system.
+>    - **Best For**: Large enterprise software with distinct modular subsystems.
+> 
+> 4. **Extreme Prototyping**:
+>    - **Concept**: A 3-phase prototyping framework designed specifically for **Web Applications**:
+>      - **Phase 1 (Static UI)**: HTML/CSS web page wireframes and layout.
+>      - **Phase 2 (Interactive Client UI)**: Functional frontend screens with buttons, forms, and navigation using **mock/simulated data**.
+>      - **Phase 3 (Backend Integration)**: Connecting the validated frontend UI to real server APIs, database tables, and business logic.
+>    - **Why for Web Apps?**: Web applications have a natural physical separation between the **Client (Browser)** and **Server (Database/APIs)**. This client-server decoupling allows developers to test complex interactive UI/UX in the browser before spending heavy resources on backend infrastructure.
+
+> [!info]- Deep Dive: Minimum Viable Products (MVPs)
+> An **MVP** is the simplest functional version of a product released to early users to gather validated learning with minimal effort.
+> 
+> * **Core Purpose**: Execute the **Build-Measure-Learn** loop to test business hypotheses before building full software.
+> * **The "Skateboard to Car" Metaphor**:
+>   - ❌ *Wrong*: Wheel $\rightarrow$ Axle $\rightarrow$ Chassis $\rightarrow$ Car *(User gets zero value until the very end)*
+>   - ✅ *Right*: Skateboard $\rightarrow$ Scooter $\rightarrow$ Bicycle $\rightarrow$ Motorcycle $\rightarrow$ Car *(User gets usable transportation at every stage)*
+> 
+> | Feature | Prototype | Minimum Viable Product (MVP) |
+> | :--- | :--- | :--- |
+> | **Primary Goal** | Test feasibility, design, or ideas | Test market demand and user adoption |
+> | **Target Audience** | Internal teams / test users | Real end-users / early adopters |
+> | **Longevity** | Often discarded | Continuously iterated into final product |
+
 ---
 
 ### 8.3 Prototyping Fidelity Techniques
@@ -391,6 +428,31 @@ PROTOTYPING TECHNIQUES
 │ Footer / Sitemap                                       │
 └────────────────────────────────────────────────────────┘
 ```
+
+> [!abstract]- Explanation of Prototyping Fidelity & Notations
+> **Fidelity** measures how close a prototype is to the final look, feel, and functionality of the product.
+> 
+> #### 1. Low-Fidelity (Lo-Fi) Prototypes
+> * **Focus**: Page layout, information architecture, and user flow without aesthetic distractions (colors, fonts, real graphics).
+> * **Storyboarding**: Visual sequence of screens mapping out a user's task flow.
+> * **Wireframe Notations**: Shorthand notation symbols for fast drawing:
+>   - `(L)` = Logo placement
+>   - `[X]` / `(X)` = Image or Banner box placeholder
+>   - `Lorem ipsum` = Placeholder text content
+> 
+> #### 2. High-Fidelity (Hi-Fi) Prototypes
+> * **Focus**: Realistic visual aesthetics, interactions, and clickable navigation (using Figma, Framer, or frontend code).
+> 
+> > [!warning] Risk: Scope Creep in Hi-Fi Prototypes
+> > High-fidelity prototypes can trigger the **"It looks finished!" illusion**. Stakeholders see a working UI and mistakenly assume the software is almost complete (ignoring missing backend logic), leading to endless feature requests and inflated project scope.
+> 
+> #### Lo-Fi vs. Hi-Fi Comparison
+> 
+> | Property | Low-Fidelity (Lo-Fi) | High-Fidelity (Hi-Fi) |
+> | :--- | :--- | :--- |
+> | **Speed & Cost** | Very fast & low cost | Time-consuming & higher cost |
+> | **Primary Goal** | Validate structural layout & user flow | Validate visual UI/UX & micro-interactions |
+> | **Best Stage** | Early requirement gathering | Usability testing & developer handoff |
 
 ---
 
