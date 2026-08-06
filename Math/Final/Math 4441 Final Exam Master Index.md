@@ -25,6 +25,7 @@ topic: Final Exam Master Index & Formula Sheet
 | **2** | [[2. Poisson Distribution & Bernoulli Distribution]] | Bernoulli PMF/Mean/Variance, Poisson process real-world examples, PMF verification proof ($\sum f = 1$), Mean ($\mu$) & Variance ($\mu$) proofs, operator & switchboard numerical problems. |
 | **3** | [[3. Covariance & Correlation]] | Definition & operational covariance formula, independence proof ($\text{Cov}(X,Y)=0$), 4 algebraic covariance properties with proofs, Variance of Sum theorem, joint PDF integration, Pearson's $\rho$ properties & scatter plots. |
 | **4** | [[4. Normal Distribution & Chebyshev Inequality]] | Empirical rule vs Chebyshev inequality, complete Chebyshev integral proof, $630x^4(1-x)^4$ numerical problem, Normal PDF integration proofs (Area = 1, Mean = $\mu$, Var = $\sigma^2$), $Z$-score, CDF symmetry, central area & variance finding problems. |
+| **5** | [[5. Practice Problems & Exam Exercises]] | Comprehensive exam-level practice problems covering Binomial, Poisson, Covariance, Portfolio Variance, Pearson Correlation Coefficient, Chebyshev's Inequality, and Normal Distribution Z-table reading. |
 
 ---
 
