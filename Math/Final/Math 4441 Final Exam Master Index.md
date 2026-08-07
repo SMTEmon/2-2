@@ -26,6 +26,7 @@ topic: Final Exam Master Index & Formula Sheet
 | **3** | [[3. Covariance & Correlation]] | Definition & operational covariance formula, independence proof ($\text{Cov}(X,Y)=0$), 4 algebraic covariance properties with proofs, Variance of Sum theorem, joint PDF integration, Pearson's $\rho$ properties & scatter plots. |
 | **4** | [[4. Normal Distribution & Chebyshev Inequality]] | Empirical rule vs Chebyshev inequality, complete Chebyshev integral proof, $630x^4(1-x)^4$ numerical problem, Normal PDF integration proofs (Area = 1, Mean = $\mu$, Var = $\sigma^2$), $Z$-score, CDF symmetry, central area & variance finding problems. |
 | **5** | [[5. Practice Problems & Exam Exercises]] | Comprehensive exam-level practice problems covering Binomial, Poisson, Covariance, Portfolio Variance, Pearson Correlation Coefficient, Chebyshev's Inequality, and Normal Distribution Z-table reading. |
+| **6** | [[6. Classroom Lecture Problems & Handwritten Proofs]] | Exact handwritten lecture math from your scans: Joint PDF $f(x,y)=\frac{6}{5}(x^2+2xy)$ complete covariance & correlation ($\rho = -0.055$), classroom Z-table central 50% solution, and general Variance of Sum proof. |
 
 ---
 
