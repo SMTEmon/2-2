@@ -46,6 +46,21 @@
 
 ---
 
+## 📐 Algorithms Quiz 3
+
+> [!info]- Quiz 3 Syllabus
+> **Syllabus:** Convex Hull · Divide & Conquer · Greedy Algorithm
+> **Notes folder:** `Quizzes & Exams/Algorithms/Quiz 3/`
+>
+> - [[00-Algorithms-Quiz-Index|📚 Quiz 3 Master Index]]
+> - [[01-Convex-Hull|Convex Hull]]
+> - [[02-Divide-and-Conquer|Divide & Conquer]]
+> - [[03-Greedy-Algorithms|Greedy Algorithm]]
+> - [[04-Cheat-Sheet|🚀 One-Page Cheat Sheet]]
+> - [[05-CPP-Implementations|⚙️ C++ Implementations (compiled & verified)]]
+
+---
+
 ## 📋 Exam Archive Structure
 
 ```
