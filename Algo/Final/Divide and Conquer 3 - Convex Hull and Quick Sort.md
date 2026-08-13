@@ -111,6 +111,22 @@ To merge $CH(A)$ and $CH(B)$, we must find the line segment connecting a point i
 >     return (a, b) # Upper tangent line segment
 > ```
 
+> [!info] How to Check if Line $(a, b)$ Cuts Through Hull $B$
+> To check if the line segment $(a, b)$ cuts into Hull $B$, we test the position of the **next clockwise point** $b_{next}$ relative to current line segment $(a, b)$:
+> 
+> #### Method 1: The Slope Comparison Test (Most Intuitive)
+> Since Hull $B$ is to the right of Hull $A$ ($x_b > x_a$):
+> 1. Calculate slope of current line $(a, b)$: 
+>    $$m_{current} = \frac{y_b - y_a}{x_b - x_a}$$
+> 2. Calculate slope to next clockwise point $(a, b_{next})$: 
+>    $$m_{next} = \frac{y_{next} - y_a}{x_{next} - x_a}$$
+> 3. **Rule**: If $m_{next} > m_{current}$, $b_{next}$ sits higher $\implies$ Line $(a, b)$ **cuts through Hull $B$** (so step $b$ clockwise to $b_{next}$).
+> 
+> #### Method 2: The 2D Cross Product Test (Standard Code & Math)
+> 1. Compute 2D Cross Product of vector $\vec{ab}$ and vector $\vec{a b_{next}}$:
+>    $$\text{Cross Product} = (x_b - x_a)(y_{next} - y_a) - (y_b - y_a)(x_{next} - x_a)$$
+> 2. **Rule**: If $\text{Cross Product} > 0 \implies b_{next}$ lies **above** line $(a, b)$ $\implies$ Line **cuts through Hull $B$**. Otherwise, it clears $b_{next}$.
+
 ---
 
 ### 1.5 Correctness Proof of Convex Hull Merge
@@ -143,7 +159,7 @@ Imagine two separate, non-overlapping solid islands $A$ and $B$ (representing $C
 ### 1.6 Cut and Paste Merge Step
 
 Once the Upper Tangent $(a_u, b_u)$ and Lower Tangent $(a_l, b_l)$ are found:
-1. Traverse $CH(A)$ clockwise from $a_u$ to $a_l$.
+1. Traverse $CH(A)$ anti-clockwise from $a_u$ to $a_l$.
 2. Jump across the Lower Tangent to $b_l$.
 3. Traverse $CH(B)$ clockwise from $b_l$ to $b_u$.
 4. Jump across the Upper Tangent back to $a_u$.

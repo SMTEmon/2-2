@@ -17,6 +17,8 @@ aliases:
 
 > [!abstract] Overview
 > In this module, we tackle two classic problem types—**Maximum Subarray Sum** and **Longest Nice Substring**—using Divide and Conquer. Both problems illustrate how splitting a linear data structure (array/string) into subproblems requires special handling during the **Combine phase** to account for elements spanning across the divide.
+> 
+> *For a full step-by-step execution trace and recursion tree diagram, see [[Divide and Conquer - Maximum Subarray Sum Simulation]].*
 
 ---
 
@@ -285,10 +287,14 @@ Let $S = s[l \dots r]$ be the current string segment. Suppose character $c = s[k
 ### 2.5 Step-by-Step Complexity Analysis
 
 #### 1. Time Complexity
-* **Best / Average Case**: If splits occur evenly (halving the string), the recurrence is $T(n) = 2T(n/2) + O(n) \implies \mathbf{O(n \log n)}$.
-* **Worst Case**: If only 1 character is missing at an extreme end each time (e.g., `"aAbBcCdD...z"`), the string shrinks by 1 character per step:
-  $$T(n) = T(n - 1) + O(n) \implies O(n^2)$$
-* Since there are at most $K = 26$ English alphabet letters, recursion depth for invalid splitting is bounded by $O(K)$, yielding an empirical worst-case bound of $\mathbf{O(K \cdot n) = O(26n) = O(n)}$.
+* **Best Case (No splits needed)**: The whole string is already nice. We scan the string once to build the set and check pairs $\implies \mathbf{O(n)}$.
+* **Average Case (Even splits)**: If an invalid character occurs near the middle, the recurrence is $T(n) = 2T(n/2) + O(n) \implies \mathbf{O(n \log n)}$.
+* **Worst Case Analysis**:
+  * **Single-Pivot Implementation (Slide 15 Code)**: If the string consists of repeated identical invalid characters (e.g., `s = "aaaaa..."` with 35 `'a'`s and no `'A'`), splitting on the first `'a'` at index 0 leaves 34 `'a'`s, then 33 `'a'`s, etc. The recursion depth reaches $N$, taking $\mathbf{O(n^2)}$ time in the naive single-element split case.
+  * **Optimized / Multi-Pivot Implementation**: If we split across **all occurrences of invalid character types simultaneously** (or remove the entire alphabet letter type in one step):
+    1. Each recursive step permanently eliminates at least **one unique letter of the alphabet** ($a..z$) from child branches.
+    2. Since there are only $K = 26$ letters in the English alphabet, the recursion depth is strictly bounded by **$\le 26$ levels**.
+    3. Total time bound: $\text{Work per level } O(n) \times 26 \text{ levels} = \mathbf{O(26n) = O(n)}$.
 
 #### 2. Space Complexity
 * **Auxiliary Space**: $O(U)$ per frame where $U \le 52$ (size of `unordered_set`).

@@ -51,61 +51,70 @@ $$\text{Maximize } \sum_{i=1}^{n} x_i v_i \quad \text{subject to} \quad \sum_{i=
 ### Greedy Criterion
 Calculate value per unit weight $r_i = \frac{v_i}{w_i}$ for each item. Select items in descending order of $r_i$.
 
-### Pseudocode
+### Code Implementation (C++)
 
-```python
-def FRACTIONAL-KNAPSACK(weights, values, capacity):
-    """
-    Input:
-        weights: Array of item weights w[1..n]
-        values:  Array of item values v[1..n]
-        capacity: Maximum weight capacity W
-    Output:
-        max_value: Maximum total value achievable
-        x: Array x[1..n] indicating fraction of each item taken
-    """
-    n = len(weights)
-    ratios = []
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Item {
+    int id;
+    double weight;
+    double value;
+    double ratio;
+};
+
+pair<double, vector<double>> fractionalKnapsack(vector<Item>& items, double capacity) {
+    int n = items.size();
     
-    # Step 1: Compute value-to-weight ratios - O(n)
-    for i in range(n):
-        ratios.append((values[i] / weights[i], weights[i], values[i], i))
-        
-    # Step 2: Sort items by ratio descending - O(n log n)
-    ratios.sort(key=lambda item: item[0], reverse=True)
-    
-    x = [0.0] * n
-    current_weight = 0.0
-    max_value = 0.0
-    
-    # Step 3 & 4: Fill knapsack greedily - O(n)
-    for ratio, w, v, original_idx in ratios:
-        if current_weight + w <= capacity:
-            x[original_idx] = 1.0
-            current_weight += w
-            max_value += v
-        else:
-            remaining_capacity = capacity - current_weight
-            x[original_idx] = remaining_capacity / w
-            max_value += x[original_idx] * v
-            current_weight = capacity
-            break  # Knapsack is full
-            
-    return max_value, x
+    // Step 1: Compute value-to-weight ratios - O(n)
+    for (int i = 0; i < n; i++) {
+        items[i].ratio = items[i].value / items[i].weight;
+    }
+
+    // Step 2: Sort items by ratio descending - O(n log n)
+    sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
+        return a.ratio > b.ratio;
+    });
+
+    vector<double> x(n, 0.0);
+    double current_weight = 0.0;
+    double max_value = 0.0;
+
+    // Step 3 & 4: Fill knapsack greedily - O(n)
+    for (int i = 0; i < n; i++) {
+        if (current_weight + items[i].weight <= capacity) {
+            x[items[i].id] = 1.0;
+            current_weight += items[i].weight;
+            max_value += items[i].value;
+        } else {
+            double remaining = capacity - current_weight;
+            x[items[i].id] = remaining / items[i].weight;
+            max_value += x[items[i].id] * items[i].value;
+            current_weight = capacity;
+            break; // Knapsack is full
+        }
+    }
+
+    return {max_value, x};
+}
 ```
 
 ### Complexity Calculation & Step-by-Step Derivation
 
 #### Time Complexity: $O(n \log n)$
 1. **Ratio Computation**: Loop over $n$ items to calculate $r_i = \frac{v_i}{w_i}$. Requires $n$ divisions $\implies O(n)$ time.
-2. **Sorting**: Sorting an array of $n$ items by ratio in descending order using Merge Sort $\implies O(n \log n)$ time.
+2. **Sorting**: Sorting an array of $n$ items by ratio in descending order using `std::sort` $\implies O(n \log n)$ time.
 3. **Greedy Selection Loop**: Iterate through sorted array. At each item, perform constant $O(1)$ arithmetic comparisons. At most $n$ iterations $\implies O(n)$ time.
 4. **Total Time**: 
    $$T(n) = O(n) + O(n \log n) + O(n) = O(n \log n)$$
 
 #### Space Complexity: $O(n)$
-1. **Auxiliary Array**: Storing tuples of `(ratio, weight, value, index)` requires $O(n)$ space.
-2. **Fraction Array $x$**: Storing the result vector of length $n$ requires $O(n)$ space.
+1. **Auxiliary Array**: Storing item structs with computed ratios requires $O(n)$ space.
+2. **Fraction Vector $x$**: Storing the result vector of length $n$ requires $O(n)$ space.
 3. **Total Space**: $S(n) = O(n)$.
 
 ---
@@ -125,47 +134,60 @@ def FRACTIONAL-KNAPSACK(weights, values, capacity):
 > **Correct Criterion: Earliest Finish Time ($f_i$)**
 > Selecting the activity that finishes first leaves the maximum possible remaining time for subsequent activities.
 
-### Pseudocode
+### Code Implementation (C++)
 
-```python
-def ACTIVITY-SELECTION(s, f):
-    """
-    Input:
-        s: Array of start times s[1..n]
-        f: Array of finish times f[1..n]
-    Output:
-        A: List of selected activity indices
-    """
-    n = len(s)
-    # Pair activities with original indices and sort by finish time
-    activities = sorted(range(n), key=lambda i: f[i])
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+struct Activity {
+    int id;
+    int start;
+    int finish;
+};
+
+vector<int> activitySelection(vector<Activity>& activities) {
+    int n = activities.size();
+    if (n == 0) return {};
+
+    // Step 1: Sort activities by finish time ascending - O(n log n)
+    sort(activities.begin(), activities.end(), [](const Activity& a, const Activity& b) {
+        return a.finish < b.finish;
+    });
+
+    vector<int> selected;
     
-    # Always select the first activity (earliest finish time)
-    A = [activities[0]]
-    last_finish = f[activities[0]]
-    
-    # Linear pass over remaining activities
-    for i in range(1, n):
-        idx = activities[i]
-        if s[idx] >= last_finish:
-            A.append(idx)
-            last_finish = f[idx]
-            
-    return A
+    // Always select the first activity (earliest finish time)
+    selected.push_back(activities[0].id);
+    int last_finish = activities[0].finish;
+
+    // Step 2: Linear pass over remaining activities - O(n)
+    for (int i = 1; i < n; i++) {
+        if (activities[i].start >= last_finish) {
+            selected.push_back(activities[i].id);
+            last_finish = activities[i].finish;
+        }
+    }
+
+    return selected;
+}
 ```
 
 ### Complexity Calculation & Step-by-Step Derivation
 
 #### Time Complexity: $O(n \log n)$
-1. **Sorting**: Ordering $n$ activities by finish time $f_i$ takes $O(n \log n)$ time.
-2. **Linear Pass**: Iterating through the $n$ sorted activities, comparing $s_i \ge \text{last\_finish}$ in $O(1)$ time per step. Total pass time is $O(n)$.
+1. **Sorting**: Ordering $n$ activities by finish time $f_i$ using `std::sort` takes $O(n \log n)$ time.
+2. **Linear Pass**: Iterating through the $n$ sorted activities, comparing `start >= last_finish` in $O(1)$ time per step. Total pass time is $O(n)$.
 3. **Total Time**:
    $$T(n) = O(n \log n) + O(n) = O(n \log n)$$
    *(Note: If pre-sorted by finish time, time complexity is $O(n)$).*
 
 #### Space Complexity: $O(n)$
-1. **Sorting Memory / Index Mapping**: Storing sorted indices takes $O(n)$ space.
-2. **Output Set $A$**: Storing selected activity indices requires $O(n)$ space in worst case.
+1. **Sorting Memory / Storage**: Storing activities takes $O(n)$ space.
+2. **Output Vector `selected`**: Storing selected activity IDs requires $O(n)$ space in worst case.
 3. **Total Space**: $S(n) = O(n)$.
 
 ---
@@ -218,69 +240,50 @@ def ACTIVITY-SELECTION(s, f):
 ### Greedy Criterion
 Sort all jobs in descending order of profit $p_i$. For each job in profit order, assign it to the **latest possible free time slot** $t \le d_i$. If no such slot is free, skip the job.
 
-### Pseudocode
-
-#### High-Level Pseudocode
-
-```python
-def JOB-SEQUENCING(jobs):
-    """
-    Input:
-        jobs: List of Job objects (id, deadline, profit)
-    Output:
-        scheduled_jobs: Time slot assignment
-        total_profit: Total profit earned
-    """
-    # Step 1: Sort jobs by profit descending - O(n log n)
-    jobs.sort(key=lambda j: j.profit, reverse=True)
-    
-    max_d = max(j.deadline for j in jobs)
-    slots = [-1] * (max_d + 1)  # 1-indexed slots 1..max_d (-1 means free)
-    
-    total_profit = 0
-    scheduled_count = 0
-    
-    # Step 2: Scan in profit order
-    for j in jobs:
-        # Step 3: Search for latest free slot t <= j.deadline
-        for t in range(min(max_d, j.deadline), 0, -1):
-            if slots[t] == -1:
-                slots[t] = j.id  # Step 4: Place job
-                total_profit += j.profit
-                scheduled_count += 1
-                break
-                
-    return slots, total_profit
-```
-
-#### Detailed Algorithm (C++ Loop Implementation)
+### Code Implementation (C++)
 
 ```cpp
-// Step 1: Sort jobs in descending order of profit
-sort(jobs.begin(), jobs.end(), [](const Job& a, const Job& b) {
-    return a.profit > b.profit;
-});
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
-int maxDeadline = 0;
-for (const auto& j : jobs) maxDeadline = max(maxDeadline, j.deadline);
-vector<int> slot(maxDeadline + 1, -1);
+using namespace std;
 
-int totalProfit = 0;
-int jobsScheduled = 0;
+struct Job {
+    int id;
+    int deadline;
+    int profit;
+};
 
-// Step 2: Scan jobs in profit order
-for (const auto& j : jobs) {
-    // Step 3: Find the latest free slot i with 1 <= i <= min(maxDeadline, j.deadline)
-    for (int i = min(maxDeadline, j.deadline); i >= 1; i--) {
-        if (slot[i] == -1) {
-            // Step 4: Place it
-            slot[i] = j.id;
-            totalProfit += j.profit;
-            jobsScheduled++;
-            break;
+pair<vector<int>, int> jobSequencing(vector<Job>& jobs) {
+    int n = jobs.size();
+    
+    // Step 1: Sort jobs by profit descending - O(n log n)
+    sort(jobs.begin(), jobs.end(), [](const Job& a, const Job& b) {
+        return a.profit > b.profit;
+    });
+
+    int maxDeadline = 0;
+    for (const auto& j : jobs) {
+        maxDeadline = max(maxDeadline, j.deadline);
+    }
+
+    // Slots array (1-indexed time slots 1..maxDeadline, -1 indicates free)
+    vector<int> slot(maxDeadline + 1, -1); 
+    int totalProfit = 0;
+
+    // Step 2 & 3: Scan jobs in profit order and find latest free slot
+    for (int i = 0; i < n; i++) {
+        for (int j = min(maxDeadline, jobs[i].deadline); j >= 1; j--) {
+            if (slot[j] == -1) {
+                slot[j] = jobs[i].id; // Place job
+                totalProfit += jobs[i].profit;
+                break;
+            }
         }
     }
-    // Else: slot taken, try next earlier slot; if no slot free, job skipped
+
+    return {slot, totalProfit};
 }
 ```
 
@@ -372,42 +375,55 @@ for (const auto& j : jobs) {
 3. For each lecture, if an already open classroom is free (its last assigned lecture finished on or before current start time $s_i$), assign the lecture to that room.
 4. If no open classroom is free, **allocate a brand-new room**.
 
-### Pseudocode
+### Code Implementation (C++)
 
-```python
-import heapq
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <queue>
+#include <unordered_map>
 
-def INTERVAL-PARTITIONING(lectures):
-    """
-    Input:
-        lectures: List of tuples (start, finish, id)
-    Output:
-        room_assignment: Dict mapping lecture id to room number
-        num_rooms: Total number of classrooms allocated
-    """
-    # Step 1: Sort by start time ascending - O(n log n)
-    sorted_lectures = sorted(lectures, key=lambda x: x[0])
-    
-    # Min-Heap stores tuples: (last_finish_time, room_id)
-    heap = []
-    room_assignment = {}
-    room_count = 0
-    
-    # Step 2: Iterate through sorted lectures
-    for start, finish, lec_id in sorted_lectures:
-        # Check if the room with earliest finish time is free
-        if heap and heap[0][0] <= start:
-            # Reuse existing room
-            last_finish, room_id = heapq.heappop(heap)
-            room_assignment[lec_id] = room_id
-            heapq.heappush(heap, (finish, room_id))
-        else:
-            # Open a new room
-            room_count += 1
-            room_assignment[lec_id] = room_count
-            heapq.heappush(heap, (finish, room_count))
-            
-    return room_assignment, room_count
+using namespace std;
+
+struct Lecture {
+    int id;
+    int start;
+    int finish;
+};
+
+pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lectures) {
+    int n = lectures.size();
+    if (n == 0) return {{}, 0};
+
+    // Step 1: Sort lectures by start time ascending - O(n log n)
+    sort(lectures.begin(), lectures.end(), [](const Lecture& a, const Lecture& b) {
+        return a.start < b.start;
+    });
+
+    // Min-Heap stores pair<last_finish_time, room_id>
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> minHeap;
+    unordered_map<int, int> roomAssignment;
+    int roomCount = 0;
+
+    // Step 2: Process each lecture in start-time order
+    for (int i = 0; i < n; i++) {
+        if (!minHeap.empty() && minHeap.top().first <= lectures[i].start) {
+            // Reuse existing room (earliest available finish time)
+            auto topRoom = minHeap.top();
+            minHeap.pop();
+            roomAssignment[lectures[i].id] = topRoom.second;
+            minHeap.push({lectures[i].finish, topRoom.second});
+        } else {
+            // Open a brand-new room
+            roomCount++;
+            roomAssignment[lectures[i].id] = roomCount;
+            minHeap.push({lectures[i].finish, roomCount});
+        }
+    }
+
+    return {roomAssignment, roomCount};
+}
 ```
 
 ---
@@ -419,14 +435,14 @@ def INTERVAL-PARTITIONING(lectures):
 2. **Min-Heap Operations**:
    - For each of the $n$ lectures:
      - Check minimum finish time at top of heap $\implies O(1)$.
-     - `heappop` and/or `heappush` on a min-heap containing at most $d \le n$ rooms $\implies O(\log d) \le O(\log n)$.
+     - `pop` and/or `push` on a min-heap (`std::priority_queue`) containing at most $d \le n$ rooms $\implies O(\log d) \le O(\log n)$.
    - Total heap operations cost $O(n \log n)$.
 3. **Total Time**:
    $$T(n) = O(n \log n) + O(n \log n) = O(n \log n)$$
 
 #### Space Complexity: $O(n)$
 - Min-heap stores at most $d \le n$ elements $\implies O(d)$.
-- `room_assignment` map stores $n$ entries $\implies O(n)$.
+- `roomAssignment` map stores $n$ entries $\implies O(n)$.
 - Total Auxiliary Space: $S(n) = O(n)$.
 
 ---
@@ -474,94 +490,91 @@ where $d_T(c)$ is the depth of character leaf node $c$ in binary tree $T$ (repre
 
 ---
 
-### Pseudocode
+### Code Implementation (C++)
 
-#### Main Pipeline & Encoding / Decoding
+```cpp
+#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <unordered_map>
 
-```python
-def HUFFMAN-MAIN(text):
-    # Step 1: Compute character frequencies
-    freq = COMPUTE-FREQUENCIES(text)
-    
-    # Create leaf nodes for each character
-    C = [Node(char=c, freq=f) for c, f in freq.items()]
-    
-    # Step 2: Build Huffman Tree
-    root = HUFFMAN(C)
-    
-    # Step 3: Generate Prefix Codes via tree traversal
-    codeTable = {}
-    ASSIGN-CODES(root, "", codeTable)
-    
-    # Step 4: Encode text
-    encoded_bitstring = "".join(codeTable[ch] for ch in text)
-    
-    # Step 5: Decode bitstring
-    decoded_text = DECODE(root, encoded_bitstring)
-    
-    return codeTable, encoded_bitstring, decoded_text
-```
+using namespace std;
 
-#### Huffman Tree Construction: `HUFFMAN(C)`
+// Tree Node structure
+struct Node {
+    char ch;
+    int freq;
+    Node* left;
+    Node* right;
 
-```python
-def HUFFMAN(C):
-    """
-    Input: Set of n character leaf nodes C
-    Output: Root node of the optimal Huffman Tree
-    """
-    n = len(C)
-    # Build min-priority queue keyed by node frequency - O(n)
-    Q = MIN-PRIORITY-QUEUE(C)
-    
-    # Perform n - 1 merges
-    for i in range(1, n):
-        z = Node()
-        x = EXTRACT-MIN(Q)  # Lowest frequency node
-        y = EXTRACT-MIN(Q)  # 2nd lowest frequency node
-        
-        z.left = x
-        z.right = y
-        z.freq = x.freq + y.freq
-        
-        INSERT(Q, z)
-        
-    return EXTRACT-MIN(Q)  # Root of the Huffman Tree
-```
+    Node(char character, int frequency) {
+        ch = character;
+        freq = frequency;
+        left = right = nullptr;
+    }
+};
 
-#### Code Table Generation: `ASSIGN-CODES(node, code, codeTable)`
+// Custom Comparator for Priority Queue (Min-Heap)
+struct Compare {
+    bool operator()(Node* a, Node* b) {
+        return a->freq > b->freq;
+    }
+};
 
-```python
-def ASSIGN-CODES(node, code, codeTable):
-    if node is None:
-        return
-    if node.left is None and node.right is None:  # Leaf node
-        # Handle single distinct character edge case
-        codeTable[node.char] = code if code != "" else "0"
-        return
-        
-    ASSIGN-CODES(node.left, code + "0", codeTable)
-    ASSIGN-CODES(node.right, code + "1", codeTable)
-```
+// Step 2: Build Huffman Tree using Min-Heap - O(n log n)
+Node* buildHuffmanTree(const unordered_map<char, int>& freqMap) {
+    priority_queue<Node*, vector<Node*>, Compare> minHeap;
 
-#### Bitstring Decoder: `DECODE(root, bitstring)`
+    for (auto pair : freqMap) {
+        minHeap.push(new Node(pair.first, pair.second));
+    }
 
-```python
-def DECODE(root, bitstring):
-    result = []
-    current = root
-    
-    for bit in bitstring:
-        if bit == '0':
-            current = current.left
-        else:
-            current = current.right
-            
-        if current.left is None and current.right is None:  # Reached leaf
-            result.append(current.char)
-            current = root  # Reset to root for next character
-            
-    return "".join(result)
+    // Perform n - 1 merges
+    while (minHeap.size() > 1) {
+        Node* x = minHeap.top(); minHeap.pop();
+        Node* y = minHeap.top(); minHeap.pop();
+
+        Node* z = new Node('\0', x->freq + y->freq);
+        z->left = x;
+        z->right = y;
+
+        minHeap.push(z);
+    }
+
+    return minHeap.top(); // Root of tree
+}
+
+// Step 3: Generate Prefix Codes via Tree Traversal - O(n)
+void assignCodes(Node* root, string code, unordered_map<char, string>& codeTable) {
+    if (!root) return;
+
+    if (!root->left && !root->right) {
+        codeTable[root->ch] = (code == "") ? "0" : code;
+        return;
+    }
+
+    assignCodes(root->left, code + "0", codeTable);
+    assignCodes(root->right, code + "1", codeTable);
+}
+
+// Step 5: Decode Bitstring Bit by Bit - O(Length of Bitstring)
+string decodeBitstring(Node* root, const string& bitstring) {
+    string result = "";
+    Node* curr = root;
+
+    for (char bit : bitstring) {
+        if (bit == '0') curr = curr->left;
+        else curr = curr->right;
+
+        if (!curr->left && !curr->right) { // Reached leaf node
+            result += curr->ch;
+            curr = root; // Restart at root for next character
+        }
+    }
+
+    return result;
+}
 ```
 
 ---
@@ -570,12 +583,12 @@ def DECODE(root, bitstring):
 
 #### Time Complexity: $O(n \log n)$
 1. **Frequency Computation**: Scanning input string of length $N \implies O(N)$.
-2. **Initial Min-Heap Building**: Heapifying $n$ leaf nodes using `build_heap` algorithm $\implies O(n)$ time.
+2. **Initial Min-Heap Building**: Inserting $n$ leaf nodes into `std::priority_queue` $\implies O(n)$ time.
 3. **Tree Merging Loop**:
    - The loop runs $n - 1$ times (creating $n - 1$ internal nodes).
    - In each iteration:
-     - 2 `EXTRACT-MIN` operations $\implies 2 \times O(\log n)$.
-     - 1 `INSERT` operation $\implies O(\log n)$.
+     - 2 `pop` operations $\implies 2 \times O(\log n)$.
+     - 1 `push` operation $\implies O(\log n)$.
    - Loop cost: $(n - 1) \times O(\log n) = O(n \log n)$.
 4. **Code Assignment & Tree Traversal**: DFS traversal over binary tree with $2n - 1$ total nodes $\implies O(n)$ time.
 5. **Total Huffman Algorithm Time**:
