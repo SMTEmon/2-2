@@ -1,5 +1,5 @@
 ---
-title: "08 - IPv6 Protocol & Tunneling Transitions"
+title: "03 - IPv6 Protocol & Tunneling Transitions"
 course: "CSE 4411"
 chapter: 4
 section: 4.4
@@ -10,16 +10,17 @@ tags:
   - tunneling
   - dual-stack
   - header-format
+  - final-exam
 aliases:
   - IPv6 Protocol
-  - IPv4 to IPv6 Tunneling
+  - IPv6 Tunneling
 ---
 
-# 08 - IPv6 Protocol & Tunneling Transitions
+# 03 - IPv6 Protocol & Tunneling Transitions
 
 > [!abstract] Key Takeaway
-> **IPv6** expands address space from 32 bits to **128 bits** ($3.4 \times 10^{38}$ addresses) and replaces the variable IPv4 header with a **fixed 40-byte header** to enable high-speed hardware processing. 
-> Crucially, IPv6 **removes the header checksum and router-assisted fragmentation**.
+> **IPv6** expands address space to **128 bits** ($3.4 \times 10^{38}$ addresses) and streamlines routing with a **fixed 40-byte base header**, eliminating the **Header Checksum** and **router fragmentation**. 
+> Global deployment uses **Dual-Stack** hosts and **IPv6-in-IPv4 Tunneling**.
 
 ---
 
@@ -34,20 +35,12 @@ aliases:
 |         Payload Length        |  Next Header  |   Hop Limit   |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                                                               |
-+                                                               +
-|                                                               |
 +                     Source IP Address                         +
 |                         (128 bits)                            |
-+                                                               +
-|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-+                                                               +
 |                                                               |
 +                  Destination IP Address                       +
 |                         (128 bits)                            |
-+                                                               +
-|                                                               |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |                            Payload                            |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -59,19 +52,19 @@ aliases:
 | :--- | :---: | :--- |
 | **Version** | 4 | IP Version (`0110` for IPv6). |
 | **Traffic Class** | 8 | Equivalent to IPv4 TOS / DiffServ (QoS priority). |
-| **Flow Label** | 20 | Identifies packets belonging to a specific non-default audio/video stream (QoS flow). |
-| **Payload Length** | 16 | Number of bytes in datagram *following* the 40-byte base header (includes extension headers). |
-| **Next Header** | 8 | Identifies upper-layer protocol (TCP=6, UDP=17) or next Extension Header (Hop-by-Hop, Routing, Fragmentation). |
+| **Flow Label** | 20 | Identifies packets belonging to a specific real-time audio/video stream. |
+| **Payload Length** | 16 | Number of bytes in datagram *following* the 40-byte base header (excludes base header). |
+| **Next Header** | 8 | Identifies transport protocol (`6` TCP, `17` UDP) or next Extension Header (`0` Hop-by-Hop, `43` Routing, `44` Fragment). |
 | **Hop Limit** | 8 | Decremented by 1 at each router; packet dropped if 0 (replaces IPv4 TTL). |
 | **Source / Dest IP** | $128 + 128$ | 16-byte IPv6 addresses written in hexadecimal (e.g., `2001:0db8:85a3::8a2e:0370:7334`). |
 
 ---
 
-## 2. Major Differences: IPv4 vs IPv6
+## 2. Major Architectural Differences: IPv4 vs IPv6
 
-| Architectural Feature | IPv4 | IPv6 | Engineering Rationale |
+| Feature | IPv4 | IPv6 | Engineering Rationale |
 | :--- | :--- | :--- | :--- |
-| **Address Space** | 32 bits ($4.3 \times 10^9$) | **128 bits ($3.4 \times 10^{38}$)** | Eliminates global address exhaustion forever. |
+| **Address Space** | 32 bits ($4.3 \times 10^9$) | **128 bits ($3.4 \times 10^{38}$)** | Solves global address exhaustion permanently. |
 | **Base Header Size** | Variable (20 – 60 bytes) | **Fixed 40 bytes** | Fixed offset enables pipelined hardware processing. |
 | **Header Checksum** | Present (Recalculated every hop) | **REMOVED** | Redundant with L2 CRC and L4 checksums; speeds up forwarding. |
 | **Fragmentation** | Performed by **routers & hosts** | **REMOVED from routers** | Routers drop oversized packets and send ICMPv6 "Packet Too Big"; source host performs PMTUD. |
@@ -80,13 +73,6 @@ aliases:
 ---
 
 ## 3. IPv4 to IPv6 Transition: Dual-Stack vs Tunneling
-
-Because the Internet contains millions of legacy IPv4 routers, a simultaneous global upgrade ("flag day") is impossible.
-
-### 1. Dual-Stack Approach
-Nodes run **both IPv4 and IPv6 protocol stacks** simultaneously. The node uses DNS (A record vs AAAA record) to choose IPv6 if supported, otherwise falling back to IPv4.
-
-### 2. Tunneling (IPv6 Encapsulated in IPv4)
 
 ```mermaid
 flowchart LR
@@ -102,27 +88,17 @@ flowchart LR
 ```
 
 ```
-Tunneling Encapsulation on the Wire:
+Tunneling Wire Encapsulation:
 +-------------------+-------------------+-------------------------+
-| IPv4 Header       | IPv6 Header       | TCP / Payload           |
+| IPv4 Outer Header | IPv6 Inner Header | TCP / Payload           |
 | (Src: B, Dst: E)  | (Src: A, Dst: F)  |                         |
 +-------------------+-------------------+-------------------------+
 |<--- IPv4 Outer Payload (Tunnel) ----->|
 ```
 
-- **Tunnel Ingress Router (B):** Puts the complete IPv6 datagram inside the payload field of an IPv4 datagram (`IPv4 Protocol = 41`).
-- **Tunnel Egress Router (E):** Strips off the outer IPv4 header, extracting the original native IPv6 datagram, and forwards it to destination F.
-
----
-
-## 4. "Why" Questions & Exam Traps
-
-> [!question] What happens when an IPv6 datagram is too large for an outgoing link's MTU?
-> **Answer:**
-> - The intermediate router **does NOT fragment the datagram**.
-> - The router immediately **drops the packet** and sends an **ICMPv6 Type 2 ("Packet Too Big")** error message back to the source host, containing the MTU of the constricted link.
-> - The source host then uses this feedback to resize its subsequent packets (**Path MTU Discovery - PMTUD**).
+- **Dual-Stack:** Nodes run both IPv4 and IPv6 stacks simultaneously.
+- **Tunneling (IPv6 inside IPv4):** The ingress dual-stack router (B) puts the complete IPv6 datagram inside the payload field of an IPv4 datagram (`IPv4 Protocol = 41`). The egress router (E) strips the outer IPv4 header and forwards the native IPv6 packet.
 
 ---
 #### Navigation
-← Previous: [[07 - NAT Architecture & Traversal]] | Next: [[09 - Generalized Forwarding & SDN (OpenFlow)]] →
+← Previous: [[02 - NAT Architecture & Traversal]] | Next: [[04 - Book Extras & Professor Traps]] →

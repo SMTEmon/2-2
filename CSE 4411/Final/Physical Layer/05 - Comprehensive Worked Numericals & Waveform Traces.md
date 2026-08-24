@@ -1,5 +1,5 @@
 ---
-title: "07 - Comprehensive Worked Numericals & Exam Problems"
+title: "05 - Comprehensive Worked Numericals & Waveform Traces"
 course: "CSE 4411"
 chapter: "Physical Layer (Forouzan Ch 4)"
 tags:
@@ -9,15 +9,17 @@ tags:
   - practice-problems
   - worked-numericals
   - exam-prep
+  - line-coding
+  - scrambling
 aliases:
   - Physical Layer Practice Problems
-  - Forouzan Chapter 4 Numericals
+  - Scrambling and Waveform Numericals
 ---
 
-# 07 - Comprehensive Worked Numericals & Exam Problems (Physical Layer)
+# 05 - Comprehensive Worked Numericals & Waveform Traces (Physical Layer)
 
 > [!abstract] Exam Objective
-> This document provides fully derived mathematical solutions for **Line Coding baud rates**, **B8ZS & HDB3 Scrambling state traces**, and **PCM Audio Digitization** calculations.
+> This document provides fully derived solutions for **B8ZS & HDB3 Scrambling state traces**, **Line Coding waveform drawing**, and **PCM Audio Digitization** calculations.
 
 ---
 
@@ -79,14 +81,13 @@ $$\mathbf{- \quad 0 \quad 0 \quad 0 \quad - \quad + \quad 0 \quad 0 \quad + \qua
 ## 🧮 Problem Set 2: Hi-Fi Audio Digitization (PCM Calculations)
 
 ### Problem Statement
-A high-fidelity stereo audio signal has bandwidth spanning from $20\text{ Hz}$ to $22\text{ kHz}$ ($f_{max} = 22\text{ kHz}$). The signal is sampled at a rate **$20\%$ higher than the theoretical Nyquist rate** and quantized into $L = 65,536$ levels.
+A high-fidelity stereo audio signal has bandwidth spanning up to $f_{max} = 22\text{ kHz}$. The signal is sampled at a rate **$20\%$ higher than the theoretical Nyquist rate** and quantized into $L = 65,536$ levels.
 
 **Calculate:**
 1. The sampling rate ($f_s$).
 2. The number of bits per sample ($n_b$).
 3. The bit rate for a single audio channel ($N$).
 4. The resulting Signal-to-Quantization-Noise Ratio ($\text{SNR}_{dB}$).
-5. The minimum channel bandwidth ($B_{min}$) required to transmit this digital stream using **NRZ-L** ($r=1$).
 
 ---
 
@@ -106,9 +107,6 @@ $$N = f_s \times n_b = 52,800\text{ samples/s} \times 16\text{ bits/sample} = \m
 #### 4. Signal-to-Quantization-Noise Ratio ($\text{SNR}_{dB}$)
 $$\text{SNR}_{dB} = 6.02 n_b + 1.76\text{ dB} = 6.02(16) + 1.76 = 96.32 + 1.76 = \mathbf{98.08\text{ dB}}$$
 
-#### 5. Minimum Bandwidth for NRZ-L ($B_{min}$)
-$$B_{min} = c \times N \times \frac{1}{r} = \frac{1}{2} \times 844.8\text{ kbps} \times \frac{1}{1} = \mathbf{422.4\text{ kHz}}$$
-
 ---
 #### Navigation
-← Previous: [[06 - Book Extras & Professor Traps]] | Next: [[00 - CSE 4411 Final Exam Master Blueprint & Formula Sheet]] →
+← Previous: [[04 - Book Extras & Professor Traps]] | Next: [[00 - CSE 4411 Final Exam Master Blueprint & Formula Sheet]] →

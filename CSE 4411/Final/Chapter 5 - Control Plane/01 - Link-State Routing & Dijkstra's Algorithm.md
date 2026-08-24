@@ -1,5 +1,5 @@
 ---
-title: "02 - Link-State Routing & Dijkstra's Algorithm"
+title: "01 - Link-State Routing & Dijkstra's Algorithm"
 course: "CSE 4411"
 chapter: 5
 section: 5.2
@@ -10,15 +10,16 @@ tags:
   - dijkstras-algorithm
   - routing-algorithms
   - oscillations
+  - final-exam
 aliases:
   - Link State Routing
-  - Dijkstra Routing Algorithm
+  - Dijkstra Algorithm
 ---
 
-# 02 - Link-State Routing & Dijkstra's Algorithm
+# 01 - Link-State Routing & Dijkstra's Algorithm
 
 > [!abstract] Key Takeaway
-> In **Link-State (LS) Routing**, all routers obtain a **complete, global view** of the network topology and link costs via **Link-State Broadcast (Flooding)**. 
+> In **Link-State (LS) Routing**, all routers obtain a **complete, global view** of the network topology and link costs via **Link-State Flooding**. 
 > Each router independently executes **Dijkstra's Algorithm** to compute the Shortest Path Tree (SPT) and construct its local forwarding table.
 
 ---
@@ -121,16 +122,10 @@ flowchart LR
 > [!warning] Exam Trap: The Oscillation Problem
 > If link costs are defined dynamically as a function of carried traffic load (e.g., higher traffic = higher cost), Link-State routing causes **continuous, severe routing oscillations**.
 
-```
-Initial State: All traffic routes Counter-Clockwise (CW is cheap).
-Update 1: CCW becomes congested (cost spikes); all routers switch to CW simultaneously.
-Update 2: CW becomes congested; all routers switch back to CCW simultaneously!
-```
-
 ### Solutions to Prevent Oscillations
 1. **Load-Insensitive Metrics (Standard in Internet):** Define link costs based on static bandwidth or physical distance rather than real-time traffic.
 2. **Desynchronized Timers:** Randomize the execution interval of the link-state algorithm at each router so that not all routers update simultaneously.
 
 ---
 #### Navigation
-← Previous: [[01 - Control Plane Architecture & SDN vs Traditional]] | Next: [[03 - Distance-Vector Routing & Bellman-Ford]] →
+← Previous: [[00 - Index]] | Next: [[02 - Distance-Vector Routing & Bellman-Ford]] →

@@ -1,5 +1,5 @@
 ---
-title: "06 - ICMP & Traceroute Mechanics"
+title: "05 - ICMP & Traceroute Mechanics"
 course: "CSE 4411"
 chapter: 5
 section: 5.5
@@ -9,17 +9,16 @@ tags:
   - icmp
   - traceroute
   - ping
-  - network-diagnostics
+  - final-exam
 aliases:
   - ICMP Protocol
   - Traceroute Mechanics
 ---
 
-# 06 - ICMP & Traceroute Mechanics
+# 05 - ICMP & Traceroute Mechanics
 
 > [!abstract] Key Takeaway
-> **ICMP (Internet Control Message Protocol - RFC 792)** is used by hosts and routers to communicate network-layer diagnostic and error information. 
-> ICMP messages are carried directly inside IP datagrams (**`IP Protocol = 1`**) and form the core operational foundation of **Ping** and **Traceroute**.
+> **ICMP (Internet Control Message Protocol - RFC 792)** is carried directly inside IP datagrams (**`IP Protocol = 1`**) and is used for network-layer diagnostic and error reporting, powering **Ping** and **Traceroute**.
 
 ---
 
@@ -36,20 +35,17 @@ aliases:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-> [!info] Why ICMP copies the first 8 bytes of the offending payload
-> The first 8 bytes of the Layer 4 payload contain the **Source and Destination Port numbers** (and TCP sequence number), allowing the sending host's OS to identify the exact application socket that generated the failed packet.
-
 ---
 
 ## 2. Master Table of High-Yield ICMP Types & Codes
 
-| Type | Code | Description / Meaning | Associated Tool / Context |
+| Type | Code | Description / Meaning | Associated Context |
 | :---: | :---: | :--- | :--- |
 | **0** | **0** | **Echo Reply** | `ping` response |
 | **8** | **0** | **Echo Request** | `ping` request |
 | **3** | **0** | Destination Network Unreachable | Routing failure |
 | **3** | **1** | Destination Host Unreachable | Host offline / ARP failure |
-| **3** | **2** | Destination Protocol Unreachable | Protocol not supported |
+| **3** | **2** | Destination Protocol Unreachable | Protocol unsupported |
 | **3** | **3** | **Destination Port Unreachable** | **Traceroute termination signal** |
 | **3** | **4** | **Fragmentation Needed and DF Set** | **Path MTU Discovery (PMTUD)** |
 | **11** | **0** | **TTL Expired in Transit** | **Traceroute intermediate hop signal** |
@@ -93,12 +89,10 @@ sequenceDiagram
 
 ## 4. "Why" Questions & Exam Traps
 
-> [!question] Why does Traceroute target an unlikely high UDP port number (e.g., 33434+)?
+> [!question] Why does Traceroute use UDP to high ports instead of Ping Echo?
 > **Answer:**
-> - Intermediate routers decrement TTL and drop packets solely because $\text{TTL} = 0$, sending back **ICMP Type 11 Code 0**.
-> - When the packet finally reaches the destination host, the TTL will *not* expire. The destination host inspects the port and discovers no process listening on port 33434, triggering an **ICMP Type 3 Code 3 (Port Unreachable)**.
-> - This distinct error code tells the sender that the packet has reached the target host, successfully ending the trace!
+> Intermediate routers decrement TTL and drop packets solely because $\text{TTL} = 0$, returning **ICMP Type 11 Code 0**. When the packet reaches the destination host, the closed UDP port triggers **ICMP Type 3 Code 3 (Port Unreachable)**. This distinct code signals to the sender that the target host was reached, terminating the trace.
 
 ---
 #### Navigation
-← Previous: [[05 - Inter-AS Routing & BGP-4]] | Next: [[07 - Book Extras & Professor Traps]] →
+← Previous: [[04 - Inter-AS Routing & BGP-4]] | Next: [[06 - Book Extras & Professor Traps]] →

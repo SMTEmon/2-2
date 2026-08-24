@@ -10,9 +10,10 @@ tags:
   - error-detection
   - crc
   - parity-check
+  - final-exam
 aliases:
   - Link Layer Overview
-  - Error Detection and CRC Math
+  - Error Detection Math
 ---
 
 # 01 - Link Layer Fundamentals & Error Detection
@@ -25,52 +26,26 @@ aliases:
 
 ## 1. Link Layer Services & Implementation
 
-```
-+-------------------------------------------------------------------------+
-| Host Architecture:                                                      |
-|   Application Layer (Browser / Web Server)                             |
-|   Transport Layer (TCP / UDP)                      [ Software (OS) ]   |
-|   Network Layer (IP Routing / Forwarding)                               |
-+-------------------------------------------------------------------------+
-|   Link Layer (NIC: Controller, PHY chip, DMA)      [ Hardware & ASIC ]  |
-|   Physical Layer (Transceiver, RJ-45 / Optical)                         |
-+-------------------------------------------------------------------------+
-```
-
-### Core Link-Layer Services
-1. **Framing:** Encapsulates network-layer datagram into a link-layer frame with Header and Trailer (FCS).
-2. **Link Access & MAC:** Coordinates broadcast media access when links are shared.
-3. **Reliable Delivery:** Implements local ACKs/retransmissions across high-error-rate links (e.g., 802.11 Wi-Fi), but **omitted on fiber/copper** (where error rates are negligible) to reduce latency.
-4. **Error Detection & Correction:** Checks for electromagnetic/thermal noise bit flips.
+- **Framing:** Encapsulates network-layer datagram into a link-layer frame with Header and Trailer (FCS).
+- **Link Access & MAC:** Coordinates broadcast media access when links are shared.
+- **Reliable Delivery:** Implements local ACKs/retransmissions across high-error-rate links (e.g., 802.11 Wi-Fi), but **omitted on fiber/copper** to reduce latency.
+- **Error Detection & Correction:** Checks for electromagnetic/thermal noise bit flips.
 
 ---
 
 ## 2. Parity Checking Techniques
 
-```mermaid
-flowchart TD
-    subgraph Parity2D ["Two-Dimensional (2D) Parity Scheme"]
-        D1["Data Row 1: 1 0 1 0 1 | Parity: 1"]
-        D2["Data Row 2: 1 1 1 1 0 | Parity: 0"]
-        D3["Data Row 3: 0 1 1 0 1 | Parity: 1"]
-        ColP["Col Parity:  0 0 1 1 0 | Parity: 0"]
-    end
-```
-
-- **Single-Bit Parity (1D):** Appends 1 bit so total number of 1s is even (even parity) or odd (odd parity). Detects **odd numbers of bit errors** (e.g., 1 bit flip), but fails completely on 2 bit flips.
+- **Single-Bit Parity (1D):** Appends 1 bit so total number of 1s is even or odd. Detects **odd numbers of bit errors** (1-bit errors), but fails on 2 bit flips.
 - **Two-Dimensional (2D) Parity:**
-  - **Single-Bit Errors:** Can **detect AND correct** (the intersecting row and column parity errors pinpoint the exact flipped bit).
+  - **Single-Bit Errors:** Can **detect AND correct** (the intersecting row and column parity errors pinpoint the flipped bit).
   - **Two-Bit Errors:** Can **detect** the presence of error without being able to correct it.
 
 ---
 
 ## 3. Cyclic Redundancy Check (CRC) / Polynomial Codes
 
-CRC is the industry-standard error detection technique used in Ethernet (CRC-32), Wi-Fi, and HDLC.
-
-### Mathematical Formulation
 - Let $D$ be the $d$-bit data payload.
-- Let $G$ be an $(r+1)$-bit **Generator Polynomial** agreed upon in advance.
+- Let $G$ be an $(r+1)$-bit **Generator Polynomial**.
 - The sender appends $r$ bits of CRC checksum ($R$) to $D$ such that the resulting $(d+r)$-bit sequence is **exactly divisible by $G$ using Modulo-2 arithmetic**:
 
 $$\frac{D \cdot 2^r \oplus R}{G} = Q \text{ with Remainder } 0 \implies R = \text{remainder}\left( \frac{D \cdot 2^r}{G} \right)$$
@@ -115,33 +90,16 @@ $$\frac{D \cdot 2^r \oplus R}{G} = Q \text{ with Remainder } 0 \implies R = \tex
 > $$\text{Transmitted Frame} = D \cdot 2^r \oplus R = 101110000 \oplus 011 = \mathbf{101110011}$$
 > 
 > **Step 4: Receiver Verification:**
-> The receiver divides $101110011$ by $G = 1001$:
-> ```
->             101011
->        -------------
-> 1001  ) 101110011
->         1001
->         ----
->          01010
->           1001
->           ----
->           001101
->             1001
->             ----
->             01001
->              1001
->              ----
->              0000  (Remainder = 0 -> No errors!)
-> ```
+> The receiver divides $101110011$ by $G = 1001 \implies \text{Remainder} = 0 \implies$ No errors!
 
 ---
 
 ## 5. "Why" Questions & Exam Traps
 
-> [!question] Why does the Internet use simple 16-bit Checksums in Transport/Network layers (TCP/IP) but complex CRC-32 in the Link layer?
+> [!question] Why does the Internet use simple 16-bit Checksums in TCP/IP but complex CRC-32 in the Link layer?
 > **Answer:**
-> - **Transport/Network Layer:** Implemented in **software (CPU)** on host operating systems. Simple 16-bit integer addition is extremely fast to compute in software.
-> - **Link Layer:** Implemented in **dedicated hardware (NIC ASICs)**. Hardware shift-registers and XOR gates compute CRC-32 at 100+ Gbps line rate with near-zero latency, providing far superior error detection guarantees (detecting all bursts $\le 32$ bits).
+> - **Transport/Network Layer (Software/CPU):** Simple 16-bit integer addition is extremely fast to compute in software.
+> - **Link Layer (Hardware/NIC ASICs):** Hardware shift-registers and XOR gates compute CRC-32 at 100+ Gbps line rate with near-zero latency, detecting all burst errors $\le 32$ bits.
 
 ---
 #### Navigation

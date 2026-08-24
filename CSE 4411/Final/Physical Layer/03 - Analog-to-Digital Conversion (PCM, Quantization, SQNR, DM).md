@@ -1,5 +1,5 @@
 ---
-title: "04 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)"
+title: "03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)"
 course: "CSE 4411"
 chapter: "Physical Layer (Forouzan Ch 4)"
 section: 4.2
@@ -12,12 +12,13 @@ tags:
   - quantization
   - sqnr
   - delta-modulation
+  - final-exam
 aliases:
   - Analog to Digital Conversion
   - PCM and Quantization Math
 ---
 
-# 04 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)
+# 03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)
 
 > [!abstract] Key Takeaway
 > **Pulse Code Modulation (PCM)** digitizes continuous analog waveforms in 3 steps: 
@@ -65,7 +66,6 @@ The continuous PAM amplitude range $[V_{min}, V_{max}]$ is divided into $L = 2^{
 $$\Delta = \frac{V_{max} - V_{min}}{L} = \frac{V_{max} - V_{min}}{2^{n_b}}$$
 
 ### 2. Maximum Quantization Error ($e_q$)
-Since a sampled point is rounded to the center of its zone:
 $$|e_q| \le \frac{\Delta}{2}$$
 
 ### 3. Signal-to-Quantization-Noise Ratio ($\text{SQNR}_{dB}$)
@@ -80,7 +80,6 @@ $$\text{SNR}_{dB} = 6.02 n_b + 1.76\text{ dB}$$
 ## 4. Step 3: Encoding & PCM Voice Math
 
 $$\text{Bit Rate } N = f_s \times n_b = 2 f_{max} \times n_b \quad (\text{bps})$$
-$$\text{Minimum Channel Bandwidth } B_{min} = c \times N \times \frac{1}{r} = c \times n_b \times f_s \times \frac{1}{r}$$
 
 > [!example]- Classic Telephone Voice Digitization (DS0 Standard)
 > - Human telephone voice bandwidth: $f_{max} = 4000\text{ Hz}$ ($4\text{ kHz}$).
@@ -90,13 +89,12 @@ $$\text{Minimum Channel Bandwidth } B_{min} = c \times N \times \frac{1}{r} = c 
 >   $$N = 8000\text{ samples/s} \times 8\text{ bits/sample} = \mathbf{64,000\text{ bps}} = \mathbf{64\text{ kbps}}$$
 > - **$\text{SNR}_{dB}$:**
 >   $$\text{SNR}_{dB} = 6.02(8) + 1.76 = \mathbf{49.92\text{ dB}}$$
-> *(This 64 kbps standard forms the fundamental DS0 digital telephone channel worldwide).*
 
 ---
 
 ## 5. Delta Modulation (DM) & Its Impairments
 
-Delta Modulation is a lightweight 1-bit alternative to PCM. It compares the current analog sample with a running staircase approximation:
+Delta Modulation is a lightweight 1-bit alternative to PCM:
 - If analog signal $>$ staircase $\implies$ output **`1`** (step up by $+\delta$).
 - If analog signal $<$ staircase $\implies$ output **`0`** (step down by $-\delta$).
 
@@ -109,14 +107,5 @@ flowchart TD
 ```
 
 ---
-
-## 6. "Why" Questions & Exam Traps
-
-> [!question] What is Companding and why is it used in telephone PCM?
-> **Answer:**
-> - In linear quantization, quiet speech sounds have a terrible SQNR because their low amplitude spans only a few quantization levels.
-> - **Companding (Compressing-Expanding):** Uses non-linear quantization ($\mu$-law in the US/Japan, A-law in Europe) that allocates **narrower step sizes to quiet signals** and **wider step sizes to loud signals**, maintaining a constant SQNR across all voice volumes.
-
----
 #### Navigation
-← Previous: [[03 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] | Next: [[05 - Transmission Modes (Parallel vs Serial Async, Sync, Isochronous)]] →
+← Previous: [[02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] | Next: [[04 - Book Extras & Professor Traps]] →

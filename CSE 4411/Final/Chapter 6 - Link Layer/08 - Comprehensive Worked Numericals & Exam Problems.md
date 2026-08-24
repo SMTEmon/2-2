@@ -9,120 +9,109 @@ tags:
   - worked-numericals
   - exam-prep
   - link-layer
+  - crc
+  - csma-cd
 aliases:
-  - Link Layer Practice Problems
-  - Chapter 6 Numericals
+  - Chapter 6 Practice Problems
+  - Link Layer Numericals
 ---
 
 # 08 - Comprehensive Worked Numericals & Exam Problems (Link Layer)
 
 > [!abstract] Exam Objective
-> This problem set provides step-by-step mathematical solutions for **CRC Modulo-2 division**, **CSMA/CD backoff slot math**, **ALOHA efficiency**, and **Multi-Switch Table learning traces**.
+> This document contains full, step-by-step solutions for **CRC Modulo-2 polynomial divisions**, **CSMA/CD minimum frame size derivations**, and **ALOHA efficiency** problems.
 
 ---
 
-## 🧮 Problem Set 1: Modulo-2 Polynomial CRC Division
+## 🧮 Problem Set 1: CRC Long Division & Error Detection
 
 ### Problem Statement
-- **Data Payload:** $D = 1101011011$ ($10\text{ bits}$).
-- **Generator Polynomial:** $G(x) = x^4 + x + 1 \implies G = 10011$ ($r+1 = 5\text{ bits} \implies r = 4\text{ bits}$).
+Given:
+- Data bitstream $D = 1010001101$ ($d = 10\text{ bits}$).
+- Generator polynomial $G(x) = x^5 + x^4 + x^2 + 1 \implies G = 110101$ ($r = 5\text{ bits}$).
 
 **Questions:**
-1. Compute the 4-bit CRC sequence ($R$).
-2. Write the actual transmitted bitstream.
-3. Show how the receiver detects an error if the 4th bit from the right is flipped during transit.
+1. Calculate the 5-bit CRC checksum $R$.
+2. What is the transmitted bit sequence $T$?
+3. If the channel corrupts the 4th bit from the right during transmission, show how the receiver detects the error.
 
 ---
 
 ### Step-by-Step Solution
 
-#### Part 1: Compute CRC Remainder $R$
-- Append $r = 4$ zeros to $D$:
-  $$D \cdot 2^4 = 11010110110000$$
+#### 1. Calculate $R = \text{remainder}\left(\frac{D \cdot 2^5}{G}\right)$
+- Append $r=5$ zeros to $D$: $D \cdot 2^5 = 101000110100000$.
+- Perform Modulo-2 division by $G = 110101$:
 
 ```
-               1100001010  (Quotient)
-          -----------------
-10011  )  11010110110000
-          10011
-          -----
-          010011
-           10011
-           -----
-           0000010110
-                 10011
-                 -----
-                 0010100
-                   10011
-                   -----
-                   001110  (Remainder R = 1110)
+               1110011010   (Quotient)
+          ------------------
+110101  ) 101000110100000
+          110101
+          ------
+          0111011
+           110101
+           ------
+           00111001
+             110101
+             ------
+             00110000
+               110101
+               ------
+               000101000
+                 110101
+                 ------
+                 0111010
+                  110101
+                  ------
+                  0011110   (Remainder R = 01110)
 ```
-- **CRC Checksum:** $R = \mathbf{1110}$.
 
-#### Part 2: Transmitted Bitstream
-$$\text{Transmitted Frame} = D \cdot 2^4 \oplus R = 11010110110000 \oplus 1110 = \mathbf{11010110111110}$$
+**CRC Checksum $R = \mathbf{01110}$**.
 
-#### Part 3: Receiver Error Detection
-- If the 4th bit from the right is flipped ($1 \to 0$), received frame is $11010110110110$.
-- Dividing $11010110110110$ by $G = 10011$ yields a **non-zero remainder ($R = 1001 \ne 0000$)**.
-- The receiver **detects the corruption and discards the frame**.
+---
+
+#### 2. Transmitted Sequence ($T$)
+$$T = D \cdot 2^5 \oplus R = 1010001101\mathbf{01110}$$
+
+---
+
+#### 3. Error Detection on Bit Inversion
+- Transmitted $T = 101000110101110$.
+- 4th bit from right flipped: Received $T' = 10100011010\mathbf{0}110$.
+- Receiver divides $T'$ by $G = 110101 \implies \text{Remainder} = 10001 \ne 00000 \implies$ **Error Detected! Frame is dropped.**
 
 ---
 
 ## 🧮 Problem Set 2: CSMA/CD Minimum Frame Size & Backoff Math
 
 ### Problem Statement
-A shared local network has length $d = 1.5\text{ km}$, signal propagation speed $v = 2 \times 10^8\text{ m/s}$, and operates at $R = 100\text{ Mbps}$ (Fast Ethernet).
+A $1\text{ Gbps}$ CSMA/CD local area network spans a total distance of $d = 1\text{ km}$ across a copper cable where propagation speed is $v = 2 \times 10^8\text{ m/s}$.
 
-1. **Calculate the minimum Ethernet frame size ($L_{min}$)** to ensure reliable collision detection.
-2. **Backoff Calculation:** If two nodes collide for the **4th time ($m=4$)**, compute the range of possible randomized backoff wait times in microseconds.
-
----
-
-### Step-by-Step Solution
-
-#### Part 1: Minimum Frame Size
-- One-way propagation delay:
-  $$t_{prop} = \frac{d}{v} = \frac{1500\text{ m}}{2 \times 10^8\text{ m/s}} = 7.5\ \mu\text{s}$$
-- Round-trip propagation delay:
-  $$2 \cdot t_{prop} = 2 \times 7.5\ \mu\text{s} = 15.0\ \mu\text{s}$$
-- Minimum transmission time $t_{trans} \ge 2 \cdot t_{prop}$:
-  $$L_{min} \ge 2 \cdot t_{prop} \times R = 15.0 \times 10^{-6}\text{ s} \times 100 \times 10^6\text{ bps} = \mathbf{1500\text{ bits}} = \mathbf{187.5\text{ Bytes}}$$
-
----
-
-#### Part 2: 4th Collision Backoff Delay
-- For $m = 4$, the random multiplier $K$ is chosen from:
-  $$K \in \{0, 1, 2, \dots, 2^4 - 1\} = \{0, 1, 2, \dots, 15\}$$
-- Each backoff slot time on 100 Mbps Ethernet is $512\text{ bit times}$:
-  $$\text{Slot Time} = \frac{512\text{ bits}}{100 \times 10^6\text{ bps}} = 5.12\ \mu\text{s}$$
-- **Range of Possible Backoff Delays:**
-  - Minimum ($K=0$): $0 \times 5.12\ \mu\text{s} = \mathbf{0\ \mu\text{s}}$
-  - Maximum ($K=15$): $15 \times 5.12\ \mu\text{s} = \mathbf{76.8\ \mu\text{s}}$
-
----
-
-## 🧮 Problem Set 3: Pure ALOHA vs Slotted ALOHA Throughput
-
-### Problem Statement
-A broadcast radio channel operates at bandwidth $R = 56\text{ kbps}$. Each frame has length $L = 1000\text{ bits}$. 
-
-**Question:** Compute the maximum usable throughput (in bits/sec) for:
-1. Pure ALOHA
-2. Slotted ALOHA
+**Calculate:**
+1. The one-way propagation delay ($t_{prop}$).
+2. The minimum frame size ($L_{min}$) required to guarantee collision detection.
+3. If two nodes experience their **2nd collision** ($m=2$), list all possible backoff delay times (in $\mu\text{s}$) that each node could choose.
 
 ---
 
 ### Step-by-Step Solution
 
-#### 1. Pure ALOHA
-$$\text{Max Efficiency } \eta_{pure} = \frac{1}{2e} \approx 0.1839$$
-$$\text{Max Throughput} = 56,000\text{ bps} \times 0.1839 = \mathbf{10,298.4\text{ bps}} \approx \mathbf{10.3\text{ kbps}}$$
+#### 1. One-Way Propagation Delay ($t_{prop}$)
+$$t_{prop} = \frac{d}{v} = \frac{1000\text{ m}}{2 \times 10^8\text{ m/s}} = 5 \times 10^{-6}\text{ s} = \mathbf{5\ \mu\text{s}}$$
 
-#### 2. Slotted ALOHA
-$$\text{Max Efficiency } \eta_{slotted} = \frac{1}{e} \approx 0.3679$$
-$$\text{Max Throughput} = 56,000\text{ bps} \times 0.3679 = \mathbf{20,602.4\text{ bps}} \approx \mathbf{20.6\text{ kbps}}$$
-*(Slotted ALOHA provides exactly double the throughput of Pure ALOHA!)*
+#### 2. Minimum Frame Size ($L_{min}$)
+$$t_{trans} \ge 2 \cdot t_{prop} \implies \frac{L_{min}}{R} \ge 2 \times 5\ \mu\text{s} = 10\ \mu\text{s}$$
+$$L_{min} \ge 10 \times 10^{-6}\text{ s} \times 10^9\text{ bps} = 10,000\text{ bits} = \mathbf{1250\text{ Bytes}}$$
+
+#### 3. Backoff Delay Choices for $m=2$
+- $K \in \{0, 1, 2, \dots, 2^2 - 1\} = \{0, 1, 2, 3\}$.
+- Slot time $= 2 \cdot t_{prop} = 10\ \mu\text{s}$.
+- Possible wait times:
+  - $K = 0 \implies \mathbf{0\ \mu\text{s}}$
+  - $K = 1 \implies \mathbf{10\ \mu\text{s}}$
+  - $K = 2 \implies \mathbf{20\ \mu\text{s}}$
+  - $K = 3 \implies \mathbf{30\ \mu\text{s}}$
 
 ---
 #### Navigation

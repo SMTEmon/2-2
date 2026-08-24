@@ -12,15 +12,15 @@ tags:
   - final-exam
 aliases:
   - Physical Layer Notes
-  - Forouzan Chapter 4
+  - Digital Transmission
 ---
 
 # Physical Layer: Digital Transmission
 
-> [!abstract] Executive Summary & Roadmap
-> The **Physical Layer** is responsible for moving individual bits across a physical transmission medium. 
+> [!abstract] Executive Summary & Roadmap (Official Scope)
+> The **Physical Layer** converts binary data into physical signals for transmission across copper, fiber, or wireless media.
 > 
-> This vault covers **Digital-to-Digital Conversion** (Line Coding schemes like NRZ, RZ, Manchester, AMI, 2B1Q, and MLT-3; Block Coding 4B/5B; Scrambling algorithms B8ZS and HDB3), **Analog-to-Digital Conversion** (Pulse Code Modulation - PCM, Nyquist sampling, Quantization error, SQNR math, and Delta Modulation), and **Transmission Modes** (Parallel vs Serial Asynchronous/Synchronous).
+> This vault covers **Digital-to-Digital Conversion** (Line Coding Schemes, Block Coding 4B/5B, Scrambling B8ZS and HDB3), **Analog-to-Digital Conversion** (PCM Sampling, Quantization, SQNR, Delta Modulation), and high-yield waveform tracing techniques. *(Note: Bandwidth mathematical derivations and Transmission Modes are excluded from the Final Exam syllabus).*
 
 ---
 
@@ -28,15 +28,13 @@ aliases:
 
 ```mermaid
 flowchart TD
-    PL["Physical Layer: Digital Transmission (Forouzan Ch 4)"]
+    PL["Physical Layer: Digital Transmission<br>(Forouzan Ch 4 Final Scope)"]
     
-    PL --> Sec1["[[01 - Digital Transmission Fundamentals & Signal Impairments]]<br>Data vs Signal Rate, Bandwidth Math & Baseline Wander"]
-    PL --> Sec2["[[02 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]]<br>10 Line Coding Waveforms, DC Component & Self-Sync"]
-    PL --> Sec3["[[03 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]]<br>4B/5B Code Substitution & B8ZS/HDB3 Parity Rules"]
-    PL --> Sec4["[[04 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]]<br>Nyquist Sampling, Quantization Step, SQNR Math & Delta Mod"]
-    PL --> Sec5["[[05 - Transmission Modes (Parallel vs Serial Async, Sync, Isochronous)]]<br>Serial Framing, Start/Stop Bits & Overhead Calculations"]
-    PL --> Sec6["[[06 - Book Extras & Professor Traps]]<br>Companding (μ-law/A-law), MLT-3 States & Exam Pitfalls"]
-    PL --> Sec7["[[07 - Comprehensive Worked Numericals & Exam Problems]]<br>Baud Rate, PCM Voice, SQNR & Scrambling Exercises"]
+    PL --> Sec1["[[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]]<br>Unipolar, Polar, Bipolar, Multilevel & Multitransition Schemes"]
+    PL --> Sec2["[[02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]]<br>4B/5B Mapping, B8ZS '000VB0VB' & HDB3 '000V'/'B00V' Rules"]
+    PL --> Sec3["[[03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]]<br>PAM Sampling, Nyquist Rate, Quantization Error & Delta Modulation"]
+    PL --> Sec4["[[04 - Book Extras & Professor Traps]]<br>Companding, MLT-3 Rules & Exam Traps"]
+    PL --> Sec5["[[05 - Comprehensive Worked Numericals & Waveform Traces]]<br>Waveform Drawing, B8ZS/HDB3 Traces & PCM Audio Math"]
 ```
 
 ---
@@ -45,14 +43,12 @@ flowchart TD
 
 | # | Note Document | Core Question Answered | High-Yield Topics |
 | :---: | :--- | :--- | :--- |
-| **01** | [[01 - Digital Transmission Fundamentals & Signal Impairments]] | *What fundamental physical limits govern sending bits over copper/fiber?* | Data Rate ($N$) vs Signal Rate ($S$), $S = c \cdot N / r$, DC Component, Baseline Wander |
-| **02** | [[02 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] | *How do different voltage waveforms represent 1s and 0s?* | NRZ-L, NRZ-I, RZ, Manchester, Diff Manchester, AMI, Pseudoternary, 2B1Q, 8B6T, MLT-3 |
-| **03** | [[03 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] | *How do we eliminate long runs of zeros without doubling bandwidth?* | 4B/5B Block Mapping, Scrambling Rules: B8ZS (`000VB0VB`), HDB3 (`000V` vs `B00V`) |
-| **04** | [[04 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] | *How is continuous analog voice converted into clean digital bits?* | Nyquist Theorem ($f_s \ge 2 f_{max}$), Quantization Error ($e_q$), $SNR_{dB} = 6.02 n_b + 1.76$, Delta Modulation |
-| **05** | [[05 - Transmission Modes (Parallel vs Serial Async, Sync, Isochronous)]] | *How are bits chronologically sequenced across physical wires?* | Parallel vs Serial, Asynchronous Framing Overhead, Synchronous Bit Streams |
-| **06** | [[06 - Book Extras & Professor Traps]] | *What tricky edge cases appear on Physical Layer final exams?* | Companding ($\mu$-law / A-law), Slope Overload vs Granular Noise, Baud vs Bit rate traps |
-| **07** | [[07 - Comprehensive Worked Numericals & Exam Problems]] | *How do you solve signal rate and PCM numericals with 100% accuracy?* | Bandwidth calculations, PCM bit rates, Scrambling step-by-step state traces |
+| **01** | [[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] | *How do we convert binary bitstreams into physical voltage waveforms?* | NRZ-L, NRZ-I, RZ, Manchester, Differential Manchester, AMI, Pseudoternary, 2B1Q, 8B6T, 4D-PAM5, MLT-3 |
+| **02** | [[02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] | *How do we eliminate long strings of zeros to preserve clock synchronization?* | 4B/5B Nibble Mapping, Scrambling Violations ($V$) and Bipolars ($B$), B8ZS Rules, HDB3 Odd/Even Rules |
+| **03** | [[03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] | *How do we digitize continuous analog voice/audio into binary bits?* | Nyquist Theorem ($f_s \ge 2 f_{max}$), Quantization Zones ($L=2^{n_b}$), $\text{SQNR}_{dB} = 6.02 n_b + 1.76$, Delta Modulation |
+| **04** | [[04 - Book Extras & Professor Traps]] | *What subtle edge cases appear in physical layer questions?* | Companding ($\mu$-law / A-law), MLT-3 state machine rules, Scrambling parity traps |
+| **05** | [[05 - Comprehensive Worked Numericals & Waveform Traces]] | *How do you draw line coding waveforms and trace scrambling substitutions?* | Complete line coding waveform traces, step-by-step B8ZS/HDB3 substitutions, PCM audio calculations |
 
 ---
 #### Navigation
-Next → [[01 - Digital Transmission Fundamentals & Signal Impairments]]
+Next → [[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]]

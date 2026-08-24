@@ -1,5 +1,5 @@
 ---
-title: "03 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)"
+title: "02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)"
 course: "CSE 4411"
 chapter: "Physical Layer (Forouzan Ch 4)"
 section: 4.1
@@ -12,17 +12,18 @@ tags:
   - scrambling
   - b8zs
   - hdb3
+  - final-exam
 aliases:
   - Block Coding and Scrambling
   - B8ZS and HDB3 Rules
 ---
 
-# 03 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)
+# 02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)
 
 > [!abstract] Key Takeaway
-> To prevent clock loss during long strings of zeros without doubling bandwidth:
-> - **Block Coding (4B/5B):** Maps 4-bit nibbles to 5-bit words, guaranteeing at most 3 consecutive zeros (with $25\%$ bandwidth overhead).
-> - **Scrambling (B8ZS & HDB3):** Modifies Bipolar AMI by substituting zero-sequences with intentional **Bipolar Violations ($V$)** at **$0\%$ extra bandwidth overhead**.
+> To prevent clock loss during long strings of zeros:
+> - **Block Coding (4B/5B):** Maps 4-bit nibbles to 5-bit words, guaranteeing at most 3 consecutive zeros (with $25\%$ bit rate overhead).
+> - **Scrambling (B8ZS & HDB3):** Modifies Bipolar AMI by substituting zero-sequences with intentional **Bipolar Violations ($V$)** at **$0\%$ extra overhead**.
 
 ---
 
@@ -39,13 +40,11 @@ Data Stream ──► [ Division: 4-bit chunks ] ──► [ 4B/5B Substitution 
   2. No 5-bit code has more than **two trailing zeros**.
   3. **Guaranteed Bound:** No sequence of combined codes will EVER have more than **three consecutive zeros**!
 - When paired with **NRZ-I** (which transitions on every 1), clock synchronization is guaranteed.
-- **Overhead Calculation:**
-  $$\text{Overhead} = \frac{5 - 4}{4} = \frac{1}{4} = \mathbf{25\%}$$
-  *(A 100 Mbps data stream requires a 125 Mbaud signal rate over Fast Ethernet 100Base-FX).*
+- **Overhead Calculation:** $\frac{5 - 4}{4} = \frac{1}{4} = \mathbf{25\%}$.
 
 ---
 
-## 2. Scrambling: Eliminating Zeros at Zero Bandwidth Cost
+## 2. Scrambling: Eliminating Zeros at Zero Overhead Cost
 
 Instead of adding extra bits like block coding, **Scrambling** modifies AMI line coding by substituting long runs of zeros with intentional **Code Violations ($V$)** and **Bipolar Pulses ($B$)**.
 
@@ -89,14 +88,5 @@ Whenever **4 consecutive zeros (`0000`)** occur, HDB3 substitutes them based on 
 > Using $B00V$ for an even pulse count ensures that the total number of non-zero pulses between two consecutive violations is always odd, maintaining **Zero DC Component** across the wire!
 
 ---
-
-## 5. "Why" Questions & Exam Traps
-
-> [!question] Why is Scrambling preferred over 4B/5B in long-distance T1/E1 telecommunications?
-> **Answer:**
-> - Block coding (4B/5B) adds a $25\%$ bit rate overhead, consuming $25\%$ more transmission bandwidth.
-> - Scrambling (B8ZS/HDB3) preserves the exact 1:1 ratio ($r=1$) between data bits and signal pulses, achieving perfect clock synchronization with **$0\%$ bandwidth overhead**.
-
----
 #### Navigation
-← Previous: [[02 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] | Next: [[04 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] →
+← Previous: [[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] | Next: [[03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] →
