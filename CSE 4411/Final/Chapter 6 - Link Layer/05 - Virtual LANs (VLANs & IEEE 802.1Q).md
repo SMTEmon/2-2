@@ -75,4 +75,4 @@ Standard Ethernet Frame:
 
 ---
 #### Navigation
-← Previous: [[04 - Ethernet Frame & Switched LANs]] | Next: [[06 - Synthesis: A Day in the Life of a Web Request]] →
+← Previous: [[04 - Ethernet Frame & Switched LANs]] | Next: [[06 - Synthesis - A Day in the Life of a Web Request]] →

@@ -15,11 +15,53 @@ aliases:
 # CSE 4411 Final Exam Master Blueprint & Formula Sheet
 
 > [!abstract] Executive Summary (Official Final Syllabus)
-> This document is the **single-source master reference** for the CSE 4411 Final Examination. It consolidates all mathematical formulas, protocol header comparison matrices, and high-frequency "Why" questions across:
+> This document is the **single-source master reference** for the CSE 4411 Final Examination. It consolidates all mathematical formulas, protocol header comparison matrices, interactive revision checklists, and high-frequency "Why" questions across:
 > - **Chapter 4:** DHCP, NAT, and IPv6 / Tunneling
 > - **Chapter 5:** Routing Algorithms (Dijkstra, Bellman-Ford), OSPF, BGP-4, ICMP & Traceroute
 > - **Chapter 6:** Error Detection (CRC), MAC Protocols (ALOHA, CSMA/CD), ARP, Ethernet, VLANs (802.1Q)
 > - **Physical Layer:** Line Coding Schemes, Block Coding (4B/5B), Scrambling (B8ZS/HDB3), PCM / Quantization
+
+---
+
+## ✅ Master Final Exam Study Progress Tracker
+
+### 📦 Chapter 4: Data Plane (DHCP to IPv6 Tunneling)
+- [ ] [[01 - DHCP Protocol Mechanics]] — 4-Step DORA Handshake, UDP 67/68, Relay Agents
+- [ ] [[02 - NAT Architecture & Traversal]] — RFC 1918 Ranges, Translation Tables, UPnP & STUN
+- [ ] [[03 - IPv6 Protocol & Tunneling Transitions]] — 40B Base Header, Extension Headers, Dual-Stack & Tunneling
+- [ ] [[04 - Book Extras & Professor Traps]] — DHCP Broadcast Traps, NAT Layer Inversion, PMTUD
+- [ ] [[05 - Comprehensive Worked Numericals & Exam Problems]] — NAT Mapping, DORA Traces, Tunneling Math
+
+### 🧠 Chapter 5: Control Plane (Routing without SDN)
+- [ ] [[01 - Link-State Routing & Dijkstra's Algorithm]] — Shortest Path Tree, $O(|E|+|V|\log|V|)$, Oscillations
+- [ ] [[02 - Distance-Vector Routing & Bellman-Ford]] — Bellman-Ford Eq, Count-to-Infinity, Poisoned Reverse
+- [ ] [[03 - Intra-AS Routing & OSPF]] — Protocol 89, MD5 Auth, ECMP, Hierarchical Area 0
+- [ ] [[04 - Inter-AS Routing & BGP-4]] — eBGP/iBGP, `AS-PATH`, Policy Tie-Breakers, Hot Potato Routing
+- [ ] [[05 - ICMP & Traceroute Mechanics]] — Type/Code Matrix (0, 8, 3, 11), UDP Probe Walkthrough
+- [ ] [[06 - Book Extras & Professor Traps]] — Gao-Rexford Valley-Free, 3-Node Loophole Proof
+- [ ] [[07 - Comprehensive Worked Numericals & Exam Problems]] — Dijkstra Matrix, DV Tables, BGP Selection
+
+### 🔗 Chapter 6: Link Layer and LANs
+- [ ] [[01 - Link Layer Fundamentals & Error Detection]] — 2D Parity, CRC Modulo-2 Arithmetic ($D \cdot 2^r / G$)
+- [ ] [[02 - Multiple Access Protocols (Partitioning, ALOHA, CSMA-CD)]] — Slotted ALOHA ($36.8\%$), Pure ALOHA ($18.4\%$), CSMA/CD $L_{min}$
+- [ ] [[03 - Link Layer Addressing & ARP]] — 48-bit MACs, ARP 4-Way Flow, Cross-Subnet Forwarding
+- [ ] [[04 - Ethernet Frame & Switched LANs]] — 802.3 Header, Self-Learning Switches, Filtering/Forwarding
+- [ ] [[05 - Virtual LANs (VLANs & IEEE 802.1Q)]] — Port Isolation, 802.1Q 4-Byte Tag, Trunking
+- [ ] [[06 - Synthesis - A Day in the Life of a Web Request]] — 5-Layer End-to-End Flow (DHCP $\to$ ARP $\to$ DNS $\to$ TCP $\to$ HTTP)
+- [ ] [[07 - Book Extras & Professor Traps]] — Cut-Through vs Store-and-Forward, CRC Burst Bounds
+- [ ] [[08 - Comprehensive Worked Numericals & Exam Problems]] — CRC Long Division, CSMA/CD Backoff Slots
+
+### ⚡ Physical Layer: Digital Transmission
+- [ ] [[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] — All 10 Waveform Analyses
+- [ ] [[02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] — 4B/5B Rules, B8ZS & HDB3 Substitution Rules
+- [ ] [[03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] — Nyquist $f_s \ge 2 f_{max}$, SQNR $6.02 n_b + 1.76$, DM
+- [ ] [[04 - Book Extras & Professor Traps]] — Companding ($\mu$-law / A-law), MLT-3 Rules
+- [ ] [[05 - Comprehensive Worked Numericals & Waveform Traces]] — B8ZS/HDB3 Traces, PCM Audio Math
+
+### 🛠️ Specialized Master Guides
+- [ ] [[00 - CSE 4411 Final Exam Master Blueprint & Formula Sheet]] — Formula Sheet & Top 10 Why Questions
+- [ ] [[01 - Protocol Header Hex Dump Parsing Master Guide]] — Hex Parsing Templates, 7 Edge Cases & 5 Simulation Problems
+- [ ] [[02 - CSE 4411 Final Exam Master Math & Problem Book]] — Complete In-Syllabus Math with Interactive Dropdowns
 
 ---
 
@@ -128,3 +170,4 @@ flowchart TD
 - [[00 - Index|Chapter 6: Link Layer and LANs]]
 - [[00 - Index|Physical Layer: Digital Transmission]]
 - [[01 - Protocol Header Hex Dump Parsing Master Guide|Protocol Header Hex Dump Master Guide]]
+- [[02 - CSE 4411 Final Exam Master Math & Problem Book|Master Math & Problem Book (Interactive Dropdowns)]]

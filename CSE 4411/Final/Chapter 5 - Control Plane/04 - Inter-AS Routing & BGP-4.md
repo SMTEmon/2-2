@@ -43,8 +43,8 @@ flowchart LR
         3a["Border Router 3a"]
     end
 
-    1c <===>|eBGP (TCP 179)| 2a
-    1b <===>|eBGP (TCP 179)| 3a
+    1c <===>|"eBGP (TCP 179)"| 2a
+    1b <===>|"eBGP (TCP 179)"| 3a
 ```
 
 - **eBGP (External BGP):** Exchanged between gateway routers in **different** ASes.

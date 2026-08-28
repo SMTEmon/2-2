@@ -76,7 +76,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    ExtClient["External Client"] -->|SYN to 138.76.29.7:80| NAT["NAT Router"]
+    ExtClient["External Client"] -->|"SYN to 138.76.29.7:80"| NAT["NAT Router"]
     NAT -.->|No NAT Table Match!| Dropped["❌ Packet Dropped!"]
     NAT --- PrivHost["Private Host (10.0.0.1:80)"]
 ```

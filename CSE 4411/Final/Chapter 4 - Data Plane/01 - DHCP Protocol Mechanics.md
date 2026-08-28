@@ -75,8 +75,8 @@ Upon receiving the **DHCP ACK**, the client operating system configures its loca
 
 ```mermaid
 flowchart LR
-    Client["Client (Subnet A)"] -->|Broadcast Discover (255.255.255.255)| Router["Router / DHCP Relay Agent<br>(ip helper-address 10.0.0.5)"]
-    Router -->|Unicast Discover (10.0.0.5)| Server["Central DHCP Server<br>(Subnet C: 10.0.0.5)"]
+    Client["Client (Subnet A)"] -->|"Broadcast Discover (255.255.255.255)"| Router["Router / DHCP Relay Agent<br>(ip helper-address 10.0.0.5)"]
+    Router -->|"Unicast Discover (10.0.0.5)"| Server["Central DHCP Server<br>(Subnet C: 10.0.0.5)"]
 ```
 
 > [!info] Why DHCP Relay Agents are Required

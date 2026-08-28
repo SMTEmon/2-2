@@ -79,7 +79,7 @@ flowchart LR
     A["IPv6 Host (Node A)"] -->|Native IPv6| B["IPv6/IPv4 Router (Node B)"]
     
     subgraph IPv4Cloud ["IPv4-Only Core Internet (Legacy Routers)"]
-        B -->|IPv4 Encapsulated Packet<br>Src: B, Dst: E, Proto: 41| C["IPv4 Router C"]
+        B -->|"IPv4 Encapsulated Packet<br>Src: B, Dst: E, Proto: 41"| C["IPv4 Router C"]
         C --> D["IPv4 Router D"]
         D --> E["IPv6/IPv4 Router (Node E)"]
     end

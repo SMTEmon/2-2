@@ -25,6 +25,15 @@ aliases:
 
 ---
 
+## ✅ Chapter 4 Study Progress Checklist
+- [x] [[01 - DHCP Protocol Mechanics]] — 4-Step DORA Handshake, UDP 67/68, Relay Agents
+- [x] [[02 - NAT Architecture & Traversal]] — RFC 1918 Ranges, Translation Tables, UPnP & STUN
+- [ ] [[03 - IPv6 Protocol & Tunneling Transitions]] — 40B Base Header, Extension Headers, Dual-Stack & Tunneling
+- [ ] [[04 - Book Extras & Professor Traps]] — DHCP Broadcast Traps, NAT Layer Inversion, PMTUD
+- [ ] [[05 - Comprehensive Worked Numericals & Exam Problems]] — NAT Mapping, DORA Traces, Tunneling Math
+
+---
+
 ## 🗺️ Visual Navigation Map
 
 ```mermaid
@@ -40,7 +49,7 @@ flowchart TD
 
 ---
 
-## 📑 Note Registry
+## 📑 Detailed Note Registry
 
 | # | Note Document | Core Question Answered | High-Yield Topics |
 | :---: | :--- | :--- | :--- |

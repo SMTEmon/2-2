@@ -22,6 +22,17 @@ aliases:
 
 ---
 
+## ✅ Chapter 5 Study Progress Checklist
+- [ ] [[01 - Link-State Routing & Dijkstra's Algorithm]] — Shortest Path Tree, $O(|E|+|V|\log|V|)$, Oscillations
+- [ ] [[02 - Distance-Vector Routing & Bellman-Ford]] — Bellman-Ford Eq, Count-to-Infinity, Poisoned Reverse
+- [ ] [[03 - Intra-AS Routing & OSPF]] — Protocol 89, MD5 Auth, ECMP, Hierarchical Area 0
+- [ ] [[04 - Inter-AS Routing & BGP-4]] — eBGP/iBGP, `AS-PATH`, Policy Tie-Breakers, Hot Potato Routing
+- [ ] [[05 - ICMP & Traceroute Mechanics]] — Type/Code Matrix (0, 8, 3, 11), UDP Probe Walkthrough
+- [ ] [[06 - Book Extras & Professor Traps]] — Gao-Rexford Valley-Free, 3-Node Loophole Proof
+- [ ] [[07 - Comprehensive Worked Numericals & Exam Problems]] — Dijkstra Matrix, DV Tables, BGP Selection
+
+---
+
 ## 🗺️ Master Visual Navigation Map
 
 ```mermaid

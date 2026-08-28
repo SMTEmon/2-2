@@ -27,11 +27,11 @@ flowchart TD
     Provider["Tier-1 Provider"]
     Peer1["ISP A (Peer)"] <===>|Settlement-Free Peering| Peer2["ISP B (Peer)"]
     
-    Provider ===>|Transit (Paid)| Peer1
-    Provider ===>|Transit (Paid)| Peer2
+    Provider ===>|"Transit (Paid)"| Peer1
+    Provider ===>|"Transit (Paid)"| Peer2
     
-    Peer1 ===>|Transit (Paid)| Customer1["Customer Net C1"]
-    Peer2 ===>|Transit (Paid)| Customer2["Customer Net C2"]
+    Peer1 ===>|"Transit (Paid)"| Customer1["Customer Net C1"]
+    Peer2 ===>|"Transit (Paid)"| Customer2["Customer Net C2"]
 ```
 
 ### The Rules of Valley-Free Routing

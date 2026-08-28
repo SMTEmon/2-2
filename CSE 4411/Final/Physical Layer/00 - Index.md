@@ -24,6 +24,15 @@ aliases:
 
 ---
 
+## ✅ Physical Layer Study Progress Checklist
+- [ ] [[01 - Line Coding Schemes (NRZ, RZ, Manchester, AMI, 2B1Q, MLT-3)]] — All 10 Waveform Analyses
+- [ ] [[02 - Block Coding (4B-5B) & Scrambling (B8ZS, HDB3)]] — 4B/5B Rules, B8ZS & HDB3 Substitution Rules
+- [ ] [[03 - Analog-to-Digital Conversion (PCM, Quantization, SQNR, DM)]] — Nyquist $f_s \ge 2 f_{max}$, SQNR $6.02 n_b + 1.76$, DM
+- [ ] [[04 - Book Extras & Professor Traps]] — Companding ($\mu$-law / A-law), MLT-3 Rules
+- [ ] [[05 - Comprehensive Worked Numericals & Waveform Traces]] — B8ZS/HDB3 Traces, PCM Audio Math
+
+---
+
 ## 🗺️ Master Visual Navigation Map
 
 ```mermaid
