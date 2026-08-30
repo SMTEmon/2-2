@@ -20,13 +20,13 @@ aliases:
 # 🧩 Dynamic Programming — Part III: Advanced State Formulations & Reconstruction
 
 > [!abstract] Overview & Scope
-> This guide covers the core topics of **Dynamic Programming — III** (Lectures 14 & 15). It focuses on building deep geometric and algebraic intuition, mastering loop direction mechanics, reconstructing optimal solutions via backtracking, and mastering 3-tier proofs of correctness (Intuitive, Exam-Ready, and Formal).
+> This guide covers the core topics of **Dynamic Programming — III** (Lectures 14 & 15). It focuses on building deep intuitive understanding, mastering loop direction mechanics, simulating tables step-by-step, reconstructing optimal solutions via backtracking, and mastering exam-focused problem solving.
 >
 > **Core Topics Covered:**
 > 1. **The DP Paradigm & Recipe**: Overlapping subproblems, optimal substructure, and the 5-step problem-solving framework.
 > 2. **Coin Change Variations**: Number of Permutations (order matters) vs. Number of Combinations (order does not matter / loop reversal trick).
 > 3. **0/1 Knapsack Problem**: 2D formulation, the $i-1$ invariant, 1D backward loop optimization, and full state reconstruction.
-> 4. **Longest Common Subsequence (LCS)**: Top-down vs bottom-up formulations, 2D table dynamics, string reconstruction, and optimal substructure proofs.
+> 4. **Longest Common Subsequence (LCS)**: Top-down vs bottom-up formulations, 2D table dynamics, string reconstruction, and recurrence intuition.
 > 5. **Edit Distance (Levenshtein Distance)**: Transition dynamics across insertion, deletion, and substitution.
 > 6. **Master Synthesis & Exam Survival Guide**: Comparison tables, time/space derivations, and exam execution strategies.
 
@@ -170,18 +170,15 @@ for (int coin : coins) {
 }
 ```
 
-> [!info]- 💡 Deep Intuition: Why Coin Outer Prevents Duplicate Orderings
-> When the coin loop is on the outside, we process the coins strictly one by one in a fixed order (e.g., first coin $1$, then coin $3$, then coin $4$).
-> - During the outer iteration for coin $1$, we calculate all possible ways to form every amount using **only coin 1**.
-> - When we advance to coin $3$, we update $dp[x]$ by adding $dp[x - 3]$. This means we take existing valid combinations (which contain only coins $\le 3$) and append coin $3$ to them.
-> - Because coin $1$ is never processed again after coin $3$, it is impossible to generate a sequence where coin $1$ appears after coin $3$ (such as $[3, 1]$).
-> - Every valid combination is constructed in exactly **one canonical sorted order** (e.g., $1 \le 1 \le \dots \le 3 \le 4$). This enforces combinations without any set-deduplication overhead!
+> [!info] 💡 Deep Intuition: Why Coin Outer Gives Combinations (Slide 10)
+> When you process one coin fully before moving to the next, each combination is built in exactly **one canonical order — smallest coin first**.
+> - So $\{1, 3\}$ is only ever built as *"ways to make 3 using coin=1, then add coin=3"*.
+> - The reverse order $\{3, 1\}$ is **never separately constructed** because coin 1 is completely finished before coin 3 is ever considered.
 
 ---
 
 #### 2D Dynamic Programming Formulation of Combinations
 
-To formally see why this works, consider the 2D state definition:
 - **State:** $dp[i][x]$ = Number of combinations to make amount $x$ using a subset of the first $i$ coin denominations $\{c_1, c_2, \dots, c_i\}$.
 - **Base Cases:**
   - $dp[i][0] = 1$ for all $0 \le i \le n$ (1 way to form 0: take nothing).
@@ -191,7 +188,7 @@ To formally see why this works, consider the 2D state definition:
   - $dp[i-1][x]$: Combinations to make $x$ **without** using coin $c_i$ at all.
   - $dp[i][x - c_i]$: Combinations to make $x$ using **at least one** coin $c_i$ (remaining amount $x - c_i$ can still use coin $c_i$, hence $dp[i][\dots]$).
 
-> [!example]- 📊 2D Table Trace: Coins = $\{1, 3, 4\}$, Target = $5$
+> [!example]- 📊 2D Table Trace: Coins = $\{1, 3, 4\}$, Target = $5$ (Slide 13)
 >
 > | $i$ \ Amount ($x$) | 0 | 1 | 2 | 3 | 4 | 5 |
 > | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -210,36 +207,7 @@ To formally see why this works, consider the 2D state definition:
 
 ---
 
-### 1.3 Proof of Correctness: Coin Change (Permutations vs Combinations)
-
-#### 1. Intuitive Proof
-> [!note]- 🧠 1. Intuitive Proof
-> - **Permutations:** Any valid sequence of coins summing to $x$ must end with some coin $c \in C$. Since the last coin can be any $c \le x$, and the preceding sequence of sum $x - c$ can be formed in $dp[x - c]$ ways, partitioning by the last coin covers all mutually exclusive and exhaustive possibilities for ordered sequences.
-> - **Combinations:** Any multiset of coins summing to $x$ using the first $i$ coin types either contains zero copies of coin $c_i$ (which equals $dp[i-1][x]$) or contains at least one copy of coin $c_i$ (which equals $dp[i][x - c_i]$). These two sets of multisets are disjoint and together cover all valid combinations.
-
-#### 2. Exam-Ready Proof
-> [!note]- 📝 2. Exam-Ready Proof (Direct Exam Writing)
-> **Theorem:** The recurrence $dp[i][x] = dp[i-1][x] + dp[i][x - c_i]$ correctly counts all unordered coin combinations summing to $x$ using coins $\{c_1, \dots, c_i\}$.
-> 
-> **Proof by Mathematical Induction:**
-> 1. **Base Cases:** For $x = 0$, $dp[i][0] = 1$ (the empty set is the unique combination). For $i = 0$ and $x > 0$, $dp[0][x] = 0$ (no positive sum can be formed with zero coins). Base cases are correct.
-> 2. **Inductive Hypothesis:** Assume $dp[i-1][x']$ and $dp[i][x'' - c_i]$ are correct for all $x' \le x$ and $x'' < x$.
-> 3. **Inductive Step:** Let $S(i, x)$ be the set of valid combinations for sum $x$ using first $i$ coins. Partition $S(i, x)$ into two disjoint subsets:
->    - $A$: Combinations not containing $c_i$. By definition, $|A| = dp[i-1][x]$.
->    - $B$: Combinations containing at least one $c_i$. Removing one $c_i$ from each combination yields a bijection to combinations summing to $x - c_i$ using first $i$ coins. Thus $|B| = dp[i][x - c_i]$.
-> 4. Since $A \cap B = \emptyset$ and $A \cup B = S(i, x)$, $|S(i, x)| = |A| + |B| = dp[i-1][x] + dp[i][x - c_i]$. $\blacksquare$
-
-#### 3. Formal Slide-Aligned Proof
-> [!note]- 📚 3. Formal Slide-Aligned Proof
-> *From Lecture 14 Slide 10-11:*
-> When processing coin $c_i$ outer and amount $x$ inner, every combination is constructed in exactly one canonical non-decreasing order: $c_{\pi(1)} \le c_{\pi(2)} \le \dots \le c_{\pi(k)}$.
-> 1. A combination containing coin $c_i$ is constructed exclusively as "a valid combination of amount $x - c_i$ using coins up to $c_i$, with an additional $c_i$ appended".
-> 2. Because coin $c_{i-1}$ has already completed execution and will never be revisited in future outer iterations, reverse orderings (e.g., placing $c_{i-1}$ after $c_i$) cannot be generated.
-> 3. Hence, each distinct multiset corresponds to exactly one derivation path in the 1D state array, guaranteeing an exact count of combinations. $\blacksquare$
-
----
-
-### 1.4 Code Implementation & Complexity Analysis
+### 1.3 Code Implementation & Complexity Analysis
 
 ```cpp
 #include <iostream>
@@ -317,10 +285,13 @@ flowchart TD
 - **Recurrence Relation:**
   $$dp[i][w] = \begin{cases} dp[i-1][w] & \text{if } w_i > w \\ \max\Big(dp[i-1][w], \; dp[i-1][w - w_i] + v_i\Big) & \text{if } w_i \le w \end{cases}$$
 
-> [!warning] 🔑 Why did we need 2D DP? (The $i-1$ Invariant)
-> In 0/1 Knapsack, every item must be used at most once.
-> - If we updated using the **current row** $dp[i][w - w_i] + v_i$, the state $dp[i][w - w_i]$ might already have included item $i$. Adding $v_i$ again would result in item $i$ being picked multiple times (which is **Unbounded Knapsack**).
-> - Referencing the **previous row** $dp[i-1][\dots]$ guarantees that the remaining capacity $w - w_i$ is filled using only items from $\{1, \dots, i-1\}$, strictly enforcing the 0/1 constraint.
+> [!warning] 🔑 Why did we need 2D DP here? (Slides 20–21)
+> - In 0/1 Knapsack, each item can be chosen **only once**.
+> - If we use the current row, then $dp[i][w - w_i]$ may already include the current item. Adding it again would count the same item twice, making it behave like **Unbounded Knapsack**.
+> - *Example:* While filling $dp[2][5]$ with $w_2 = 2$:
+>   $$dp[2][5] = \max(dp[2][5], dp[2][5 - 2] + v_2) = \max(dp[2][5], dp[2][3] + v_2)$$
+>   If $dp[2][3]$ already included item 2, adding $v_2$ again would choose the second item twice, which violates the 0/1 constraint.
+> - Therefore, we use the **previous row ($dp[i-1]$)** instead of the current row, ensuring each item is used at most once.
 
 ---
 
@@ -330,7 +301,7 @@ Let $n = 3$ items, Knapsack capacity $W = 5$:
 - $\text{Weights } w = [1, 3, 4]$ (1-indexed: $w_1=1, w_2=3, w_3=4$)
 - $\text{Values } v = [2, 4, 5]$ (1-indexed: $v_1=2, v_2=4, v_3=5$)
 
-> [!example]- 📊 2D Knapsack Table Simulation
+> [!example]- 📊 2D Knapsack Table Simulation (Slide 18)
 >
 > | Item ($i$) \ Capacity ($w$) | 0 | 1 | 2 | 3 | 4 | 5 |
 > | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -357,7 +328,7 @@ Let $n = 3$ items, Knapsack capacity $W = 5$:
 
 ### 2.3 Space Optimization: The 1D Backward Loop Hack
 
-We can reduce the space complexity from $O(n \cdot W)$ to $O(W)$ using a 1D array by running the capacity loop **backwards**:
+We can reduce the space complexity from $O(n \cdot W)$ to $O(W)$ using a 1D array by running the capacity loop **backwards** (Slide 23):
 
 ```cpp
 vector<int> dp(W + 1, 0);
@@ -389,17 +360,13 @@ flowchart LR
 
 ### 2.4 Reconstruction: Finding the Selected Items (Backtracking)
 
-While 1D DP computes the maximum value in $O(W)$ space, the full 2D DP table is required to **reconstruct the exact subset of items chosen**.
+While 1D DP computes the maximum value in $O(W)$ space, the full 2D DP table is required to **reconstruct which items are picked for weight W knapsack** (Lecture 15 Slides 8–16).
 
-#### Reconstruction Decision Rule
-Start at $i = n, w = W$. At each cell $(i, w)$, ask: *"Was item $i$ included in the optimal solution?"*
-1. If $dp[i][w] == dp[i-1][w]$:
-   - The value is identical without item $i$. Item $i$ was **skipped**.
-   - Transition: Move to $(i-1, w)$.
-2. If $dp[i][w] \ne dp[i-1][w]$:
-   - The value must have come from taking item $i$. Item $i$ was **taken**.
-   - Transition: Record item $i$, and move to $(i-1, w - w_i)$.
-3. Terminate when $i = 0$ or $w = 0$.
+#### The Core Idea (Slide 9)
+We filled the table forward. Now we trace back from $dp[n][W]$. At each cell $dp[i][w]$, ask: *"Did I take item $i$ or not?"*
+- **If $dp[i][w] == dp[i-1][w]$:** Item $i$ was **skipped** $\implies$ Move to $(i-1, w)$.
+- **Otherwise ($dp[i][w] \ne dp[i-1][w]$):** Item $i$ was **taken** $\implies$ Move to $(i-1, w - w_i)$.
+- Repeat until $i = 0$.
 
 ```mermaid
 flowchart TD
@@ -409,60 +376,24 @@ flowchart TD
     Step3 --> EndNode["i = 0: STOP<br>Chosen: {Item 1, Item 3}"]
 ```
 
-> [!example]- 📊 Step-by-Step Backtracking Trace from $dp[3][5] = 7$
+> [!example]- 📊 Step-by-Step Backtracking Trace from $dp[3][5] = 7$ (Slides 10–16)
 > - **Step 1 ($i = 3, w = 5$):**
->   - $dp[3][5] = 7$, $dp[2][5] = 6$.
->   - $7 \ne 6 \implies$ **Take Item 3** ($w_3 = 4, v_3 = 5$).
->   - New state: $i = 2, w = 5 - 4 = 1$.
+>   - $dp[3][5] = 7$ vs $dp[2][5] = 6 \implies$ Not equal $\to$ **Take Item 3** ($w_3 = 4, v_3 = 5$).
+>   - Move to $dp[2][5 - 4] = dp[2][1]$.
 > - **Step 2 ($i = 2, w = 1$):**
->   - $dp[2][1] = 2$, $dp[1][1] = 2$.
->   - $2 == 2 \implies$ **Skip Item 2**.
->   - New state: $i = 1, w = 1$.
+>   - $dp[2][1] = 2$ vs $dp[1][1] = 2 \implies$ Equal $\to$ **Skip Item 2**.
+>   - Move to $dp[1][1]$.
 > - **Step 3 ($i = 1, w = 1$):**
->   - $dp[1][1] = 2$, $dp[0][1] = 0$.
->   - $2 \ne 0 \implies$ **Take Item 1** ($w_1 = 1, v_1 = 2$).
->   - New state: $i = 0, w = 1 - 1 = 0$.
+>   - $dp[1][1] = 2$ vs $dp[0][1] = 0 \implies$ Not equal $\to$ **Take Item 1** ($w_1 = 1, v_1 = 2$).
+>   - Move to $dp[0][1 - 1] = dp[0][0]$.
 > - **Step 4 ($i = 0$):**
->   - Reached base case. Terminate.
+>   - Stop.
 >
-> **Selected Items:** Item 1 and Item 3.
-> - Total Weight $= w_1 + w_3 = 1 + 4 = \mathbf{5} \le 5$.
-> - Total Value $= v_1 + v_3 = 2 + 5 = \mathbf{7}$.
+> **Selected Items:** Item 1 and Item 3 (Total Weight $= 1 + 4 = 5$, Total Value $= 2 + 5 = 7$).
 
 ---
 
-### 2.5 Proof of Correctness: 0/1 Knapsack
-
-#### 1. Intuitive Proof
-> [!note]- 🧠 1. Intuitive Proof
-> For the first $i$ items with capacity $w$, any optimal selection either:
-> 1. Does not contain item $i$: The best value is simply the optimal value for the first $i-1$ items with capacity $w$ ($dp[i-1][w]$).
-> 2. Contains item $i$: Item $i$ consumes $w_i$ capacity and contributes $v_i$ value. The remaining capacity $w - w_i$ must be packed optimally using items from $\{1, \dots, i-1\}$, giving value $dp[i-1][w - w_i] + v_i$.
-> Since item $i$ can only be either included or excluded, taking the maximum of these two exhaustive cases guarantees the optimal choice.
-
-#### 2. Exam-Ready Proof
-> [!note]- 📝 2. Exam-Ready Proof (Direct Exam Writing)
-> **Theorem:** The recurrence $dp[i][w] = \max(dp[i-1][w], dp[i-1][w - w_i] + v_i)$ correctly computes the optimal 0/1 Knapsack value for items $\{1, \dots, i\}$ with capacity $w$.
->
-> **Proof by Contradiction & Optimal Substructure:**
-> Let $O$ be an optimal subset of items from $\{1, \dots, i\}$ for capacity $w$.
-> - **Case 1 ($i \notin O$):** Then $O \subseteq \{1, \dots, i-1\}$. $O$ must be an optimal solution for $\{1, \dots, i-1\}$ with capacity $w$. If there existed a subset $O'$ with total weight $\le w$ and value $V(O') > V(O)$, then $O'$ would also be valid for $\{1, \dots, i\}$, contradicting the optimality of $O$. Thus, $V(O) = dp[i-1][w]$.
-> - **Case 2 ($i \in O$):** Then $O \setminus \{i\} \subseteq \{1, \dots, i-1\}$ has total weight $\le w - w_i$. $O \setminus \{i\}$ must be optimal for $\{1, \dots, i-1\}$ with capacity $w - w_i$. If a better subset $O''$ existed with value $V(O'') > V(O \setminus \{i\})$, then $O'' \cup \{i\}$ would have value $V(O'') + v_i > V(O)$ with weight $\le w$, contradicting the optimality of $O$. Thus, $V(O) = dp[i-1][w - w_i] + v_i$.
-> - Taking $dp[i][w] = \max(dp[i-1][w], dp[i-1][w - w_i] + v_i)$ exhaustively covers both cases. $\blacksquare$
-
-#### 3. Formal Slide-Aligned Proof
-> [!note]- 📚 3. Formal Slide-Aligned Proof
-> *From Lecture 14 Slide 20-21 & Lecture 15 Slide 4:*
-> 1. By induction on $i$: For $i = 0$, $dp[0][w] = 0$ is trivially optimal as no items exist.
-> 2. Assume $dp[i-1][w']$ is optimal for all $w' \in [0, W]$.
-> 3. For item $i$, if $w_i > w$, item $i$ cannot fit; hence $dp[i][w] = dp[i-1][w]$ is optimal by the induction hypothesis.
-> 4. If $w_i \le w$, the decision space is binary ($\{0, 1\}$). Since subproblems on $(i-1)$ are optimal, by Bellman's Principle of Optimality, selecting the maximum over all valid single-step decisions preserves global optimality:
->    $$dp[i][w] = \max\Big(dp[i-1][w], dp[i-1][w - w_i] + v_i\Big)$$
-> 5. Induction holds for all $i \le n$ and $w \le W$. $\blacksquare$
-
----
-
-### 2.6 Full C++ Code Implementation
+### 2.5 Full C++ Code Implementation
 
 ```cpp
 #include <iostream>
@@ -548,7 +479,7 @@ int knapsack1D(int n, int W, const vector<int>& weight, const vector<int>& value
 
 ---
 
-### 3.1 Why Brute Force Fails
+### 3.1 Why Brute Force Fails (Slide 20)
 
 - A string $s_1$ of length $m$ has $2^m$ possible subsequences (each character can be either included or excluded).
 - Testing each subsequence for presence in $s_2$ takes $O(n)$ time.
@@ -556,12 +487,11 @@ int knapsack1D(int n, int W, const vector<int>& weight, const vector<int>& value
 
 ---
 
-### 3.2 DP Formulation & Recurrence
+### 3.2 DP Formulation & Recurrence (Slide 21)
 
-- **State:** $dp[i][j]$ = Length of the LCS of prefixes $s_1[0 \dots i-1]$ (length $i$) and $s_2[0 \dots j-1]$ (length $j$).
+- **State:** $dp[i][j]$ = Length of the LCS of first $i$ characters of $s_1$ and first $j$ characters of $s_2$.
 - **Base Cases:**
-  - $dp[0][j] = 0$ for all $0 \le j \le n$ (LCS with an empty string is always 0).
-  - $dp[i][0] = 0$ for all $0 \le i \le m$ (LCS with an empty string is always 0).
+  - $dp[0][j] = 0$ and $dp[i][0] = 0$ for all $i, j$ (LCS with an empty string is always 0).
 - **Recurrence Relation:**
   $$dp[i][j] = \begin{cases} dp[i-1][j-1] + 1 & \text{if } s_1[i-1] == s_2[j-1] \\ \max\Big(dp[i-1][j], \; dp[i][j-1]\Big) & \text{if } s_1[i-1] \ne s_2[j-1] \end{cases}$$
 
@@ -574,18 +504,16 @@ flowchart TD
     Mismatch --> Skip2["Skip char from s2: dp[i][j-1]"]
 ```
 
-> [!info]- 💡 Deep Intuition: Why Diagonal on Match, Max on Mismatch?
-> 1. **Match Case ($s_1[i-1] == s_2[j-1]$):**
->    - Because both strings end with the exact same character, this character can be safely paired and placed at the end of the common subsequence.
->    - Pairing this character consumes one character from both $s_1$ and $s_2$, reducing the problem to finding the LCS of the remaining prefixes: $dp[i-1][j-1] + 1$.
-> 2. **Mismatch Case ($s_1[i-1] \ne s_2[j-1]$):**
->    - Since the ending characters are different, they **cannot both** be the final character of a common subsequence.
->    - At least one of them must be useless for extending the current LCS.
->    - We branch into two possibilities: discard $s_1[i-1]$ (look at $dp[i-1][j]$) or discard $s_2[j-1]$ (look at $dp[i][j-1]$), and take the best outcome ($\max$).
+> [!info] 💡 DP Solution Intuition (Slide 22)
+> - **$s_1[i-1] == s_2[j-1]$:** These two characters must be in the LCS. Take them and look at what remains: $dp[i-1][j-1] + 1$.
+> - **$s_1[i-1] \ne s_2[j-1]$:** At least one of them is **NOT** in the LCS.
+>   - Try skipping $s_1[i-1] \to dp[i-1][j]$
+>   - Try skipping $s_2[j-1] \to dp[i][j-1]$
+>   - Take the better option: $\max$ of both.
 
 ---
 
-### 3.3 Step-by-Step 2D Table Simulation
+### 3.3 Step-by-Step 2D Table Simulation (Slides 26–27)
 
 Let $s_1 = \text{"ABBCD"}$ ($m = 5$) and $s_2 = \text{"BABAC"}$ ($n = 5$):
 
@@ -611,7 +539,7 @@ Let $s_1 = \text{"ABBCD"}$ ($m = 5$) and $s_2 = \text{"BABAC"}$ ($n = 5$):
 
 ---
 
-### 3.4 LCS String Reconstruction (Backtracking)
+### 3.4 LCS String Reconstruction (Homework Slide 28)
 
 To print the actual LCS string, start at cell $(m, n)$ and trace backward:
 
@@ -637,33 +565,7 @@ flowchart TD
 
 ---
 
-### 3.5 Proof of Correctness: LCS Optimal Substructure Theorem
-
-#### 1. Intuitive Proof
-> [!note]- 🧠 1. Intuitive Proof
-> - If $s_1$ and $s_2$ end in the same character $c$, appending $c$ to the optimal LCS of the prefixes of $s_1$ and $s_2$ must yield the optimal LCS for the full strings.
-> - If they end in different characters, any common subsequence can end in at most one of those two characters. Thus, the optimal LCS must either omit $s_1$'s last character or $s_2$'s last character. Evaluating both possibilities and taking the maximum covers all valid scenarios.
-
-#### 2. Exam-Ready Proof
-> [!note]- 📝 2. Exam-Ready Proof (Direct Exam Writing)
-> **Theorem (LCS Optimal Substructure):** Let $X = \langle x_1, \dots, x_m \rangle$ and $Y = \langle y_1, \dots, y_n \rangle$. Let $Z = \langle z_1, \dots, z_k \rangle$ be any LCS of $X$ and $Y$.
-> 1. **If $x_m = y_n$:** Then $z_k = x_m = y_n$ and $Z_{k-1}$ is an LCS of $X_{m-1}$ and $Y_{n-1}$.
->    - *Proof:* If $z_k \ne x_m$, we could append $x_m$ to $Z$, forming a common subsequence of length $k+1$, contradicting the optimality of $Z$. If $Z_{k-1}$ were not an optimal LCS of $X_{m-1}$ and $Y_{n-1}$, there would exist $W$ with $|W| > k-1$; appending $x_m$ to $W$ would yield $|W| + 1 > k$, again contradicting optimality.
-> 2. **If $x_m \ne y_n$:** Then $z_k \ne x_m \implies Z$ is an LCS of $X_{m-1}$ and $Y$.
->    - *Proof:* If $z_k \ne x_m$, $Z$ is entirely contained in $X_{m-1}$ and $Y$. If a longer common subsequence $W$ existed for $X_{m-1}$ and $Y$, $W$ would also be a common subsequence for $X$ and $Y$, contradicting optimality.
-> 3. **If $x_m \ne y_n$:** Symmetrically, $z_k \ne y_n \implies Z$ is an LCS of $X$ and $Y_{n-1}$. $\blacksquare$
-
-#### 3. Formal Slide-Aligned Proof
-> [!note]- 📚 3. Formal Slide-Aligned Proof
-> *From Lecture 15 Slide 21-22:*
-> 1. The recurrence decomposes the problem into independent prefix subproblems.
-> 2. When $s_1[i] == s_2[j]$, greedily matching this pair is always safe because keeping both characters cannot prevent an optimal alignment of the preceding characters. The problem reduces to $dp[i-1][j-1] + 1$.
-> 3. When $s_1[i] \ne s_2[j]$, the optimal alignment cannot match both characters simultaneously. Hence, the optimal solution is strictly the maximum over the two disjoint subproblems: excluding $s_1[i]$ ($dp[i-1][j]$) or excluding $s_2[j]$ ($dp[i][j-1]$).
-> 4. By mathematical induction on $(i + j)$, the bottom-up table guarantees computation of the exact LCS length. $\blacksquare$
-
----
-
-### 3.6 Full C++ Code: LCS (Tabulation, Reconstruction & Space Optimization)
+### 3.5 Full C++ Code: LCS (Tabulation, Reconstruction & Space Optimization)
 
 ```cpp
 #include <iostream>
@@ -848,7 +750,7 @@ int minEditDistance(const string& s1, const string& s2) {
 > [!important] 🎯 Exam Breakdown (Marks: 120, Time: 2 Hours)
 > - **4 Question Sets**: You must answer all 4 sets. Average time per set: **25-28 minutes**.
 > - **After-Mid Focus**: DP, Divide & Conquer, Greedy, Max Flow, Randomized Algorithms.
-> - **Proofs from before mid are excluded**; after-mid DP & algorithm proofs/intuitions are fair game!
+> - **Proofs from before mid are excluded**; after-mid topics focus on working principles and state transitions!
 
 ```mermaid
 flowchart TD
