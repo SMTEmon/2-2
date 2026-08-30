@@ -1,205 +1,347 @@
 ---
+title: Maximum Flow (Max Flow)
+date: 2026-08-30
 tags:
-  - computer-science
   - algorithms
-  - graph-theory
   - max-flow
   - edmonds-karp
   - ford-fulkerson
+  - cs4403
+  - lecture22
+aliases:
+  - Max Flow
+  - Network Flow
+  - Ford-Fulkerson Algorithm
+  - Edmonds-Karp Algorithm
+  - Max-Flow Min-Cut Theorem
 ---
 
-# 🌊 Maximum Flow (Max Flow) — Ultimate Study & Intuition Guide
+# 🌊 Maximum Flow (Max Flow) — Master Exam & Intuition Guide
 
-## 1. Problem Definition & Core Concepts
+> [!abstract] Lecture & Syllabus Overview (CSE 4403: Lecture 22)
+> - **Instructor**: Anika Farzana, Department of CSE, Islamic University of Technology.
+> - **Core Topics**: Problem Formulation, Greedy Limitations, Residual Networks ($G_f$), Augmenting Paths, Ford-Fulkerson Method, Edmonds-Karp Algorithm, Max-Flow Min-Cut Duality, and Formal Complexity Proofs (Lemma 1 & Lemma 2).
+> - **Exam Target**: Full conceptual clarity, hand-simulation precision, complexity derivations, and 3-tier proof mastery.
 
-### 💡 Real-World Framing
-Imagine a network of water pipes, a highway traffic grid, or internet routing cables. Every connection has a maximum throughput (capacity). The **Maximum Flow Problem** asks:
-> *How much total flow (water, traffic, data packets) can we push from a starting point (source $s$) to an ending destination (sink $t$) per unit time without overflowing any pipe?*
+---
+
+## 1. Problem Formulation & Core Definitions
+
+### 💡 Physical Intuition: The Pipeline Network
+Imagine an interconnected system of pipes delivering water from a reservoir (the **Source** $s$) to a treatment facility (the **Sink** $t$). 
+- Each pipe has a physical diameter that restricts the maximum volume of water passing through it per second (**Capacity**).
+- Water cannot build up, leak, or magically appear at intermediate junctions (**Flow Conservation**).
+- **The Core Question**: What is the maximum volume of water we can push through the network from $s$ to $t$ per unit time without bursting any pipe?
 
 ```mermaid
 flowchart LR
-    s(("s (Source)")) -->|cap: 3| A(("A"))
-    s -->|cap: 2| B(("B"))
-    A -->|cap: 5| B
-    A -->|cap: 2| t(("t (Sink)"))
-    B -->|cap: 3| t
+    s(("s (Source)")) -->|"cap: 7"| A(("A"))
+    s -->|"cap: 4"| D(("D"))
+    D -->|"cap: 3"| A
+    D -->|"cap: 2"| C(("C"))
+    A -->|"cap: 5"| B(("B"))
+    A -->|"cap: 3"| C
+    C -->|"cap: 3"| B
+    C -->|"cap: 5"| t(("t (Sink)"))
+    B -->|"cap: 8"| t
 ```
 
 ---
 
-### 📐 Formal Definition
+### 📐 Mathematical Formulation
 
 Given a directed graph $G = (V, E)$ with:
-* A designated **Source** $s \in V$ (produces flow).
-* A designated **Sink** $t \in V$ (consumes flow).
-* Each directed edge $(u, v) \in E$ has a non-negative capacity $c(u, v) \ge 0$. If there is no edge between $u$ and $v$, $c(u, v) = 0$.
+1. A designated **Source** $s \in V$ (generates flow, no net inflow).
+2. A designated **Sink** $t \in V$ (absorbs flow, no net outflow).
+3. Each directed edge $(u, v) \in E$ has a non-negative **Capacity** $c(u, v) \ge 0$. If $(u, v) \notin E$, then $c(u, v) = 0$.
 
-A **flow** is a function $f: V \times V \to \mathbb{R}$ satisfying two fundamental constraints:
+A **Flow** is a real-valued function $f: V \times V \to \mathbb{R}$ satisfying two fundamental axioms:
 
-1. **Capacity Limit (Capacity Constraint):**
-   $$0 \le f(u, v) \le c(u, v) \quad \forall (u, v) \in E$$
-   *Flow on any edge cannot exceed its capacity and cannot be negative.*
+> [!note] 1. Capacity Constraint
+> For every directed edge $(u, v) \in E$:
+> $$0 \le f(u, v) \le c(u, v)$$
+> *The flow along an edge cannot be negative and cannot exceed the physical capacity of the pipe.*
 
-2. **Flow Conservation:**
-   $$\sum_{u \in V} f(u, v) = \sum_{w \in V} f(v, w) \quad \forall v \in V \setminus \{s, t\}$$
-   *For every intermediate node $v$, total incoming flow must equal total outgoing flow. Flow cannot pool or vanish at intermediate nodes.*
+> [!note] 2. Flow Conservation
+> For every intermediate vertex $v \in V \setminus \{s, t\}$:
+> $$\sum_{u \in V} f(u, v) = \sum_{w \in V} f(v, w)$$
+> *Total inflow arriving at node $v$ must strictly equal the total outflow departing from $v$. Intermediate nodes cannot store or generate flow.*
 
-### 🎯 The Goal
-Maximize the **total flow value** $|f|$ leaving the source (which equals the total flow entering the sink):
-$$|f| = \sum_{v \in V} f(s, v) = \sum_{u \in V} f(u, t)$$
+### 🎯 Objective Function
+Maximize the **total net flow value** $|f|$, defined as the net flow leaving the source $s$ (which mathematically equals the net flow entering the sink $t$):
+$$|f| = \sum_{v \in V} f(s, v) - \sum_{u \in V} f(u, s) = \sum_{u \in V} f(u, t) - \sum_{w \in V} f(t, w)$$
 
 ---
 
-## 2. Deep Intuition: Why Greedy Fails & Why We Need Residual Graphs
+## 2. Why Greedy Fails & The Residual Graph Concept
 
-### ❌ The Greedy Pitfall
-If you greedily pick random paths and push maximum possible flow through them, you can easily get stuck in a sub-optimal configuration.
+### ❌ The Greedy Pitfall: The Point of No Return
+Why can't we simply find paths from $s$ to $t$ greedily and push flow until no paths exist? 
 
-> [!example]- Why Simple Greedy Fails (The Trap)
-> Consider the graph:
-> - $s \to A$ (capacity 1), $s \to B$ (capacity 1)
-> - $A \to t$ (capacity 1), $B \to t$ (capacity 1)
-> - $A \to B$ (capacity 1)
+> [!warning]- ❌ Counter-Example: Why Plain Greedy Fails
+> Consider the classic diamond network:
+> - $s \to A$ (cap 1), $s \to B$ (cap 1)
+> - $A \to t$ (cap 1), $B \to t$ (cap 1)
+> - Cross-edge: $A \to B$ (cap 1)
 > 
 > ```mermaid
 > flowchart LR
->     s(("s")) -->|1| A(("A"))
->     s(("s")) -->|1| B(("B"))
->     A -->|1| B
->     A -->|1| t(("t"))
->     B -->|1| t
+>     s(("s")) -->|"1"| A(("A"))
+>     s -->|"1"| B(("B"))
+>     A -->|"1"| B
+>     A -->|"1"| t(("t"))
+>     B -->|"1"| t
 > ```
 > 
-> If our greedy algorithm accidentally chooses the path $s \to A \to B \to t$ and pushes $1$ unit of flow:
-> - $s \to A$ is saturated ($1/1$).
-> - $A \to B$ is saturated ($1/1$).
-> - $B \to t$ is saturated ($1/1$).
+> If a greedy algorithm naively chooses the zigzag path $s \to A \to B \to t$ and pushes $1$ unit of flow:
+> - $s \to A$ is fully saturated ($1/1$).
+> - $A \to B$ is fully saturated ($1/1$).
+> - $B \to t$ is fully saturated ($1/1$).
 > 
-> Now, no more flow can be sent! The total flow achieved is **$1$**.
-> But the optimal routing is $s \to A \to t$ ($1$ unit) and $s \to B \to t$ ($1$ unit), giving a total max flow of **$2$**.
+> **Result**: No more paths exist. The greedy algorithm terminates with total flow $= 1$.
+> **The True Optimum**: Send $1$ unit along $s \to A \to t$ and $1$ unit along $s \to B \to t$, achieving total flow $= \mathbf{2}$.
 > 
-> **Key realization:** We need a mechanism to **"undo"** or **"reroute"** a bad decision made earlier!
+> **The Core Realization**: A purely greedy algorithm makes irreversible mistakes. We need an algorithmic mechanism to **"undo"** or **"reroute"** previous flow assignments!
 
 ---
 
-### 🔄 The Residual Graph ($G_f$) & Reverse Edges
+### 🔄 The Residual Network ($G_f$) & Reverse Edges
 
-To allow the algorithm to change its mind and undo bad choices, we build a **Residual Graph** $G_f = (V, E_f)$.
+To allow the algorithm to change its mind and reroute flow, we construct a **Residual Graph** $G_f = (V, E_f)$.
 
-For every edge $(u, v)$ in the original graph:
-1. **Forward Residual Edge $(u, v)$:**
+For every directed edge $(u, v)$ in the original graph $G$:
+1. **Forward Residual Edge $(u, v)$**:
    $$c_f(u, v) = c(u, v) - f(u, v)$$
-   *Represents how much **more** flow we can push in the original forward direction.*
+   *Represents the remaining available capacity to push **more** flow forward.*
 
-2. **Reverse Residual Edge $(v, u)$:**
+2. **Reverse Residual Edge $(v, u)$**:
    $$c_f(v, u) = f(u, v)$$
-   *Represents how much flow we can **push back / cancel / undo**.*
+   *Represents the amount of existing flow that we are allowed to **cancel / push back / reroute**.*
 
 ```mermaid
 flowchart LR
-    subgraph Original Edge
-    u1(("u")) -->|"flow / cap = 3 / 5"| v1(("v"))
+    subgraph Original Edge in G
+    u1(("u")) -->|"f(u,v) = 3 / c(u,v) = 5"| v1(("v"))
     end
     
-    subgraph Residual Graph
-    u2(("u")) -->|"Forward: 5 - 3 = 2"| v2(("v"))
-    v2 -->|"Reverse: 3 (undo)"| u2
+    subgraph Edges in Residual Graph G_f
+    u2(("u")) -->|"Forward: c_f(u,v) = 5 - 3 = 2"| v2(("v"))
+    v2 -->|"Reverse: c_f(v,u) = 3 (undo capacity)"| u2
     end
 ```
 
-> [!note]- How Does Pushing Flow on a Reverse Edge Work in Practice?
-> Suppose node $D$ sent 3 units of flow to node $A$ along $(D, A)$.
-> Later, we find a path in the residual graph that traverses the reverse edge $(A, D)$ with 1 unit of flow.
+> [!tip]- 💡 What Does Pushing Flow on a Reverse Edge Actually Mean?
+> Pushing flow on a reverse edge $(v, u)$ in $G_f$ does **not** mean sending physical water backwards.
+> It means:
+> 1. Decreasing the positive forward flow $f(u, v)$ in the original graph.
+> 2. Redirecting the inflow that previously went into $u$ toward an alternative neighbor.
+> 3. Supplying $v$ from an alternative upstream neighbor.
 > 
-> Pushing 1 unit on $(A, D)$ in $G_f$ means:
-> - Decreasing $f(D, A)$ from $3$ to $2$ in the original graph.
-> - Freeing up 1 unit of flow arriving at $A$ (which can now go to $C$ instead).
-> - Freeing up 1 unit of capacity at $D$ (which can now go to $C$ directly from $D$).
-> 
-> Net result: We rerouted flow without violating flow conservation at $A$ or $D$!
+> *Algebraically*: Pushing $\Delta$ along $(v, u)$ in $G_f$ updates the flow in $G$ via:
+> $$f(u, v) \gets f(u, v) - \Delta$$
+> Flow conservation is strictly preserved at both $u$ and $v$!
 
 ---
 
-### 🛤️ Augmenting Paths & Bottleneck Capacity
+### 🛤️ Augmenting Paths & Bottlenecks
 
-* **Augmenting Path ($p$):** A simple directed path from $s$ to $t$ in the residual graph $G_f$ where every edge has residual capacity $c_f(u, v) > 0$.
-* **Bottleneck Capacity ($c_f(p)$):** The minimum residual capacity along the augmenting path:
-  $$c_f(p) = \min_{(u, v) \in p} c_f(u, v)$$
-* When we push $c_f(p)$ along $p$, at least one edge on $p$ becomes **saturated** ($c_f(u, v) = 0$) and is called the **critical edge**.
-* When no augmenting path remains from $s$ to $t$ in $G_f$, the flow is **maximum** (by the Max-Flow Min-Cut theorem).
+> [!note] Definitions
+> - **Augmenting Path ($p$)**: Any simple directed path from source $s$ to sink $t$ in the residual network $G_f$ where every edge has strictly positive residual capacity ($c_f(u, v) > 0$).
+> - **Bottleneck Capacity ($c_f(p)$ or $\Delta$)**: The minimum residual capacity along the augmenting path:
+>   $$c_f(p) = \min_{(u, v) \in p} c_f(u, v)$$
+> - **Critical Edge**: Any edge $(u, v)$ on path $p$ that achieves the minimum ($c_f(u, v) = c_f(p)$). After augmenting, its residual capacity drops to $0$ and it disappears from $G_f$.
 
 ---
 
 ## 3. The Ford-Fulkerson Method
 
-### ⚙️ Algorithm Steps
-1. **Initialize:** Set flow $f(u, v) = 0$ for all edges. The residual capacities start at $c_f(u, v) = c(u, v)$ and $c_f(v, u) = 0$.
-2. **Find Augmenting Path:** Find any path $p$ from $s$ to $t$ in $G_f$ with $c_f(u, v) > 0$ using DFS or BFS.
-3. **Augment Flow:**
-   - Compute bottleneck $\Delta = \min_{(u, v) \in p} c_f(u, v)$.
-   - For every edge $(u, v)$ on $p$:
-     - $c_f(u, v) \gets c_f(u, v) - \Delta$ (less room forward)
-     - $c_f(v, u) \gets c_f(v, u) + \Delta$ (more room to undo later)
-4. **Repeat:** Repeat steps 2–3 until no path from $s$ to $t$ exists in $G_f$.
-5. **Return:** Total flow out of $s$: $\sum_{(s, v)} (c(s, v) - c_f(s, v))$.
+### ⚙️ Algorithmic Blueprint
 
----
-
-### 💻 Pseudocode
-
-```text
-FORD-FULKERSON(G, s, t):
-    for each edge (u, v) in E:
-        residual(u, v) = c(u, v)   // forward edge starts at full capacity
-        residual(v, u) = 0          // reverse edge starts at 0
-
-    while there is a path p from s to t with residual(u, v) > 0 on p:
-        bottleneck = min( residual(u, v) for (u, v) in p )
-        for each edge (u, v) in p:
-            residual(u, v) -= bottleneck  // decrease forward residual capacity
-            residual(v, u) += bottleneck  // increase reverse residual capacity
-
-    return total flow out of s // sum of (c(s, v) - residual(s, v))
+```mermaid
+flowchart TD
+    Start(["Start: Initialize flow f(u,v) = 0 for all edges<br>c_f(u,v) = c(u,v), c_f(v,u) = 0"]) --> FindPath{"Find an augmenting path p<br>from s to t in G_f with c_f > 0<br>(using DFS or BFS)"}
+    FindPath -- "Path p Found" --> Bottleneck["Compute bottleneck: Δ = min c_f(u,v) on p"]
+    Bottleneck --> UpdateEdges["For each edge (u,v) on p:<br>c_f(u,v) = c_f(u,v) - Δ (reduce forward)<br>c_f(v,u) = c_f(v,u) + Δ (increase reverse)"]
+    UpdateEdges --> FindPath
+    FindPath -- "No Path Remains" --> Terminate(["Terminate: Return total flow |f|<br>(Max Flow Achieved by Max-Flow Min-Cut)"])
 ```
 
 ---
 
-### ⏱️ Time Complexity Analysis: $O(E \cdot f)$
+### 💻 Pseudocode (Lecture Slide 5)
 
-> [!abstract]- Detailed Complexity Proof for Ford-Fulkerson
-> **Claim:** If all capacities are integers, Ford-Fulkerson terminates in $O(E \cdot f)$ time, where $f$ is the maximum flow value.
+```text
+FORD-FULKERSON(G, s, t):
+    for each edge (u, v) in E:
+        residual(u, v) = c(u, v)      //forward: starts at full capacity
+        residual(v, u) = 0            //reverse: starts at 0
+
+    while there is a path p from s to t with residual(u, v) > 0 on p:
+        bottleneck = min( residual(u, v) for (u, v) in p )
+
+        for each edge (u, v) in p:
+            residual(u, v) -= bottleneck   //less room to push forward
+            residual(v, u) += bottleneck   //more room to undo it later
+
+    return total flow out of s   //sum of c(s, v) - residual(s, v)
+```
+
+---
+
+### ⚠️ The Pathological Flaw of DFS-Based Ford-Fulkerson
+
+> [!warning]- 🚨 Why DFS Path Selection Can Be Catastrophically Slow
+> Consider the following network with large integer capacity $M = 10^6$:
+> 
+> ```mermaid
+> flowchart LR
+>     s(("s")) -->|"M = 10^6"| A(("A"))
+>     s -->|"M = 10^6"| B(("B"))
+>     A -->|"1"| B
+>     A -->|"M = 10^6"| t(("t"))
+>     B -->|"M = 10^6"| t
+> ```
+> 
+> If DFS repeatedly alternates its path selection:
+> 1. Iteration 1: $s \to A \to B \to t \implies \Delta = 1$. Cross-edge $A \to B$ is saturated; reverse edge $B \to A$ opens with capacity 1. Total flow $= 1$.
+> 2. Iteration 2: $s \to B \to A \to t$ (using reverse edge $B \to A$) $\implies \Delta = 1$. Total flow $= 2$.
+> 3. Iteration 3: $s \to A \to B \to t \implies \Delta = 1$. Total flow $= 3$.
+> 
+> The algorithm requires **$2 \times 10^6$ iterations** to send the maximum flow of $2 \times 10^6$, despite the network having only 4 vertices and 5 edges!
+> 
+> **Irrational Capacities**: If capacities are irrational numbers, Ford-Fulkerson with DFS may run in an **infinite loop** and converge to an incorrect value strictly smaller than the true maximum flow!
+
+---
+
+### 📜 Proof: Ford-Fulkerson Running Time ($O(E \cdot f)$)
+
+*(Slide 6 contains this proof)*
+
+> [!tip]- Version 1: Intuitive / Conceptual Explanation
+> Think of pushing flow as filling buckets:
+> 1. All initial capacities are whole numbers (integers).
+> 2. Because you never divide and only add/subtract integers, the bottleneck capacity of every augmenting path is at least $1$ unit.
+> 3. Each round increases the total flow by at least $1$.
+> 4. If the true maximum flow is $f$, the algorithm cannot possibly run more than $f$ rounds before hitting the ceiling.
+> 5. In each round, searching for a path across the graph using DFS or BFS takes work proportional to the number of edges $O(E)$.
+> 6. Multiplying $f$ rounds by $O(E)$ work per round gives a total runtime of $O(E \cdot f)$.
+
+> [!abstract]- Version 2: 📝 Exam-Ready Writing (Write this on the exam)
+> **Claim:** If all edge capacities are integers, Ford-Fulkerson terminates in $O(E \cdot f)$ time, where $f$ is the value of the maximum flow.
 > 
 > **Proof:**
-> 1. **Integer Invariant:** Edge capacities are integers. When we initialize, all residual capacities are integers.
-> 2. **Minimum Augmentation Step:** Since residual capacities are integers $\ge 1$ for usable edges, the bottleneck $c_f(p) = \min_{(u, v) \in p} c_f(u, v)$ is always an integer $\ge 1$.
-> 3. **Bound on Iterations:** Every augmentation increases the total flow by at least $1$. Since the maximum possible flow is $f$, the algorithm can perform at most $f$ augmentations.
-> 4. **Cost per Iteration:** Finding a path using DFS or BFS in a graph with $V$ vertices and $E$ edges takes $O(V + E) = O(E)$ time (assuming every vertex is reachable on a path towards $t$). Updating edge capacities along the path takes $O(V) \le O(E)$ time.
-> 5. **Total Running Time:**
->    $$\text{Total Time} = (\text{Number of Augmentations}) \times (\text{Cost per Augmentation}) = O(f) \times O(E) = O(E \cdot f)$$
+> 1. **Integer Invariant:** All capacities $c(u, v)$ are integers. By induction, all residual capacities $c_f(u, v)$ remain integers throughout execution.
+> 2. **Minimum Step Bound:** For any augmenting path $p$, the bottleneck capacity $c_f(p) = \min_{(u, v) \in p} c_f(u, v)$ is an integer $\ge 1$.
+> 3. **Bound on Augmentations:** Since each augmentation increases the total flow $|f|$ by at least $1$, and the flow cannot exceed the maximum flow value $f$, the algorithm executes at most $f$ augmentations.
+> 4. **Cost per Iteration:** Finding an augmenting path using DFS or BFS on the residual graph $G_f = (V, E_f)$ with $|E_f| \le 2|E|$ edges costs $O(V + E) = O(E)$ time. Updating capacities along the path costs $O(V) \le O(E)$.
+> 5. **Total Complexity:** 
+>    $$\text{Total Time} = (\text{Number of Augmentations}) \times (\text{Cost per Augmentation}) = O(f) \times O(E) = \mathbf{O(E \cdot f)}$$ $\blacksquare$
 
-> [!warning] The Pathological Flaw of Plain Ford-Fulkerson
-> - If capacities are large integers (e.g., $c = 10^9$), Ford-Fulkerson using DFS might alternate back and forth augmenting by just $1$ each step, taking $2 \times 10^9$ iterations!
-> - If capacities are **irrational numbers**, Ford-Fulkerson with DFS may **never terminate**, and worse, it can converge to an incorrect flow value far below the true maximum.
+> [!note]- Version 3: Exact Slide/Formal Version (Lecture Slide 6)
+> **Claim:** If all edge capacities are integers, Ford–Fulkerson terminates in $O(E \cdot f)$ time, where $f$ is the value of the maximum flow.
+> 
+> Each augmenting path has bottleneck capacity $c_f(p) = \min c_f(u, v)$, where $(u, v) \in p$. Since every residual capacity is an integer $\ge 1$ whenever the edge is usable, the bottleneck is always an integer $\ge 1$.
+> 
+> So every augmentation increases the total flow value by at least 1. Because the flow value can never exceed $f$ (the max flow), the algorithm performs at most $f$ augmentations before no augmenting path remains.
+> 
+> Each augmentation searches for a path with one BFS or DFS over the residual graph, which has $O(E)$ edges, so each search costs $O(E)$.
+> 
+> $$\text{Total time} = (\text{number of augmentations}) \times (\text{cost per augmentation}) = O(f) \times O(E) = O(E \cdot f)$$
 
 ---
 
-## 4. The Edmonds-Karp Algorithm (The Shortest Path Optimization)
+## 4. Max-Flow Min-Cut Theorem & Finding the Min-Cut
 
-### 🚀 What is Edmonds-Karp?
-Edmonds-Karp is an implementation of Ford-Fulkerson with **one simple, powerful rule**:
-> **Always choose the augmenting path with the FEWEST edges (shortest path in terms of edge count), found by running a standard Breadth-First Search (BFS) on $G_f$.**
+### ✂️ What is an $s$-$t$ Cut?
 
-No other changes are made!
+> [!note] Formal Cut Definition
+> An **$s$-$t$ Cut** $(S, T)$ is a partition of the vertex set $V$ into two disjoint subsets $S$ and $T = V \setminus S$ such that:
+> $$s \in S \quad \text{and} \quad t \in T$$
+> 
+> The **Capacity of the Cut** $c(S, T)$ is the sum of capacities of edges originating in $S$ and pointing into $T$:
+> $$c(S, T) = \sum_{u \in S, v \in T} c(u, v)$$
+> *(Crucial note: Edges going from $T$ back to $S$ do NOT add to the cut capacity).*
+
+```mermaid
+flowchart LR
+    subgraph S ["Source Partition (S)"]
+        s(("s"))
+        A(("A"))
+        D(("D"))
+    end
+
+    subgraph T ["Sink Partition (T)"]
+        B(("B"))
+        C(("C"))
+        t(("t"))
+    end
+
+    A -->|"c(A,B) = 5"| B
+    A -->|"c(A,C) = 3"| C
+    D -->|"c(D,C) = 2"| C
+```
+
+---
+
+### ⚖️ Weak Duality & The Max-Flow Min-Cut Theorem
+
+> [!abstract] Weak Duality Principle
+> For **any** valid flow $f$ and **any** valid $s$-$t$ cut $(S, T)$:
+> $$|f| \le c(S, T)$$
+> *The flow passing from $s$ to $t$ cannot exceed the capacity of any bottleneck barrier dividing $s$ and $t$.*
+
+> [!note] The Max-Flow Min-Cut Rule (Lecture Slides 3 & 4)
+> **When no augmenting path remains in the residual graph, the flow is maximum.**
+> 
+> Formally, the maximum value of an $s$-$t$ flow strictly equals the minimum capacity of an $s$-$t$ cut:
+> $$\mathbf{\text{Maximum Flow Value} = \text{Minimum Cut Capacity}}$$
+
+---
+
+### 💡 Intuitive Short Proof of Correctness (Why No Augmenting Path $\implies$ Max Flow)
+
+*(Note: The slide states this theorem as a fundamental property. Here is the clean, intuitive proof for understanding:)*
+
+> [!tip]- 💡 Intuitive Short Proof (The Cut Bottleneck Duality)
+> 1. When the algorithm stops, $t$ is completely unreachable from $s$ in the residual graph $G_f$.
+> 2. Let $S$ be the set of all nodes reachable from $s$ in $G_f$, and $T = V \setminus S$ be everything else.
+> 3. Because you cannot step from $S$ into $T$ in $G_f$:
+>    - Every forward pipe crossing from $S \to T$ must have residual capacity $c_f(u, v) = 0$, meaning it is **100% full** ($f(u, v) = c(u, v)$).
+>    - Every reverse pipe crossing from $T \to S$ must have residual capacity $c_f(v, u) = 0$, meaning it carries **zero flow** ($f(v, u) = 0$).
+> 4. Hence, the net flow crossing the boundary from $S$ to $T$ equals the **exact total forward capacity of the cut**: $|f| = c(S, T)$.
+> 5. Since no flow can ever exceed any cut capacity ($|f| \le c(S, T)$ by weak duality), hitting exact equality means our flow is the **absolute maximum possible**, and this cut is the **tightest possible bottleneck (minimum cut)**.
+
+---
+
+### 🔍 How to Extract the Minimum Cut from the Final Residual Graph
+
+> [!tip] Step-by-Step Procedure to Identify $(S, T)$
+> 1. Run the flow algorithm until termination (no augmenting path in $G_f$).
+> 2. Perform a **BFS or DFS starting from source $s$** in the final residual graph $G_f$, traversing only edges with residual capacity $c_f(u, v) > 0$.
+> 3. Define:
+>    - $S = \{\text{all vertices reachable from } s \text{ in } G_f\}$
+>    - $T = V \setminus S$ (all unreachable vertices, including $t$).
+> 4. The **Minimum Cut Edges** are the directed edges $(u, v)$ in the **original graph $G$** such that $u \in S$ and $v \in T$.
+> 5. **Verification**: Calculate $\sum_{u \in S, v \in T} c(u, v)$. It will exactly equal $|f|_{\max}$!
+
+---
+
+## 5. The Edmonds-Karp Algorithm ($O(V \cdot E^2)$)
+
+### 🚀 The Core Innovation: BFS Shortest Paths
+
+Edmonds-Karp is an implementation of Ford-Fulkerson with **one simple, decisive modification**:
+> **Always choose the augmenting path with the FEWEST edges (the shortest path in terms of edge count), found by running standard Breadth-First Search (BFS) on $G_f$.**
 
 ### 🌟 Why BFS Fixes Everything
-1. **Guaranteed Polynomial Time:** Terminating in $O(V \cdot E)$ augmentations.
-2. **Capacity Independent:** The runtime depends **only** on $|V|$ and $|E|$, completely unaffected by large or irrational capacity numbers.
-3. **Total Time Complexity:**
-   $$\text{Total Time} = O(V \cdot E) \times O(E) = O(V \cdot E^2)$$
+1. **Guaranteed Polynomial Time**: It terminates in at most $O(V \cdot E)$ augmentations.
+2. **Capacity-Independent Runtime**: The runtime depends **strictly** on $|V|$ and $|E|$, completely eliminating susceptibility to large numbers or irrational capacities.
+3. **Total Running Time**: 
+   $$\text{Total Time} = (\text{Max Augmentations}) \times (\text{Cost per BFS}) = O(V \cdot E) \times O(E) = \mathbf{O(V \cdot E^2)}$$
 
 ---
 
-### 💻 Pseudocode
+### 💻 Pseudocode (Lecture Slide 8)
 
 ```text
 EDMONDS-KARP(G, s, t):
@@ -207,8 +349,9 @@ EDMONDS-KARP(G, s, t):
         residual(u, v) = c(u, v)
         residual(v, u) = 0
 
-    while BFS(Gf, s, t) finds a shortest path p: // path with fewest edges
+    while BFS(Gf, s, t) finds a path p:      //shortest path, fewest edges
         bottleneck = min( residual(u, v) for (u, v) in p )
+
         for each edge (u, v) in p:
             residual(u, v) -= bottleneck
             residual(v, u) += bottleneck
@@ -216,154 +359,265 @@ EDMONDS-KARP(G, s, t):
     return total flow out of s
 
 BFS(Gf, s, t):
-    // standard BFS from s looking for t
-    // considers only edges with residual(u, v) > 0
-    // returns path p with minimum edge count, or NULL if unreachable
+    //standard breadth-first search on the residual graph Gf
+    //returns the s-t path using the fewest edges, or "none"
 ```
 
 ---
 
-## 5. 🔬 In-Depth Proof of Edmonds-Karp Complexity ($O(V \cdot E^2)$)
+### 🔬 Edmonds-Karp Complexity Proof: Lemma 1 & Lemma 2
 
-This is one of the most classic proofs in graph algorithms. Let's break it down into two intuitive lemmas.
+*(Slides 9 & 10 contain these proofs)*
 
-### 📜 Lemma 1: Shortest Path Distances Never Decrease (Monotonicity)
+#### 📜 Lemma 1: Monotonicity of Shortest Path Distances
 
 Let $\delta_i(v)$ denote the shortest-path distance (number of edges) from source $s$ to vertex $v$ in the residual graph $G_f$ after $i$ augmentations.
 
-> [!abstract]- Lemma 1: For all vertices $v \in V$, $\delta_{i+1}(v) \ge \delta_i(v)$
-> 
-> **Intuition:**
-> When we augment flow along a shortest path $p$, what changes in the residual graph?
-> - Some forward edges on $p$ may be saturated and disappear. (Removing edges cannot create shorter paths).
-> - Some reverse edges $(v, u)$ are introduced or have their capacity increased.
-> 
-> Does introducing a reverse edge $(v, u)$ create a shortcut from $s$?
-> No! Because $(u, v)$ was on the shortest path before, we know:
-> $$\delta_i(v) = \delta_i(u) + 1$$
-> The reverse edge points backward towards $s$ (from $v$ back to $u$).
-> If a new path to $u$ were to use this reverse edge $(v, u)$, its distance to $u$ would be:
-> $$\delta_{i+1}(v) + 1 \ge \delta_i(v) + 1 = (\delta_i(u) + 1) + 1 = \delta_i(u) + 2$$
-> This is strictly longer than the original distance $\delta_i(u)$!
-> Therefore, no reverse edge can ever decrease the distance from $s$ to any vertex.
-> 
-> **Conclusion:** Shortest path distances from $s$ are monotonically non-decreasing over time:
+> [!tip]- Lemma 1 — Version 1: Intuitive / Conceptual Explanation
+> When you augment flow along a BFS shortest path:
+> - Some forward edges get saturated and disappear (removing edges can only make paths longer or equal, never shorter).
+> - Some reverse edges $(v, u)$ appear. But remember: the forward edge $(u, v)$ was on the shortest path, meaning $v$ was *further away* from $s$ than $u$ ($\text{dist}(v) = \text{dist}(u) + 1$).
+> - So the reverse edge $(v, u)$ points **backwards toward $s$**. 
+> - Using a backward-pointing edge to reach $u$ would take $\text{dist}(v) + 1 = \text{dist}(u) + 2$ steps, which is longer than the original distance to $u$!
+> - Therefore, reverse edges can never create a "shortcut" to any node. Distances from $s$ can only stay the same or grow larger.
+
+> [!abstract]- Lemma 1 — Version 2: 📝 Exam-Ready Writing (Write this on the exam)
+> **Lemma 1:** For all vertices $v \in V$, the shortest path distance $\delta(v)$ from source $s$ in $G_f$ is monotonically non-decreasing after each augmentation:
 > $$\delta_{i+1}(v) \ge \delta_i(v) \quad \forall v \in V$$
+> 
+> **Proof by Contradiction:**
+> 1. Suppose there exists a vertex whose distance strictly decreases after an augmentation. Let $v$ be the vertex with the minimum $\delta_{i+1}(v)$ such that $\delta_{i+1}(v) < \delta_i(v)$.
+> 2. Let $u$ be the vertex immediately preceding $v$ on the shortest path from $s$ to $v$ in $G_{f, i+1}$, so $(u, v) \in E_{f, i+1}$ and:
+>    $$\delta_{i+1}(v) = \delta_{i+1}(u) + 1$$
+> 3. By the minimal choice of $v$, vertex $u$ did not decrease in distance: $\delta_{i+1}(u) \ge \delta_i(u)$.
+> 4. **Case A: $(u, v) \in E_{f, i}$ (edge already existed before augmentation):**
+>    $$\delta_i(v) \le \delta_i(u) + 1 \le \delta_{i+1}(u) + 1 = \delta_{i+1}(v)$$
+>    This contradicts our assumption that $\delta_{i+1}(v) < \delta_i(v)$.
+> 5. **Case B: $(u, v) \notin E_{f, i}$ (edge was created by the $i$-th augmentation):**
+>    The edge $(u, v)$ must be the reverse of an edge $(v, u)$ augmented at step $i$. Since Edmonds-Karp uses BFS shortest paths:
+>    $$\delta_i(u) = \delta_i(v) + 1$$
+>    Substituting gives:
+>    $$\delta_{i+1}(v) = \delta_{i+1}(u) + 1 \ge \delta_i(u) + 1 = (\delta_i(v) + 1) + 1 = \delta_i(v) + 2$$
+>    This contradicts $\delta_{i+1}(v) < \delta_i(v)$.
+> 6. Therefore, no vertex distance can decrease: $\delta_{i+1}(v) \ge \delta_i(v)$ for all $v$. $\blacksquare$
+
+> [!note]- Lemma 1 — Version 3: Exact Slide/Formal Version (Lecture Slide 9)
+> Edmonds-Karp always augments along a shortest $s$-$t$ path (fewest edges) in the residual graph, found by BFS.
+> 
+> Let $\delta_i(v)$ denote the BFS distance from $s$ to $v$ in the residual graph after $i$ augmentations.
+> 
+> **Lemma 1 (distances never decrease):** For every vertex $v$, $\delta_i(v)$ is non-decreasing as $i$ increases ($\delta_{i+1}(v) \ge \delta_i(v)$).
+> 
+> **Sketch:** Augmenting along a shortest path can only add reverse edges that point “backward” toward $s$. Using such a reverse edge later would require a shorter route than BFS already found earlier, which contradicts $\delta$ being a shortest-path distance at that earlier step.
+> 
+> This monotonicity is the key fact used to bound how many times any single edge can be the bottleneck of an augmenting path.
 
 ---
 
-### 📜 Lemma 2: Each Edge Can Be Critical at Most $O(V)$ Times
+#### 📜 Lemma 2: Critical Edge Bound & Overall $O(V \cdot E^2)$ Complexity
 
-An edge $(u, v)$ is **critical** in an augmenting path if it determines the bottleneck ($c_f(u, v) = \text{bottleneck}$). After augmentation, its residual capacity drops to $0$ and it **disappears** from $G_f$.
+> [!tip]- Lemma 2 — Version 1: Intuitive / Conceptual Explanation
+> 1. An edge $(u, v)$ is **critical** when it is the bottleneck. When you push flow through it, it runs out of capacity and disappears from $G_f$.
+> 2. How can $(u, v)$ ever come back? The only way is if flow is pushed in the opposite direction along $(v, u)$ in some future round.
+> 3. For $(u, v)$ to be on a BFS shortest path initially, $v$ was 1 step further from $s$ than $u$ ($\text{dist}(v) = \text{dist}(u) + 1$).
+> 4. For $(v, u)$ to be used later, $u$ must be 1 step further from $s$ than $v$ ($\text{dist}'(u) = \text{dist}'(v) + 1$).
+> 5. Since distances never decrease (Lemma 1), $u$'s new distance is at least $(\text{dist}(u) + 1) + 1 = \text{dist}(u) + 2$.
+> 6. Every time an edge disappears and reappears as critical, its starting node $u$ is pushed **at least 2 steps further away** from $s$.
+> 7. Since a node can only be at most $|V|-1$ steps away before reaching $t$, it can only jump by 2 at most $|V|/2$ times.
+> 8. With $O(E)$ total edges, the total number of critical events (and augmentations) is $O(V \cdot E)$. Each BFS costs $O(E)$, yielding $O(V \cdot E^2)$ total time!
 
-> [!abstract]- Lemma 2: Any edge $(u, v)$ can become critical at most $\frac{|V|}{2}$ times
+> [!abstract]- Lemma 2 — Version 2: 📝 Exam-Ready Writing (Write this on the exam)
+> **Lemma 2:** During the execution of Edmonds-Karp, each directed edge $(u, v)$ can become critical at most $\frac{|V|}{2} = O(V)$ times.
 > 
-> **Proof Step-by-Step:**
-> 1. **First Critical Event (at augmentation $i$):**
+> **Proof:**
+> 1. **First Critical Event (Step $i$):**
 >    Since $(u, v)$ is on the BFS shortest path:
 >    $$\delta_i(v) = \delta_i(u) + 1$$
->    Because $(u, v)$ is critical, it is saturated and disappears from $G_f$.
+>    Because $(u, v)$ is critical, its residual capacity becomes 0 and it disappears from $G_f$.
 > 
-> 2. **Reappearance of $(u, v)$ (at a later augmentation $j > i$):**
->    The edge $(u, v)$ cannot be used again until flow is pushed in the opposite direction along $(v, u)$, which restores some capacity to $(u, v)$.
->    For $(v, u)$ to be on the shortest augmenting path at step $j$, BFS must satisfy:
+> 2. **Restoration of Edge $(u, v)$ (Step $j > i$):**
+>    Edge $(u, v)$ cannot reappear in $G_f$ until flow is pushed along the reverse edge $(v, u)$. For $(v, u)$ to be on the BFS shortest path at step $j$:
 >    $$\delta_j(u) = \delta_j(v) + 1$$
 > 
-> 3. **Applying Lemma 1 (Distances never decrease):**
->    We know $\delta_j(v) \ge \delta_i(v)$. Substituting this in:
->    $$\delta_j(u) = \delta_j(v) + 1 \ge \delta_i(v) + 1$$
->    Since $\delta_i(v) = \delta_i(u) + 1$:
->    $$\delta_j(u) \ge (\delta_i(u) + 1) + 1 = \delta_i(u) + 2$$
+> 3. **Applying Lemma 1 (Monotonicity):**
+>    Since distances never decrease, $\delta_j(v) \ge \delta_i(v)$. Substituting $\delta_i(v) = \delta_i(u) + 1$:
+>    $$\delta_j(u) = \delta_j(v) + 1 \ge \delta_i(v) + 1 = (\delta_i(u) + 1) + 1 = \delta_i(u) + 2$$
 > 
-> 4. **Second Critical Event (at augmentation $k > j$):**
->    For $(u, v)$ to become critical again at step $k$, we must have $\delta_k(u) \ge \delta_j(u) \ge \delta_i(u) + 2$.
+> 4. **Subsequent Critical Event (Step $k > j$):**
+>    For $(u, v)$ to become critical again at step $k$, $\delta_k(u) \ge \delta_j(u) \ge \delta_i(u) + 2$.
+>    Between any two critical events for edge $(u, v)$, $\delta(u)$ must increase by at least **2**.
 > 
-> 5. **Bounding the Count:**
->    - Between any two times that edge $(u, v)$ becomes critical, its distance from source $\delta(u)$ **must increase by at least 2**.
->    - The distance $\delta(u)$ starts at $\ge 0$ and can be at most $|V| - 2$ (since the path cannot exceed $|V|-1$ vertices before reaching $t$, $u \neq t$).
->    - If $\delta(u) \ge |V|$, the node becomes unreachable from $s$.
->    - Therefore, $\delta(u)$ can only increase by 2 at most:
->      $$\frac{|V| - 2}{2} + 1 \le \frac{|V|}{2} = O(V) \text{ times}$$
+> 5. **Bounding Critical Events:**
+>    - The distance $\delta(u)$ begins at $\ge 0$ and cannot exceed $|V|-2$ while $u$ is on an augmenting path to $t$ ($u \neq t$).
+>    - Hence, the number of critical events for $(u, v)$ is bounded by:
+>      $$\frac{|V| - 2}{2} + 1 \le \frac{|V|}{2} = O(V)$$
+> 
+> 6. **Overall Time Complexity:**
+>    - The residual graph contains at most $2|E| = O(E)$ directed edges.
+>    - Total critical edge events $\le 2|E| \times O(V) = O(V \cdot E)$.
+>    - Each augmentation saturates at least one critical edge $\implies$ at most $O(V \cdot E)$ total augmentations.
+>    - Each augmentation runs one BFS in $O(V + E) = O(E)$ time.
+>    - Total Time Complexity:
+>      $$\mathbf{\text{Total Time} = O(V \cdot E) \times O(E) = O(V \cdot E^2)}$$ $\blacksquare$
+
+> [!note]- Lemma 2 — Version 3: Exact Slide/Formal Version (Lecture Slide 10)
+> An edge $(u, v)$ is critical in an augmentation if it is the bottleneck, so it disappears from the residual graph afterward.
+> 
+> **Lemma 2 (each edge is critical $O(V)$ times):** When $(u, v)$ is critical, $\delta(v) = \delta(u) + 1$. For $(u, v)$ to become usable again, flow must later be pushed back along $(v, u)$, requiring $\delta'(u) = \delta'(v) + 1$ at that later point.
+> 
+> So the second time:
+> $$\delta'(u) = \delta'(v) + 1$$
+> Also by Lemma 1, $\delta'(v) \ge \delta(v)$.
+> Adding 1 to both sides:
+> $$\delta'(v) + 1 \ge \delta(v) + 1 \implies \delta'(u) \ge \delta(v) + 1 \implies \delta'(u) \ge (\delta(u) + 1) + 1 \implies \delta'(u) \ge \delta(u) + 2$$
+> 
+> So between any two consecutive times $(u, v)$ is critical, $\delta(u)$ has gone up by at least 2. Since $\delta(v)$ never decreases (Lemma 1), this jump of $\ge 2$ keeps happening every time $(u, v)$ becomes critical again.
+> 
+> $\delta(u)$ can only take the $V$ possible values $0, 1, \dots, V-1$. Starting from $\delta(u) \ge 0$ and rising by $\ge 2$ each time, it can hit at most about $V/2$ distinct values before running out. So $(u, v)$ can be critical at most $O(V)$ times.
+> 
+> There are $O(E)$ edges, so total critical-edge events and hence number of augmentations is $O(V \cdot E)$. Each augmentation costs $O(E)$ for its BFS.
+> 
+> $$\text{Total time} = (\text{number of augmentations}) \times (\text{cost per augmentation}) = O(V \cdot E) \times O(E) = O(V \cdot E^2)$$
 
 ---
 
-### 🏁 Final Complexity Calculation
+## 6. Step-by-Step Worked Simulation (Lecture Slides 11–19)
 
-1. **Total Number of Critical Edge Events:**
-   - In any connected graph, there are at most $2|E|$ directed edges in the residual graph (forward and reverse).
-   - Each edge can be critical at most $O(V)$ times.
-   - Total critical edge events across the entire algorithm $\le 2|E| \times O(V) = O(V \cdot E)$.
-2. **Total Number of Augmentations:**
-   - Every augmentation has at least one critical edge.
-   - Hence, the total number of augmenting paths is bounded by $O(V \cdot E)$.
-3. **Cost per Augmentation:**
-   - Running BFS to find the shortest path takes $O(V + E) = O(E)$.
-4. **Total Time Complexity:**
-   $$\text{Total Time} = (\text{Total Augmentations}) \times (\text{Cost of BFS}) = O(V \cdot E) \times O(E) = \mathbf{O(V \cdot E^2)}$$
+Let's execute a complete hand simulation on the exact 6-node network from Lecture Slides 11–19.
 
----
-
-## 6. Step-by-Step Worked Example (From Lecture Slides)
-
-Let's trace the network from the lecture (Reference: `cp-algorithms.com` network with 6 nodes $\{s, A, B, C, D, t\}$ and 9 directed edges).
+### 🌐 Initial Graph Network
+- **Vertices**: $V = \{s, A, B, C, D, t\}$ ($|V| = 6$)
+- **Directed Edges & Capacities**:
+  - $s \to A: 7$
+  - $s \to D: 4$
+  - $D \to A: 3$
+  - $D \to C: 2$
+  - $A \to B: 5$
+  - $A \to C: 3$
+  - $C \to B: 3$
+  - $C \to t: 5$
+  - $B \to t: 8$
 
 ```mermaid
 flowchart LR
-    s(("s")) -->|0/7| A(("A"))
-    s -->|0/4| D(("D"))
-    A -->|0/5| B(("B"))
-    A -->|0/3| C(("C"))
-    A -->|0/3| D(("D"))
-    D -->|0/2| C(("C"))
-    C -->|0/3| B(("B"))
-    C -->|0/5| t(("t"))
-    B -->|0/8| t
+    s(("s")) -->|"0/7"| A(("A"))
+    s -->|"0/4"| D(("D"))
+    D -->|"0/3"| A
+    D -->|"0/2"| C(("C"))
+    A -->|"0/5"| B(("B"))
+    A -->|"0/3"| C
+    C -->|"0/3"| B
+    C -->|"0/5"| t(("t"))
+    B -->|"0/8"| t
 ```
 
 ---
 
-### 📝 Iteration Trace
+### 📝 Step-by-Step Iteration Walkthrough
 
-| Iteration | Augmenting Path Found | Residual Capacities on Edges | Bottleneck ($\Delta$) | Total Flow After Augmentation | Notes |
-|:---:|:---|:---|:---:|:---:|:---|
-| **1** | $s \to A \to B \to t$ | $s \to A: 7$<br>$A \to B: 5$<br>$B \to t: 8$ | **5** | **5** | $A \to B$ becomes saturated ($5/5$) |
-| **2** | $s \to D \to A \to C \to t$ | $s \to D: 4$<br>$D \to A: 3$<br>$A \to C: 3$<br>$C \to t: 5$ | **3** | **8** | $D \to A$ and $A \to C$ saturated ($3/3$) |
-| **3** | $s \to D \to C \to B \to t$ | $s \to D: 1$<br>$D \to C: 2$<br>$C \to B: 3$<br>$B \to t: 3$ | **1** | **9** | $s \to D$ becomes saturated ($4/4$) |
-| **4** | $s \to A \to D \to C \to t$ | $s \to A: 2$<br>**$A \to D$ (rev): 3**<br>$D \to C: 1$<br>$C \to t: 2$ | **1** | **10** | **Uses reverse edge $(A, D)$** to cancel 1 unit of flow from $D \to A$ |
-| **5** | *None* | No path with $c_f > 0$ from $s$ to $t$ | — | **10 (MAX)** | **Algorithm Terminates** |
+> [!example]- 🔹 Iteration 1: Path $s \to A \to B \to t$
+> 1. **BFS Shortest Path**: $s \to A \to B \to t$ (length = 3 edges).
+> 2. **Available Residual Capacities**:
+>    - $c_f(s, A) = 7$
+>    - $c_f(A, B) = 5$
+>    - $c_f(B, t) = 8$
+> 3. **Bottleneck**: $\Delta_1 = \min(7, 5, 8) = \mathbf{5}$.
+> 4. **Edge Updates**:
+>    - $s \to A$: Flow becomes $5/7$. Forward residual $c_f = 2$, reverse residual $c_f(A, s) = 5$.
+>    - $A \to B$: Flow becomes $5/5$ (**Saturated / Critical Edge**). Forward residual $c_f = 0$, reverse residual $c_f(B, A) = 5$.
+>    - $B \to t$: Flow becomes $5/8$. Forward residual $c_f = 3$, reverse residual $c_f(t, B) = 5$.
+> 5. **Total Flow**: $|f| = \mathbf{5}$.
+
+> [!example]- 🔹 Iteration 2: Path $s \to D \to A \to C \to t$
+> 1. **BFS Shortest Path**: $s \to D \to A \to C \to t$ (length = 4 edges).
+> 2. **Available Residual Capacities**:
+>    - $c_f(s, D) = 4$
+>    - $c_f(D, A) = 3$
+>    - $c_f(A, C) = 3$
+>    - $c_f(C, t) = 5$
+> 3. **Bottleneck**: $\Delta_2 = \min(4, 3, 3, 5) = \mathbf{3}$.
+> 4. **Edge Updates**:
+>    - $s \to D$: Flow becomes $3/4$. Forward $c_f = 1$, reverse $c_f(D, s) = 3$.
+>    - $D \to A$: Flow becomes $3/3$ (**Saturated / Critical Edge**). Forward $c_f = 0$, reverse $c_f(A, D) = 3$.
+>    - $A \to C$: Flow becomes $3/3$ (**Saturated / Critical Edge**). Forward $c_f = 0$, reverse $c_f(C, A) = 3$.
+>    - $C \to t$: Flow becomes $3/5$. Forward $c_f = 2$, reverse $c_f(t, C) = 3$.
+> 5. **Total Flow**: $|f| = 5 + 3 = \mathbf{8}$.
+
+> [!example]- 🔹 Iteration 3: Path $s \to D \to C \to B \to t$
+> 1. **BFS Shortest Path**: $s \to D \to C \to B \to t$ (length = 4 edges).
+> 2. **Available Residual Capacities**:
+>    - $c_f(s, D) = 1$
+>    - $c_f(D, C) = 2$
+>    - $c_f(C, B) = 3$
+>    - $c_f(B, t) = 3$
+> 3. **Bottleneck**: $\Delta_3 = \min(1, 2, 3, 3) = \mathbf{1}$.
+> 4. **Edge Updates**:
+>    - $s \to D$: Flow becomes $4/4$ (**Saturated / Critical Edge**). Forward $c_f = 0$, reverse $c_f(D, s) = 4$.
+>    - $D \to C$: Flow becomes $1/2$. Forward $c_f = 1$, reverse $c_f(C, D) = 1$.
+>    - $C \to B$: Flow becomes $1/3$. Forward $c_f = 2$, reverse $c_f(B, C) = 1$.
+>    - $B \to t$: Flow becomes $6/8$. Forward $c_f = 2$, reverse $c_f(t, B) = 6$.
+> 5. **Total Flow**: $|f| = 8 + 1 = \mathbf{9}$.
+
+> [!example]- 🔹 Iteration 4: Path $s \to A \to D \to C \to t$ (Reverse Edge Magic!)
+> 1. **BFS Shortest Path**: $s \to A \to D \to C \to t$ (length = 4 edges).
+>    - Notice that $(A, D)$ is a **reverse edge** of the original edge $D \to A$!
+> 2. **Available Residual Capacities**:
+>    - $c_f(s, A) = 2$ (forward)
+>    - $c_f(A, D) = 3$ (**reverse edge**: $f(D, A) = 3$)
+>    - $c_f(D, C) = 1$ (forward)
+>    - $c_f(C, t) = 2$ (forward)
+> 3. **Bottleneck**: $\Delta_4 = \min(2, 3, 1, 2) = \mathbf{1}$.
+> 4. **Edge Updates**:
+>    - $s \to A$: Flow increases from $5 \to 6/7$. Forward $c_f = 1$, reverse $c_f(A, s) = 6$.
+>    - $A \to D$ (Reverse): Pushing 1 unit on reverse edge $(A, D)$ **decreases** flow on original $D \to A$ from $3 \to 2/3$! Forward $c_f(D, A)$ becomes $1$, reverse $c_f(A, D)$ becomes $2$.
+>    - $D \to C$: Flow increases from $1 \to 2/2$ (**Saturated / Critical Edge**). Forward $c_f = 0$, reverse $c_f(C, D) = 2$.
+>    - $C \to t$: Flow increases from $3 \to 4/5$. Forward $c_f = 1$, reverse $c_f(t, C) = 4$.
+> 5. **Total Flow**: $|f| = 9 + 1 = \mathbf{10}$.
+
+> [!example]- 🔹 Iteration 5: Termination Check & Reachability Analysis
+> 1. Run BFS from $s$ in residual graph $G_f$:
+>    - From $s$: $c_f(s, A) = 1 > 0 \implies \text{Node } A \text{ is reachable}$. Edge $s \to D$ has $c_f = 0$.
+>    - From $A$: Forward edges $A \to B$ ($c_f=0$) and $A \to C$ ($c_f=0$) are saturated. But reverse edge $A \to D$ has $c_f = 2 > 0 \implies \text{Node } D \text{ is reachable}$.
+>    - From $D$: Edge $D \to A$ has $c_f=1$ (already visited). Edge $D \to C$ has $c_f=0$ (saturated).
+>    - No other outgoing edges with $c_f > 0$ exist from $\{s, A, D\}$.
+> 2. **Sink $t$ is NOT reachable from $s$ in $G_f$!**
+> 3. **Algorithm Terminates.** Maximum Flow $= \mathbf{10}$.
 
 ---
 
-### 🔍 Deep Dive into Iteration 4 (The Reverse Edge Magic!)
+### 📊 Complete Simulation Summary Table (Lecture Slide 19)
 
-> [!example]- Understanding Iteration 4 Step-by-Step
-> In Iteration 2, we sent 3 units of flow from $D \to A$.
-> In Iteration 4:
-> - Residual capacity on $s \to A$ is $7 - 5 = 2$.
-> - Residual capacity on reverse edge $A \to D$ is $f(D, A) = 3$.
-> - Residual capacity on $D \to C$ is $2 - 1 = 1$.
-> - Residual capacity on $C \to t$ is $5 - 3 = 2$.
-> 
-> The bottleneck is $\min(2, 3, 1, 2) = 1$.
-> 
-> When we push 1 unit along $s \to A \to D \to C \to t$:
-> 1. $s \to A$ flow increases from $5$ to $6$.
-> 2. $D \to A$ flow **decreases** from $3$ to $2$ (we pushed along reverse edge $A \to D$).
-> 3. $D \to C$ flow increases from $1$ to $2$.
-> 4. $C \to t$ flow increases from $3$ to $4$.
-> 
-> **Why is this valid?**
-> - Node $A$ receives 6 from $s$, sends 5 to $B$ and 1 to $C$ ($6 = 5 + 1$). Flow is conserved!
-> - Node $D$ receives 4 from $s$, sends 2 to $A$ and 2 to $C$ ($4 = 2 + 2$). Flow is conserved!
-> - Total flow reaching $t$: $6$ (from $B$) $+ 4$ (from $C$) $= \mathbf{10}$.
+| Iteration | Augmenting Path Found | Bottleneck ($\Delta$) | Flow Along Path | Total Accumulated Flow | Notes & Critical Edges |
+| :---: | :---| :---: | :---: | :---: | :---|
+| **1** | $s \to A \to B \to t$ | **5** | $\min(7, 5, 8) = 5$ | **5** | $A \to B$ saturated |
+| **2** | $s \to D \to A \to C \to t$ | **3** | $\min(4, 3, 3, 5) = 3$ | **8** | $D \to A, A \to C$ saturated |
+| **3** | $s \to D \to C \to B \to t$ | **1** | $\min(1, 2, 3, 3) = 1$ | **9** | $s \to D$ saturated |
+| **4** | $s \to A \to D \to C \to t$ | **1** | $\min(2, 3, 1, 2) = 1$ | **10** | Uses reverse edge $A \to D$; $D \to C$ saturated |
+| **5** | *None (no path in $G_f$)* | — | — | **10 (MAX)** | **Terminates** |
 
 ---
 
-## 7. 💻 C++ Implementation (Edmonds-Karp)
+### ✂️ Finding the Minimum Cut on this Graph
 
-Here are clean, easy-to-read, competitive-programming-ready implementations in C++.
+Let's extract the Minimum $s$-$t$ Cut from the final residual state:
+1. **Reachable set from $s$ in $G_f$**: 
+   $$S = \{s, A, D\}$$
+2. **Unreachable set**: 
+   $$T = V \setminus S = \{B, C, t\}$$
+3. **Cross-Edges from $S$ to $T$ in the original graph $G$**:
+   - Edge $(A, B)$ with capacity $c(A, B) = 5$ (Flow $= 5/5$)
+   - Edge $(A, C)$ with capacity $c(A, C) = 3$ (Flow $= 3/3$)
+   - Edge $(D, C)$ with capacity $c(D, C) = 2$ (Flow $= 2/2$)
+4. **Cut Capacity Calculation**:
+   $$\text{Capacity } c(S, T) = c(A, B) + c(A, C) + c(D, C) = 5 + 3 + 2 = \mathbf{10}$$
+5. **Verification**:
+   $$\text{Max Flow Value } (|f| = 10) = \text{Min Cut Capacity } (c(S, T) = 10) \quad \checkmark$$
 
-> [!example]- Edmonds-Karp C++ Implementation (Adjacency Matrix — Best for $V \le 500$)
+---
+
+## 7. C++ Implementation (Exam & Lab Reference)
+
+> [!example]- Edmonds-Karp Implementation (Adjacency Matrix — Ideal for Exams & $V \le 500$)
 > ```cpp
 > #include <iostream>
 > #include <vector>
@@ -374,7 +628,7 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 > 
 > const int INF = 1e9;
 > 
-> //edmonds-karp max flow implementation
+> //standard bfs finding shortest augmenting path
 > int bfs(int s, int t, const vector<vector<int>>& capacity, vector<int>& parent, int n) {
 >     fill(parent.begin(), parent.end(), -1);
 >     parent[s] = -2; //mark source as visited
@@ -387,24 +641,24 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 >         q.pop();
 > 
 >         for(int next = 0; next < n; next++) {
->             //if unvisited and residual capacity > 0
+>             //traverse if unvisited and residual capacity > 0
 >             if(parent[next] == -1 && capacity[cur][next] > 0) {
 >                 parent[next] = cur;
 >                 int new_flow = min(flow, capacity[cur][next]);
->                 if(next == t) return new_flow; //reached sink
+>                 if(next == t) return new_flow; //found path to sink
 >                 q.push({next, new_flow});
 >             }
 >         }
 >     }
->     return 0; //no augmenting path
+>     return 0; //no augmenting path left
 > }
 > 
-> int maxFlow(int s, int t, vector<vector<int>>& capacity, int n) {
+> int edmondsKarp(int s, int t, vector<vector<int>>& capacity, int n) {
 >     int flow = 0;
 >     vector<int> parent(n);
 >     int new_flow;
 > 
->     //augment while path exists
+>     //augment while a path exists in residual graph
 >     while((new_flow = bfs(s, t, capacity, parent, n)) > 0) {
 >         flow += new_flow;
 >         int cur = t;
@@ -424,26 +678,23 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 >     vector<vector<int>> capacity(n, vector<int>(n, 0));
 > 
 >     //mapping: s=0, A=1, B=2, C=3, D=4, t=5
->     //add edges with capacities
 >     capacity[0][1] = 7; //s -> A
 >     capacity[0][4] = 4; //s -> D
+>     capacity[4][1] = 3; //D -> A
+>     capacity[4][3] = 2; //D -> C
 >     capacity[1][2] = 5; //A -> B
 >     capacity[1][3] = 3; //A -> C
->     capacity[1][4] = 3; //A -> D
->     capacity[4][3] = 2; //D -> C
 >     capacity[3][2] = 3; //C -> B
 >     capacity[3][5] = 5; //C -> t
 >     capacity[2][5] = 8; //B -> t
 > 
 >     int s = 0, t = 5;
->     cout << "Maximum Flow: " << maxFlow(s, t, capacity, n) << "\n"; //outputs 10
+>     cout << "Maximum Flow: " << edmondsKarp(s, t, capacity, n) << "\n"; //prints 10
 >     return 0;
 > }
 > ```
 
----
-
-> [!example]- Edmonds-Karp C++ Implementation (Adjacency List — Scalable for Sparse Graphs)
+> [!example]- Edmonds-Karp Scalable Implementation (Adjacency List — Competitive Programming)
 > ```cpp
 > #include <iostream>
 > #include <vector>
@@ -463,7 +714,7 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 > 
 > vector<vector<Edge>> adj;
 > 
-> //add directed edge with residual reverse edge
+> //add directed edge with corresponding residual reverse edge
 > void addEdge(int from, int to, int cap) {
 >     Edge a = {to, cap, 0, (int)adj[to].size()};
 >     Edge b = {from, 0, 0, (int)adj[from].size()};
@@ -498,7 +749,7 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 >     return 0;
 > }
 > 
-> int edmondsKarp(int s, int t, int n) {
+> int maxFlow(int s, int t, int n) {
 >     int total_flow = 0;
 >     vector<int> parent_node(n);
 >     vector<int> parent_edge(n);
@@ -526,31 +777,49 @@ Here are clean, easy-to-read, competitive-programming-ready implementations in C
 >     //mapping: s=0, A=1, B=2, C=3, D=4, t=5
 >     addEdge(0, 1, 7);
 >     addEdge(0, 4, 4);
+>     addEdge(4, 1, 3);
+>     addEdge(4, 3, 2);
 >     addEdge(1, 2, 5);
 >     addEdge(1, 3, 3);
->     addEdge(1, 4, 3);
->     addEdge(4, 3, 2);
 >     addEdge(3, 2, 3);
 >     addEdge(3, 5, 5);
 >     addEdge(2, 5, 8);
 > 
->     cout << "Max Flow: " << edmondsKarp(0, 5, n) << "\n"; //outputs 10
+>     cout << "Max Flow: " << maxFlow(0, 5, n) << "\n"; //prints 10
 >     return 0;
 > }
 > ```
 
 ---
 
-## 8. Complexity Summary & Quick Comparison
+## 8. Complexity Summary & Exam Quick-Reference
 
-| Algorithm | Augmentation Method | Total Augmentations | Time Complexity | Space Complexity | Best Use Case |
-|:---|:---|:---:|:---:|:---:|:---|
-| **Ford-Fulkerson** | Any path (DFS / BFS) | $\le f$ (max flow value) | $O(E \cdot f)$ | $O(V + E)$ | Small flow values ($f$), simple theory |
-| **Edmonds-Karp** | Shortest path (BFS) | $\le O(V \cdot E)$ | $O(V \cdot E^2)$ | $O(V + E)$ | General graphs, no capacity dependence |
-| **Dinic's Algorithm** | Level Graph + Blocking Flow | $\le O(V)$ phases | $O(V^2 \cdot E)$ | $O(V + E)$ | Standard for competitive programming |
+### 📊 Algorithm Comparison Table (Lecture Slide 20)
+
+| Algorithm | Augmenting Path Strategy | Path Finding Cost | Max Augmentations | Total Time Complexity | Space Complexity | Capacity Dependency |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Ford-Fulkerson** | Any path (DFS / BFS) | $O(E)$ | $\le f$ (max flow value) | $\mathbf{O(E \cdot f)}$ | $O(V + E)$ | **Yes** (Slow for large $f$) |
+| **Edmonds-Karp** | Shortest path (BFS) | $O(E)$ | $\le O(V \cdot E)$ | $\mathbf{O(V \cdot E^2)}$ | $O(V + E)$ | **No** (Polynomial) |
+| **Dinic's Algorithm** | Level Graph + Blocking Flow | $O(E)$ per path | $\le O(V)$ phases | $\mathbf{O(V^2 \cdot E)}$ | $O(V + E)$ | **No** (Competitive Standard) |
 
 ### 💾 Space Complexity Breakdown
-- **Adjacency Matrix:** $O(V^2)$ space to store capacities and flows between all pairs of nodes.
-- **Adjacency List:** $O(V + E)$ space (each edge stores its capacity, flow, and reverse edge pointer).
-- **Auxiliary BFS Space:** $O(V)$ space for the queue and `parent` / `visited` arrays.
-- **Total Space:** **$O(V + E)$** (or $O(V^2)$ when using matrix).
+- **Adjacency Matrix**: $O(V^2)$ auxiliary space.
+- **Adjacency List**: $O(V + E)$ auxiliary space.
+- **BFS Queue & Parent Arrays**: $O(V)$ space.
+- **Total Space**: $\mathbf{O(V + E)}$ (or $O(V^2)$ with matrix).
+
+---
+
+### 📝 Exam Hand-Simulation Strategy (For the 2-Hour Exam)
+
+> [!tip] How to Simulate Max Flow Quickly Under Exam Pressure
+> 1. **Draw a Dual-Arrow Matrix or Keep a Clean Table**: 
+>    For each iteration, write down:
+>    - **Path selected** (e.g., $s \to A \to B \to t$).
+>    - **Bottleneck calculation**: $\Delta = \min(\dots)$.
+>    - **Flow update**: Old Flow $+ \Delta =$ New Flow.
+> 2. **Track Residual Changes Immediately**:
+>    - Forward capacity: subtract $\Delta$.
+>    - Reverse capacity: add $\Delta$.
+> 3. **Watch Out for Reverse Edges**: If you use an edge in the opposite direction of the original graph arrow, you are **reducing flow** on that original edge.
+> 4. **Don't Forget Min-Cut**: If the question asks for the min cut, run DFS/BFS from $s$ on the final residual graph. Write down $S = \{\dots\}$, $T = \{\dots\}$, list the crossing edges from $S \to T$, and sum their original capacities. Confirm $\sum = |f|$.

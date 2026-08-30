@@ -7,6 +7,7 @@ tags:
   - merge-sort
   - binary-search
   - complexity-analysis
+  - master-theorem
   - proofs
   - exam-prep
 aliases:
@@ -16,87 +17,114 @@ aliases:
 # Divide and Conquer 1: Foundations & Core Algorithms
 
 > [!abstract] Overview
-> **Divide and Conquer (D&C)** is an algorithmic paradigm based on multi-branched recursion. A problem is broken down into two or more subproblems of the same or related type, until these become simple enough to be solved directly. The solutions to the subproblems are then combined to give a solution to the original problem.
+> **Divide and Conquer (D&C)** is an algorithmic paradigm based on multi-branched recursion. A problem is broken down into two or more independent subproblems of the same type, until these become simple enough to be solved directly (base case). The solutions to the subproblems are then combined to give a solution to the original problem.
+> 
+> *Course Reference*: CSE 4403 Lecture 16 (Divide and Conquer - 1).
 
 ---
 
 ## 1. Dynamic Programming vs. Divide & Conquer
 
-> [!info] Key Architectural Difference
-> The crucial distinction between **Dynamic Programming (DP)** and **Divide & Conquer (D&C)** lies in the independence of subproblems.
+> [!info] The Key Architectural Difference
+> In Dynamic Programming, subproblems **overlap** — the same smaller problem appears repeatedly, so we cached/memoized results to avoid recomputation.
+> 
+> In Divide & Conquer, our subproblems are **strictly independent**. There is no overlap across branches, so **no caching or memoization is needed**. Subproblems are solved once and combined.
 
 | Dimension | Dynamic Programming (DP) | Divide & Conquer (D&C) |
 | :--- | :--- | :--- |
-| **Subproblems** | Overlapping (same subproblem appears repeatedly) | **Independent** (no overlap across subproblems) |
-| **Caching / Memoization** | **Required** (table/memo array used to avoid re-computation) | **Not needed** (subproblems are solved once) |
-| **Execution Flow** | Typically Bottom-up tabular construction (or Top-down + Memo) | Strictly **Top-down recursion** |
+| **Subproblem Nature** | **Overlapping** (identical subproblems recur many times) | **Independent** (disjoint subproblems, no overlap) |
+| **Re-computation Handling** | **Cache/Memoize** (save answers in a table/array) | **Solve once** (never repeated, nothing to cache) |
+| **Execution Direction** | Bottom-up tabular construction or Top-down + memo | Strictly **Top-down multi-branch recursion** |
+| **Dependency Graph** | Directed Acyclic Graph (DAG) with shared nodes | **Recursion Tree** (branches do not intersect) |
 | **Classic Examples** | Coin Change, 0/1 Knapsack, LCS, Floyd-Warshall | Merge Sort, Quick Sort, Binary Search, Convex Hull |
 
 ---
 
 ## 2. The General D&C Template
 
-Every Divide and Conquer algorithm follows three main phases:
+Every Divide and Conquer algorithm follows three fundamental phases:
 
-1. **Split (Divide)**: Partition the problem of size $n$ into $a$ smaller subproblems, each of size $n/b$.
-2. **Solve (Conquer)**: Recursively solve each subproblem. If the subproblem size is small enough, solve it directly via the **Base Case**.
-3. **Combine (Merge)**: Recombine the answers of the subproblems into a unified final answer for the parent problem.
+```mermaid
+flowchart TD
+    P["Original Problem of size n"] -->|"1. Split"| S1["Left Subproblem (size n/b)"]
+    P -->|"1. Split"| S2["Right Subproblem (size n/b)"]
+    S1 -->|"2. Solve (Recurse)"| A1["Left Solution"]
+    S2 -->|"2. Solve (Recurse)"| A2["Right Solution"]
+    A1 -->|"3. Combine"| Final["Unified Final Solution"]
+    A2 -->|"3. Combine"| Final
+```
 
-> [!tip] The "Smart Combine" Rule
-> In most D&C algorithms, **the SPLIT step is trivial** (e.g., just finding the midpoint $\lfloor (l + r)/2 \rfloor$). All the core intelligence and computational work resides in the **COMBINE** step!
+1. **Split (Divide)**: Break the problem of size $n$ into $a$ smaller, independent subproblems of size $n/b$.
+2. **Solve (Conquer)**: Recursively solve each subproblem. When the subproblem is sufficiently small, solve it immediately via the **Base Case**.
+3. **Combine (Merge)**: Merge the subproblem solutions into the final answer.
 
-> [!example]- D&C Pseudocode Template
-> ```python
-> function solve(problem):
->     # 1. Base Case check
->     if problem is small enough:
->         return base_case_solution(problem)
->     
->     # 2. Split (Divide)
->     left_subproblem, right_subproblem = split(problem)
->     
->     # 3. Solve (Conquer)
->     left_ans = solve(left_subproblem)
->     right_ans = solve(right_subproblem)
->     
->     # 4. Combine (Merge)
->     return combine(left_ans, right_ans)
+> [!tip] Slide Insight: "The Hard Part Is Never the Split"
+> In most D&C algorithms:
+> * **The SPLIT is dumb**: Just cut the array/data in half at the midpoint $\lfloor (l + r) / 2 \rfloor$. No intelligence required.
+> * **The COMBINE is smart**: This is where the real work lives. Most of the algorithm's logic, correctness, and runtime complexity reside here!
+> 
+> *Examples*:
+> * **Merge Sort**: Split is trivial ($O(1)$ cut in half); Combine does the heavy lifting ($O(n)$ two-pointer merge).
+> * **Binary Search**: Split is trivial ($O(1)$ midpoint); Combine is trivial ($O(1)$ return selected branch).
+> * **Quick Sort**: Exception to the rule — Split is smart ($O(n)$ Lomuto partitioning); Combine is free ($O(1)$).
+
+> [!example]- General D&C Pseudocode Template
+> ```cpp
+> //generic d&c template
+> Solution solve(Problem p) {
+>     //base case: small enough to solve directly
+>     if (isBaseCase(p)) {
+>         return solveBaseCase(p);
+>     }
+> 
+>     //1. split into independent parts
+>     auto [left_sub, right_sub] = split(p);
+> 
+>     //2. solve subproblems recursively
+>     Solution left_ans = solve(left_sub);
+>     Solution right_ans = solve(right_sub);
+> 
+>     //3. combine results into final answer
+>     return combine(left_ans, right_ans);
+> }
 > ```
 
 ---
 
 ## 3. Merge Sort
 
-### 3.1 Pseudocode & Implementation
+### 3.1 Intuition & Analogy
 
-> [!note] Merge Sort Mechanics
-> Merge Sort splits an array in half recursively until single-element arrays are reached (which are inherently sorted), then **merges** adjacent sorted arrays in linear time $O(n)$.
+> [!note] The Card Sorting Analogy
+> Imagine you have an unsorted pile of cards:
+> 1. You divide the pile into two halves repeatedly until you have single cards. A pile with just 1 card is already sorted by definition.
+> 2. Now take two sorted piles lying face-up on the table. How do you merge them into a single sorted pile?
+> 3. You simply compare the **top card of Pile A** with the **top card of Pile B**.
+> 4. Pick whichever is smaller, remove it, and place it at the back of your new pile.
+> 5. Repeat until both piles are empty. This takes linear time $O(n)$ because every card is inspected and moved exactly once!
+
+---
+
+### 3.2 C++ Implementation
 
 ```cpp
-void mergeSort(vector<int>& arr, int l, int r) {
-    // Base case: Sub-array with 0 or 1 element is already sorted
-    if (l >= r) return;
-    
-    // Split step: Trivial midpoint calculation
-    int mid = l + (r - l) / 2;
-    
-    // Solve step: Recursively sort left and right halves
-    mergeSort(arr, l, mid);
-    mergeSort(arr, mid + 1, r);
-    
-    // Combine step: Merge two sorted sub-arrays arr[l..mid] and arr[mid+1..r]
-    merge(arr, l, mid, r);
-}
+#include <iostream>
+#include <vector>
 
+using namespace std;
+
+//combines two sorted subarrays arr[l..mid] and arr[mid+1..r]
 void merge(vector<int>& arr, int l, int mid, int r) {
     int n1 = mid - l + 1;
     int n2 = r - mid;
-    
+
+    //temporary arrays for left and right halves
     vector<int> L(n1), R(n2);
     for (int i = 0; i < n1; i++) L[i] = arr[l + i];
     for (int j = 0; j < n2; j++) R[j] = arr[mid + 1 + j];
-    
+
     int i = 0, j = 0, k = l;
+    //pick the smaller element from L or R
     while (i < n1 && j < n2) {
         if (L[i] <= R[j]) {
             arr[k++] = L[i++];
@@ -104,220 +132,373 @@ void merge(vector<int>& arr, int l, int mid, int r) {
             arr[k++] = R[j++];
         }
     }
-    
+
+    //copy any remaining elements
     while (i < n1) arr[k++] = L[i++];
     while (j < n2) arr[k++] = R[j++];
+}
+
+//main recursive merge sort function
+void mergeSort(vector<int>& arr, int l, int r) {
+    //base case: 0 or 1 element is already sorted
+    if (l >= r) return;
+
+    //trivial split at midpoint
+    int mid = l + (r - l) / 2;
+
+    //recurse on left and right halves
+    mergeSort(arr, l, mid);
+    mergeSort(arr, mid + 1, r);
+
+    //smart combine step
+    merge(arr, l, mid, r);
 }
 ```
 
 ---
 
-### 3.2 Merge Sort Recursion Tree Visualization
+### 3.3 Concrete Step-by-Step Recursion Tree
+
+Let us trace `arr = [38, 27, 43, 3, 9, 82, 10]` ($n = 7$):
 
 ```mermaid
 graph TD
-    A["[1, 2, 3, 4, 5, 7]<br>lo=0, mid=2, hi=5"] --> B["[2, 3, 7]<br>lo=0, mid=1, hi=2"]
-    A --> C["[1, 4, 5]<br>lo=3, mid=4, hi=5"]
-    
-    B --> D["[3, 7]<br>lo=0, mid=0, hi=1"]
-    B --> E["[2]<br>lo=2, hi=2"]
-    
-    D --> F["[3]"]
-    D --> G["[7]"]
-    
-    C --> H["[1, 5]<br>lo=3, mid=3, hi=4"]
-    C --> I["[4]<br>lo=5, hi=5"]
-    
-    H --> J["[5]"]
-    H --> K["[1]"]
+    A["[38, 27, 43, 3, 9, 82, 10]<br>lo=0, mid=3, hi=6"] --> B["[38, 27, 43, 3]<br>lo=0, mid=1, hi=3"]
+    A --> C["[9, 82, 10]<br>lo=4, mid=5, hi=6"]
+
+    B --> D["[38, 27]<br>lo=0, mid=0, hi=1"]
+    B --> E["[43, 3]<br>lo=2, mid=2, hi=3"]
+
+    D --> F["[38] (base)"]
+    D --> G["[27] (base)"]
+    E --> H["[43] (base)"]
+    E --> I["[3] (base)"]
+
+    C --> J["[9, 82]<br>lo=4, mid=4, hi=5"]
+    C --> K["[10] (base)"]
+
+    J --> L["[9] (base)"]
+    J --> M["[82] (base)"]
+
+    %% Merges
+    F -.->|"merge -> [27, 38]"| D
+    G -.->|"merge"| D
+    H -.->|"merge -> [3, 43]"| E
+    I -.->|"merge"| E
+    D -.->|"merge -> [3, 27, 38, 43]"| B
+    E -.->|"merge"| B
+
+    L -.->|"merge -> [9, 82]"| J
+    M -.->|"merge"| J
+    J -.->|"merge -> [9, 10, 82]"| C
+    K -.->|"merge"| C
+
+    B -.->|"merge -> [3, 9, 10, 27, 38, 43, 82]"| A
+    C -.->|"merge"| A
 ```
 
 ---
 
-### 3.3 Correctness Proof of Merge Sort
-
-#### 1. Intuitive Proof (Plain English)
-Imagine you have two piles of cards on a table, and **both piles are already sorted** from smallest to largest. If you want to merge them into a single sorted pile:
-1. You only ever need to look at the **top (smallest available) card** of each pile.
-2. Whichever card is smaller between the two top cards is guaranteed to be the overall smallest card remaining.
-3. You pick that card up and put it into your new combined pile.
-4. Repeating this step until both piles are empty guarantees the final combined pile is perfectly sorted!
-Since single-element piles are automatically sorted (you can't misorder 1 card), breaking the array down to single elements and repeatedly merging sorted pairs guarantees the entire array becomes sorted.
-
-#### 2. Formal Mathematical Proof (by Structural Induction)
-* **Base Case**: For an array of size $n = 1$ ($l = r$), the array contains a single element. A single-element array is trivially sorted. The base case holds.
-* **Inductive Hypothesis**: Assume `mergeSort(arr, l, r)` correctly returns a sorted array for any sub-array of length $k < n$.
-* **Inductive Step**: For an array of size $n$:
-  1. The midpoint splits the array into left sub-array of length $n_1 = \lfloor n/2 \rfloor$ and right sub-array of length $n_2 = \lceil n/2 \rceil$.
-  2. By the Inductive Hypothesis, since $n_1 < n$ and $n_2 < n$, `mergeSort(arr, l, mid)` correctly sorts `arr[l..mid]` and `mergeSort(arr, mid+1, r)` correctly sorts `arr[mid+1..r]`.
-  3. The `merge()` function takes two sorted arrays $L$ and $R$. By comparing the current elements $L[i]$ and $R[j]$ and copying the smaller element into `arr[k]`, it maintains the loop invariant that `arr[l..k-1]` contains the $k-l$ smallest elements of $L \cup R$ in sorted order.
-  4. Thus, `merge()` yields a completely sorted array `arr[l..r]`. By induction, Merge Sort is correct for all $n \ge 1$. $\blacksquare$
-
-> [!tip] 3. Exam-Ready Proof (Fast to write on paper)
-> **Goal**: Prove `MergeSort(arr, l, r)` correctly sorts array of size $n$.
-> * **Base Case ($n=1$)**: A single element $l=r$ is sorted by definition.
-> * **Inductive Hypothesis**: Assume `MergeSort` works for all sizes $k < n$.
-> * **Inductive Step**:
->   1. Array is split at `mid`. Size of left & right halves are $< n$.
->   2. By IH, `left` and `right` sub-arrays are correctly sorted.
->   3. `Merge()` compares smallest elements of both sorted halves, placing min element next. This maintains sorted order.
-> * **Conclusion**: By induction, `MergeSort` is correct for all $n \ge 1$.
-
----
-
-### 3.4 Step-by-Step Complexity Analysis of Merge Sort
+### 3.4 Complexity Analysis of Merge Sort
 
 #### 1. Time Complexity Recurrence
-Let $T(n)$ be the total time required to sort an array of size $n$:
+Let $T(n)$ be the runtime for an array of size $n$:
 $$T(n) = \begin{cases} \Theta(1) & \text{if } n = 1 \\ 2T\left(\frac{n}{2}\right) + \Theta(n) & \text{if } n > 1 \end{cases}$$
 
 Where:
-* $2T(n/2)$ represents the 2 recursive calls on sub-arrays of size $n/2$.
-* $\Theta(n)$ represents the linear time work done by `merge()` at each level.
+* $2T(n/2)$: two recursive calls on subproblems of size $n/2$.
+* $\Theta(n)$: linear work performed by the `merge()` procedure across all elements.
 
 #### 2. Derivation via Recursion Tree Method
-1. **Tree Depth**: At each recursive level $k$, array size is reduced to $\frac{n}{2^k}$.
-   The recursion terminates when $\frac{n}{2^k} = 1 \implies k = \log_2 n$. Total levels = $\mathbf{1 + \log_2 n}$.
-2. **Work per Level**:
-   * Level 0 (Root): $1 \times cn = cn$
-   * Level 1: $2 \times c\left(\frac{n}{2}\right) = cn$
-   * Level 2: $4 \times c\left(\frac{n}{4}\right) = cn$
-   * Level $k$: $2^k \times c\left(\frac{n}{2^k}\right) = cn$
+1. **Tree Depth**: Each step cuts array size in half ($n \to n/2 \to n/4 \to \dots \to 1$).
+   $$\frac{n}{2^k} = 1 \implies 2^k = n \implies k = \log_2 n \implies \text{Depth} = 1 + \log_2 n$$
+2. **Work Done per Level**:
+   * Level 0 (Root): $1 \text{ node} \times cn = cn$
+   * Level 1: $2 \text{ nodes} \times c\left(\frac{n}{2}\right) = cn$
+   * Level 2: $4 \text{ nodes} \times c\left(\frac{n}{4}\right) = cn$
+   * Level $k$: $2^k \text{ nodes} \times c\left(\frac{n}{2^k}\right) = cn$
 3. **Total Work**:
-   $$\text{Total Time} = \sum_{k=0}^{\log_2 n} cn = cn \times (1 + \log_2 n) = \Theta(n \log_2 n)$$
+   $$\text{Total Time} = \sum_{k=0}^{\log_2 n} cn = cn \times (1 + \log_2 n) = \mathbf{\Theta(n \log n)}$$
 
-> [!success] Time Complexity Summary
-> * **Best Case**: $\Omega(n \log n)$
-> * **Average Case**: $\Theta(n \log n)$
-> * **Worst Case**: $O(n \log n)$
+> [!note]- Tree Level Calculation Table
+> | Level $k$ | Number of Subproblems | Subproblem Size | Work per Node | Total Work at Level |
+> | :---: | :---: | :---: | :---: | :---: |
+> | 0 | $2^0 = 1$ | $n$ | $cn$ | $cn$ |
+> | 1 | $2^1 = 2$ | $n/2$ | $c(n/2)$ | $cn$ |
+> | 2 | $2^2 = 4$ | $n/4$ | $c(n/4)$ | $cn$ |
+> | $k$ | $2^k$ | $n/2^k$ | $c(n/2^k)$ | $cn$ |
+> | $\log_2 n$ (Leaves) | $n$ | 1 | $c$ | $cn$ |
+> | **Total Sum** | — | — | — | **$cn(1 + \log_2 n) = \Theta(n \log n)$** |
 
-#### 3. Space Complexity Analysis
-* Auxiliary array memory inside `merge()` function takes $\Theta(n)$ space.
-* Call stack memory takes $\Theta(\log n)$ space due to tree height.
+#### 3. Best, Average, and Worst Case
+* **Best Case**: $\Omega(n \log n)$ — array is still split and merged completely.
+* **Average Case**: $\Theta(n \log n)$
+* **Worst Case**: $O(n \log n)$
+* **Stability**: **Stable** (using `<=` in `L[i] <= R[j]` preserves original relative order of equal elements).
+
+#### 4. Space Complexity Analysis
+* **Auxiliary Array Space**: $\Theta(n)$ extra space needed by temporary buffers `L` and `R` in `merge()`.
+* **Call Stack Space**: $\Theta(\log n)$ activation records simultaneously active on the recursion stack.
 * **Total Space Complexity**: $\mathbf{\Theta(n)}$ auxiliary space.
 
 ---
 
-## 4. Binary Search Reframed as D&C
+### 3.5 Intuitive & Exam-Ready Correctness
 
-> [!note] Binary Search as D&C
-> Binary Search splits the search space at the midpoint. However, unlike Merge Sort which solves **both** subproblems, Binary Search eliminates one half and solves **only one** subproblem. Additionally, the combine step is trivial ($O(1)$).
+> [!tip] Why Merge Sort Works (Intuitive & Exam-Ready Proof)
+> * **Intuition (Two Card Piles)**: When merging two already sorted piles of cards, comparing only the top cards guarantees you always pick the smallest remaining card overall. Since 1-element piles are automatically sorted, merging sorted pairs step-by-step upwards guarantees the entire array is sorted.
+> * **Exam-Ready Points**:
+>   1. **Base Case ($n=1$)**: A single element is sorted by definition.
+>   2. **Inductive Hypothesis**: Assume `mergeSort` correctly sorts halves of size $< n$.
+>   3. **Combine Step**: The `merge()` routine repeatedly picks the smaller of the two remaining front elements from the sorted left and right halves, placing them in non-decreasing order.
+>   4. **Conclusion**: By induction, Merge Sort is correct for all $n \ge 1$.
 
-### 4.1 Pseudocode
+---
 
-```python
-function binarySearchDC(arr, l, r, target):
-    # Base case: Search space exhausted
-    if l > r:
-        return -1
-    
-    mid = l + (r - l) // 2
-    
-    # Check if target is at mid
-    if arr[mid] == target:
-        return mid
-    
-    # Recurse on left half
-    elif arr[mid] > target:
-        return binarySearchDC(arr, l, mid - 1, target)
-    
-    # Recurse on right half
-    else:
-        return binarySearchDC(arr, mid + 1, r, target)
+## 4. Binary Search Reframed as Divide & Conquer
+
+> [!question] Slide 10 Home Task: Complete Solution
+> Slide 10 asks:
+> 1. What is the "combine" step here?
+> 2. What is the recurrence relation and time complexity?
+> 3. What does the recursion tree look like?
+
+### 4.1 Concept & C++ Code
+
+Unlike Merge Sort which solves **both** subproblems, Binary Search inspects the middle element and **discards one half entirely**, recursing on only **one** subproblem.
+
+```cpp
+//binary search reframed as divide and conquer
+int binarySearchDC(const vector<int>& arr, int l, int r, int target) {
+    //base case: search space exhausted
+    if (l > r) return -1;
+
+    int mid = l + (r - l) / 2;
+
+    //base case: found target at mid
+    if (arr[mid] == target) {
+        return mid;
+    }
+    //recurse on left half only
+    else if (arr[mid] > target) {
+        return binarySearchDC(arr, l, mid - 1, target);
+    }
+    //recurse on right half only
+    else {
+        return binarySearchDC(arr, mid + 1, r, target);
+    }
+}
 ```
 
 ---
 
-### 4.2 Correctness Proof of Binary Search
+### 4.2 Answering the Slide 10 Questions
 
-#### 1. Intuitive Proof (Plain English)
-Think of looking up a word in a dictionary:
-1. You open the dictionary right in the middle.
-2. If the word at the middle page comes *after* your target word alphabetically, you know for a fact that your target word **cannot possibly be in the second half** of the book (because the book is sorted!).
-3. Therefore, you can safely discard the entire right half and focus exclusively on the left half.
-4. You never risk accidentally throwing away the target because the sorted order guarantees where it can and cannot be.
+#### 1. What is the "combine" step in Binary Search?
+* **Answer**: There is **no combine step** (or it is trivial $O(1)$).
+* Because only one recursive call is made, the result returned by that single call is directly passed up the call stack without any merging of sub-solutions:
+  $$\text{Combine Cost } f(n) = \Theta(1)$$
 
-#### 2. Formal Mathematical Proof (by Induction on Search Space Size)
-* **Invariant**: If `target` exists in the initial array `arr[0..N-1]`, then `target` must exist within the index range `arr[l..r]`.
-* **Base Case**: Initially $l = 0, r = N-1$. The invariant holds trivially. If $l > r$, the range is empty, so `target` does not exist in the array. Returning `-1` is correct.
-* **Inductive Step**: Suppose the invariant holds for range `arr[l..r]`. Let `mid = floor((l + r) / 2)`:
-  1. If `arr[mid] == target`, target is found at `mid`. Returning `mid` is correct.
-  2. If `arr[mid] > target`: Since `arr` is sorted in ascending order, for all $j \ge \text{mid}$, `arr[j] >= arr[mid] > target`. Thus, `target` cannot be present at any index $j \in [\text{mid}, r]$. Hence, if `target` exists, it must lie in `arr[l..mid-1]`.
-  3. If `arr[mid] < target`: Similarly, for all $j \le \text{mid}$, `arr[j] <= arr[mid] < target`. Thus `target` cannot lie in $j \in [l, \text{mid}]$. If it exists, it must lie in `arr[mid+1..r]`.
-* In all cases, the invariant is preserved for the smaller sub-range. By induction, Binary Search is correct. $\blacksquare$
+#### 2. What is the Recurrence Relation and Time Complexity?
+* **Recurrence**:
+  $$T(n) = 1 \cdot T\left(\frac{n}{2}\right) + \Theta(1)$$
+  * $a = 1$: exactly 1 subproblem is solved.
+  * $b = 2$: subproblem size is halved.
+  * $f(n) = \Theta(1)$: midpoint calculation and comparison.
+* **Solving via Master Theorem**:
+  * $n^{\log_b a} = n^{\log_2 1} = n^0 = 1$.
+  * $f(n) = \Theta(1) = \Theta(n^{\log_b a})$.
+  * Falls into **Case 2** with $k = 0 \implies T(n) = \Theta(n^{\log_b a} \log n) = \mathbf{\Theta(\log n)}$.
 
-> [!tip] 3. Exam-Ready Proof (Fast to write on paper)
-> **Goal**: Prove `BinarySearch(arr, l, r, target)` correctly locates `target`.
-> * **Loop Invariant**: `target` $\in$ `arr[l..r]` if it exists in the array.
-> * **Base Case ($l > r$)**: Range is empty $\implies$ return `-1` (target absent).
-> * **Step**: Midpoint element `arr[mid]` is compared with `target`:
->   * `arr[mid] == target` $\implies$ Found at `mid`.
->   * `arr[mid] > target` $\implies$ Array sorted $\implies$ target cannot be in `arr[mid..r]`. Search `arr[l..mid-1]`.
->   * `arr[mid] < target` $\implies$ Target cannot be in `arr[l..mid]`. Search `arr[mid+1..r]`.
-> * **Conclusion**: Invariant preserved at each step. Search terminates in $\le \log_2 n$ steps.
+#### 3. What does the Recursion Tree look like?
+Because $a = 1$, the tree does not branch out; it is a **single vertical chain (path)**:
 
----
+```mermaid
+graph TD
+    A["Range [0..7] (size n)<br>Work: O(1)"] -->|"arr[mid] > target"| B["Range [0..2] (size n/2)<br>Work: O(1)"]
+    B -->|"arr[mid] < target"| C["Range [2..2] (size n/4)<br>Work: O(1)"]
+    C -->|"Found target!"| D["Return mid (Result)"]
+```
 
-### 4.3 Step-by-Step Complexity Analysis of Binary Search
-
-#### 1. Time Complexity Recurrence
-$$T(n) = T\left(\frac{n}{2}\right) + \Theta(1)$$
-
-Where:
-* $a = 1$: We only recurse on $1$ subproblem of size $n/2$.
-* $f(n) = \Theta(1)$: Midpoint calculation and comparison take $O(1)$ constant time.
-* **Combine step**: None / $O(1)$ constant work.
-
-#### 2. Derivation via Substitution / Master Theorem
-Using **Master Theorem** ($T(n) = aT(n/b) + f(n)$):
-* $a = 1, b = 2 \implies n^{\log_b a} = n^{\log_2 1} = n^0 = 1$.
-* $f(n) = \Theta(1) = \Theta(n^{\log_b a})$.
-* This corresponds to **Case 2** of Master Theorem $\implies T(n) = \Theta(n^{\log_b a} \log n) = \mathbf{\Theta(\log n)}$.
-
-#### 3. Space Complexity
-* **Recursive Implementation**: $\mathbf{O(\log n)}$ space due to call stack frame depth of $\log_2 n$.
-* **Iterative Implementation**: $\mathbf{O(1)}$ space.
+* **Number of nodes**: Exactly $1 + \log_2 n$ nodes.
+* **Work per node**: $O(1)$.
+* **Total Time**: $O(1) \times (1 + \log_2 n) = \mathbf{O(\log n)}$.
 
 ---
 
-## 5. Recurrence Trees & Master Theorem Framework
+### 4.3 Intuitive & Exam-Ready Correctness
 
-> [!info] The Generalized Recurrence Form
-> For any D&C algorithm dividing a problem of size $n$ into $a$ subproblems of size $n/b$ with combine cost $f(n)$:
+> [!tip] Why Binary Search Works (Intuitive & Exam-Ready Proof)
+> * **Intuition (Dictionary Lookup)**: Opening a dictionary in the middle and seeing a word alphabetically greater than your target means the target cannot exist in the right half. Discarding that half never risks losing the target because the array is sorted.
+> * **Exam-Ready Points**:
+>   1. **Search Invariant**: If `target` exists, it must lie in `arr[l..r]`.
+>   2. **Base Case ($l > r$)**: Range is empty $\implies$ return `-1` (target absent).
+>   3. **Midpoint Check**:
+>      - `arr[mid] == target`: found at `mid`.
+>      - `arr[mid] > target`: target cannot be in `arr[mid..r]`; search `arr[l..mid-1]`.
+>      - `arr[mid] < target`: target cannot be in `arr[l..mid]`; search `arr[mid+1..r]`.
+>   4. **Termination**: Invariant is preserved and range halves each step, terminating in $\le 1 + \log_2 n$ steps.
+
+---
+
+## 5. Generalized Recurrences & Master Theorem Framework
+
+> [!info] The Generalized Form (Slide 11)
+> Given a problem of size $n$:
+> * Divide into $a$ subproblems ($a \ge 1$)
+> * Each with size $n/b$ ($b > 1$)
+> * Combine cost = $[\text{merge}] = f(n)$
+> 
 > $$T(n) = a T\left(\frac{n}{b}\right) + f(n)$$
 
 ---
 
-### 5.1 Three Benchmark Recurrence Analysis Examples
+### 5.1 The 3 Slide Benchmark Recurrence Examples
 
-#### Example 1: $T(n) = 2T(n/2) + cn$ (Equal Work at Every Level)
-* **Tree Structure**: $2^k$ nodes at level $k$, each doing work $c(n/2^k)$.
-* **Level Work**: $2^k \cdot c(n/2^k) = cn$.
-* **Total Sum**: $\sum_{k=0}^{\log_2 n} cn = cn(1 + \log_2 n) = \mathbf{\Theta(n \log n)}$.
-* **Work Location**: Work is evenly distributed across all levels.
+The course slides (Slides 12, 13, 14) present 3 fundamental archetypes illustrating how work distribution determines the overall runtime:
 
-#### Example 2: $T(n) = 2T(n/2) + c$ (Work Dominated by Leaves)
-* **Tree Structure**: $2^k$ nodes at level $k$, each doing constant work $c$.
-* **Level Work**: $2^k \cdot c = c \cdot 2^k$.
-* **Total Sum**: $\sum_{k=0}^{\log_2 n} c \cdot 2^k = c(1 + 2 + 4 + \dots + n) = c(2n - 1) = \mathbf{\Theta(n)}$.
-* **Work Location**: Work is dominated by the bottom leaf level ($n$ leaves).
-
-#### Example 3: $T(n) = 2T(n/2) + cn^2$ (Work Dominated by Root)
-* **Tree Structure**: $2^k$ nodes at level $k$, each doing work $c(n/2^k)^2 = c \frac{n^2}{4^k}$.
-* **Level Work**: $2^k \cdot c \frac{n^2}{4^k} = cn^2 \left(\frac{1}{2}\right)^k$.
-* **Total Sum**: $cn^2 \sum_{k=0}^{\log_2 n} \left(\frac{1}{2}\right)^k \le cn^2 \left(\frac{1}{1 - 1/2}\right) = 2cn^2 = \mathbf{\Theta(n^2)}$.
-* **Work Location**: Work is dominated by the top root node.
+```
+Archetype 1: Balanced Work (Every level does equal work)  -> O(n log n)
+Archetype 2: Leaf-Heavy (Work grows exponentially down)   -> O(n)
+Archetype 3: Root-Heavy (Work shrinks exponentially down)  -> O(n^2)
+```
 
 ---
 
-### 5.2 Master Theorem Cheat Sheet
+#### Example 1: $T(n) = 2T(n/2) + cn$ (Slide 12 — Balanced Work)
 
-> [!important] Master Theorem Formulation
-> Given $T(n) = aT(n/b) + \Theta(n^c)$ where $a \ge 1, b > 1, c \ge 0$:
->
-> 1. **Case 1 (Leaf Heavy)**: If $c < \log_b a$, then:
->    $$T(n) = \Theta\left(n^{\log_b a}\right)$$
-> 2. **Case 2 (Balanced Work)**: If $c = \log_b a$, then:
->    $$T(n) = \Theta\left(n^c \log n\right) = \Theta\left(n^{\log_b a} \log n\right)$$
-> 3. **Case 3 (Root Heavy)**: If $c > \log_b a$, then:
->    $$T(n) = \Theta\left(n^c\right) = \Theta(f(n))$$
+```mermaid
+graph TD
+    A["cn"] --> B1["cn / 2"]
+    A --> B2["cn / 2"]
+    B1 --> C1["cn / 4"]
+    B1 --> C2["cn / 4"]
+    B2 --> C3["cn / 4"]
+    B2 --> C4["cn / 4"]
+```
+
+* **Level-by-Level Work**:
+  * Level 0: $cn$
+  * Level 1: $2 \times \frac{cn}{2} = cn$
+  * Level 2: $4 \times \frac{cn}{4} = cn$
+  * Level $k$: $2^k \times \frac{cn}{2^k} = cn$
+* **Work Location**: **Equal amount of work done at every level**.
+* **Total Work**:
+  $$\text{Total} = \sum_{k=0}^{\log_2 n} cn = cn \times (1 + \log_2 n) = \mathbf{\Theta(n \log_2 n)}$$
+
+---
+
+#### Example 2: $T(n) = 2T(n/2) + c$ (Slide 13 — Leaf-Heavy)
+
+```mermaid
+graph TD
+    A["c"] --> B1["c"]
+    A --> B2["c"]
+    B1 --> C1["c"]
+    B1 --> C2["c"]
+    B2 --> C3["c"]
+    B2 --> C4["c"]
+```
+
+* **Level-by-Level Work**:
+  * Level 0: $c$
+  * Level 1: $2c$
+  * Level 2: $4c$
+  * Level $k$: $2^k c$
+  * Leaf Level ($\log_2 n$): $n \times c = nc$
+* **Work Location**: **Most of the work is done in the leaves** (geometric series expanding downwards).
+* **Total Work**:
+  $$T(n) = nc + \frac{nc}{2} + \frac{nc}{4} + \dots + c = nc \left(1 + \frac{1}{2} + \frac{1}{4} + \dots + \frac{1}{n}\right) \le 2nc = \mathbf{\Theta(n)}$$
+
+---
+
+#### Example 3: $T(n) = 2T(n/2) + cn^2$ (Slide 14 — Root-Heavy)
+
+```mermaid
+graph TD
+    A["cn^2"] --> B1["c(n/2)^2 = cn^2 / 4"]
+    A --> B2["c(n/2)^2 = cn^2 / 4"]
+    B1 --> C1["cn^2 / 16"]
+    B1 --> C2["cn^2 / 16"]
+    B2 --> C3["cn^2 / 16"]
+    B2 --> C4["cn^2 / 16"]
+```
+
+* **Level-by-Level Work**:
+  * Level 0: $cn^2$
+  * Level 1: $2 \times \frac{cn^2}{4} = \frac{cn^2}{2}$
+  * Level 2: $4 \times \frac{cn^2}{16} = \frac{cn^2}{4}$
+  * Level $k$: $2^k \times \frac{cn^2}{4^k} = cn^2 \left(\frac{1}{2}\right)^k$
+* **Work Location**: **Most of the work is done in the root** (geometric series decaying downwards).
+* **Total Work**:
+  $$T(n) = cn^2 + \frac{cn^2}{2} + \frac{cn^2}{4} + \dots = cn^2 \left(1 + \frac{1}{2} + \frac{1}{4} + \dots\right) \le 2cn^2 = \mathbf{\Theta(n^2)}$$
+
+---
+
+### 5.2 Master Theorem Cheat Sheet (Slide 15)
+
+> [!important] The Master Theorem Formulation
+> Given recurrence $T(n) = aT(n/b) + f(n)$ where $a \ge 1, b > 1$:
+> Let $c_{crit} = \log_b a$ (critical exponent representing number of leaves $n^{\log_b a}$).
+> 
+> 1. **Case 1 (Leaf Heavy / $f(n) = O(n^c)$ where $c < \log_b a$)**:
+>    $$T(n) = \mathbf{\Theta\left(n^{\log_b a}\right)}$$
+> 2. **Case 2 (Balanced Work / $f(n) = \Theta(n^c)$ where $c = \log_b a$)**:
+>    $$T(n) = \mathbf{\Theta\left(n^c \log n\right)} = \mathbf{\Theta\left(n^{\log_b a} \log n\right)}$$
+> 3. **Case 3 (Root Heavy / $f(n) = \Omega(n^c)$ where $c > \log_b a$)**:
+>    $$T(n) = \mathbf{\Theta(f(n))}$$
+>    *(Requires regularity condition: $a f(n/b) \le k f(n)$ for some $k < 1$)*.
+
+---
+
+### 5.3 Master Theorem Exam Practice Problems
+
+> [!example]- Click to expand 7 Fully Solved Exam Recurrences
+> 
+> #### Problem 1: $T(n) = 4T(n/2) + n$
+> * $a = 4, b = 2, f(n) = n^1 \implies \log_b a = \log_2 4 = 2$.
+> * Compare $c = 1$ with $\log_b a = 2$: $1 < 2 \implies$ **Case 1 (Leaf Heavy)**.
+> * Result: $T(n) = \mathbf{\Theta(n^2)}$.
+> 
+> #### Problem 2: $T(n) = 4T(n/2) + n^2$
+> * $a = 4, b = 2, f(n) = n^2 \implies \log_b a = \log_2 4 = 2$.
+> * Compare $c = 2$ with $\log_b a = 2$: $2 = 2 \implies$ **Case 2 (Balanced)**.
+> * Result: $T(n) = \mathbf{\Theta(n^2 \log n)}$.
+> 
+> #### Problem 3: $T(n) = 4T(n/2) + n^3$
+> * $a = 4, b = 2, f(n) = n^3 \implies \log_b a = \log_2 4 = 2$.
+> * Compare $c = 3$ with $\log_b a = 2$: $3 > 2 \implies$ **Case 3 (Root Heavy)**.
+> * Regularity check: $4(n/2)^3 = 4(n^3/8) = \frac{1}{2} n^3 \le k n^3$ (with $k = 1/2 < 1$).
+> * Result: $T(n) = \mathbf{\Theta(n^3)}$.
+> 
+> #### Problem 4: Karatsuba Multiplication: $T(n) = 3T(n/2) + O(n)$
+> * $a = 3, b = 2, f(n) = n^1 \implies \log_2 3 \approx 1.585$.
+> * $c = 1 < 1.585 \implies$ **Case 1**.
+> * Result: $T(n) = \mathbf{\Theta(n^{\log_2 3}) \approx \Theta(n^{1.585})}$.
+> 
+> #### Problem 5: Strassen's Matrix Multiplication: $T(n) = 7T(n/2) + O(n^2)$
+> * $a = 7, b = 2, f(n) = n^2 \implies \log_2 7 \approx 2.807$.
+> * $c = 2 < 2.807 \implies$ **Case 1**.
+> * Result: $T(n) = \mathbf{\Theta(n^{\log_2 7}) \approx \Theta(n^{2.807})}$.
+> 
+> #### Problem 6: When Master Theorem FAILS: $T(n) = 2T(n/2) + n \log n$
+> * $a = 2, b = 2 \implies n^{\log_2 2} = n^1$.
+> * $f(n) = n \log n$ is asymptotically larger than $n^1$, but **not polynomially larger** (ratio is $\log n$, not $n^\epsilon$).
+> * Extended Master Theorem gives: $T(n) = \mathbf{\Theta(n \log^2 n)}$.
+> 
+> #### Problem 7: When Master Theorem Cannot Be Used
+> Master Theorem cannot be used if:
+> 1. $a$ is not a constant (e.g., $T(n) = 2^n T(n/2) + n$).
+> 2. $b \le 1$ or subproblem sizes are unequal (e.g., $T(n) = T(n-1) + 1$ or $T(n) = T(n/3) + T(2n/3) + n$).
+> 3. $f(n)$ is not monotonic or positive (e.g., $T(n) = 2T(n/2) + n \sin n$).
+
+---
+
+## 6. Exam Tips & Key Takeaways
+
+1. **Top-Down Independence**: If an exam question asks why caching is not used in MergeSort or Binary Search, state clearly: *Subproblems are completely disjoint and independent; no subproblem is ever evaluated more than once.*
+2. **Master Theorem Short Answer**: In the exam, always state:
+   - $a = \dots, b = \dots, f(n) = \dots$
+   - Critical value $n^{\log_b a} = \dots$
+   - Comparison between $f(n)$ and $n^{\log_b a}$
+   - Specific Case (1, 2, or 3) applied.

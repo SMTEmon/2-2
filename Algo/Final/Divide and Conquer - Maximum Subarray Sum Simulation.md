@@ -16,6 +16,8 @@ aliases:
 
 > [!abstract] Simulation Objective
 > This note provides a complete, step-by-step simulation and recursion tree execution trace for finding the **Maximum Subarray Sum** using Divide and Conquer.
+> 
+> *Core Theory & Proofs*: See [[Divide and Conquer 2 - Subarray and Substring]].
 
 ---
 
@@ -36,15 +38,16 @@ Consider the array `arr` of size $N = 9$:
 ## 2. D&C Algorithm Quick Reference
 
 ```cpp
-int maxSubArraySum(arr, l, r) {
-    if (l == r) return arr[l]; // Base Case: 1 element
-    
+//quick reference for d&c max subarray sum
+int maxSubArraySum(const vector<int>& arr, int l, int r) {
+    if (l == r) return arr[l]; //base case: 1 element
+
     int mid = l + (r - l) / 2;
-    
+
     int left_max  = maxSubArraySum(arr, l, mid);
     int right_max = maxSubArraySum(arr, mid + 1, r);
     int cross_max = findCrossing(arr, l, mid, r);
-    
+
     return max({left_max, right_max, cross_max});
 }
 ```
@@ -55,15 +58,15 @@ int maxSubArraySum(arr, l, r) {
 
 ```mermaid
 graph TD
-    Root["maxSubArray(0, 8)<br>Range: [-2,1,-3,4,-1,2,1,-5,4]<br>L: 4, R: 4, Cross: 6 => <b>Ret: 6</b>"]
+    Root["maxSubArray(0, 8)<br>Range: [-2, 1, -3, 4, -1, 2, 1, -5, 4]<br>L: 4, R: 4, Cross: 6 => <b>Ret: 6</b>"]
     
-    Root --> L1["maxSubArray(0, 4)<br>Range: [-2,1,-3,4,-1]<br>L: 1, R: 4, Cross: 4 => <b>Ret: 4</b>"]
-    Root --> R1["maxSubArray(5, 8)<br>Range: [2,1,-5,4]<br>L: 3, R: 4, Cross: 3 => <b>Ret: 4</b>"]
+    Root --> L1["maxSubArray(0, 4)<br>Range: [-2, 1, -3, 4, -1]<br>L: 1, R: 4, Cross: 4 => <b>Ret: 4</b>"]
+    Root --> R1["maxSubArray(5, 8)<br>Range: [2, 1, -5, 4]<br>L: 3, R: 4, Cross: 3 => <b>Ret: 4</b>"]
     
-    L1 --> L2["maxSubArray(0, 2)<br>Range: [-2,1,-3]<br>L: 1, R: -3, Cross: 1 => <b>Ret: 1</b>"]
-    L1 --> R2["maxSubArray(3, 4)<br>Range: [4,-1]<br>L: 4, R: -1, Cross: 3 => <b>Ret: 4</b>"]
+    L1 --> L2["maxSubArray(0, 2)<br>Range: [-2, 1, -3]<br>L: 1, R: -3, Cross: 1 => <b>Ret: 1</b>"]
+    L1 --> R2["maxSubArray(3, 4)<br>Range: [4, -1]<br>L: 4, R: -1, Cross: 3 => <b>Ret: 4</b>"]
     
-    L2 --> L3["maxSubArray(0, 1)<br>Range: [-2,1]<br>L: -2, R: 1, Cross: -1 => <b>Ret: 1</b>"]
+    L2 --> L3["maxSubArray(0, 1)<br>Range: [-2, 1]<br>L: -2, R: 1, Cross: -1 => <b>Ret: 1</b>"]
     L2 --> R3["maxSubArray(2, 2)<br><b>Base: -3</b>"]
     
     L3 --> L4["maxSubArray(0, 0)<br><b>Base: -2</b>"]
@@ -72,8 +75,8 @@ graph TD
     R2 --> L5["maxSubArray(3, 3)<br><b>Base: 4</b>"]
     R2 --> R5["maxSubArray(4, 4)<br><b>Base: -1</b>"]
     
-    R1 --> L6["maxSubArray(5, 6)<br>Range: [2,1]<br>L: 2, R: 1, Cross: 3 => <b>Ret: 3</b>"]
-    R1 --> R6["maxSubArray(7, 8)<br>Range: [-5,4]<br>L: -5, R: 4, Cross: -1 => <b>Ret: 4</b>"]
+    R1 --> L6["maxSubArray(5, 6)<br>Range: [2, 1]<br>L: 2, R: 1, Cross: 3 => <b>Ret: 3</b>"]
+    R1 --> R6["maxSubArray(7, 8)<br>Range: [-5, 4]<br>L: -5, R: 4, Cross: -1 => <b>Ret: 4</b>"]
     
     L6 --> L7["maxSubArray(5, 5)<br><b>Base: 2</b>"]
     L6 --> R7["maxSubArray(6, 6)<br><b>Base: 1</b>"]
@@ -84,9 +87,9 @@ graph TD
 
 ---
 
-## 4. Step-by-Step Simulation Call Trace
+## 4. Chronological Step-by-Step Execution Trace
 
-We trace the recursive call stack chronologically (Depth-First Search order).
+We trace the recursive call stack chronologically in Depth-First Search (DFS) order:
 
 ### Phase 1: Left Subtree Execution (`arr[0..4]`)
 
@@ -133,7 +136,7 @@ We trace the recursive call stack chronologically (Depth-First Search order).
 * `maxSubArray(3, 4)` returns $\max(4, -1, 3) = \mathbf{4}$.
 
 #### Step 7: Complete `maxSubArray(0, 4)`
-Now we combine the subproblems for `arr[0..4] = [-2, 1, -3, 4, -1]`:
+Combining subproblems for `arr[0..4] = [-2, 1, -3, 4, -1]`:
 * `left_max` $= 1$ (from `maxSubArray(0, 2)`).
 * `right_max` $= 4$ (from `maxSubArray(3, 4)`).
 * Detailed Trace of `findCrossing(0, 2, 4)` with `mid = 2`:
@@ -184,7 +187,7 @@ Now we combine the subproblems for `arr[0..4] = [-2, 1, -3, 4, -1]`:
 ### Phase 3: Root Level Combination (`arr[0..8]`)
 
 #### Step 12: Final Merge at `maxSubArray(0, 8)`
-We now have the three candidate results at the top level:
+Candidate results at the top level:
 1. **`left_max`** $= \mathbf{4}$ (from left half `arr[0..4]`).
 2. **`right_max`** $= \mathbf{4}$ (from right half `arr[5..8]`).
 3. **`cross_max`**: Computed via `findCrossing(0, 4, 8)` with `mid = 4`:
@@ -211,19 +214,19 @@ We now have the three candidate results at the top level:
 
 ---
 
-## 5. Final Decision Table
+## 5. Final Decision Summary
 
-| Candidate | Location | Subarray Indices | Subarray Elements | Value |
-| :--- | :--- | :--- | :--- | :---: |
-| `left_max` | Entirely in Left (`0..4`) | `3..3` | `[4]` | 4 |
-| `right_max` | Entirely in Right (`5..8`) | `8..8` | `[4]` | 4 |
+| Candidate | Location | Subarray Range | Elements | Sum |
+| :--- | :--- | :---: | :--- | :---: |
+| `left_max` | Entirely in Left Half | `3..3` | `[4]` | 4 |
+| `right_max` | Entirely in Right Half | `8..8` | `[4]` | 4 |
 | **`cross_max`** | **Crosses Midpoint (`mid=4`)** | **`3..6`** | **`[4, -1, 2, 1]`** | **6** |
 
-$$\text{Final Result} = \max(4, 4, 6) = \mathbf{6}$$
+$$\text{Final Answer} = \max(4, 4, 6) = \mathbf{6}$$
 
 ---
 
-## 6. Summary of Key Learnings
+## 6. Key Exam Takeaways
 
-1. **Why `cross_max` won**: Neither the left half alone nor the right half alone contained the complete optimal sequence. The optimal sequence `[4, -1, 2, 1]` started in the left half at index 3 and crossed into the right half ending at index 6.
-2. **How `findCrossing` works**: By fixing the midpoint `mid` and expanding outwards in both directions (leftwards to find the best suffix of `arr[l..mid]`, rightwards to find the best prefix of `arr[mid+1..r]`), we guaranteed finding the best contiguous crossing range in linear $O(n)$ time.
+1. **Contiguity Guarantee**: A crossing subarray is formed by concatenating the optimal suffix of the left half with the optimal prefix of the right half. Both portions meet at the boundary between `mid` and `mid+1`, guaranteeing contiguity.
+2. **Speed & Efficiency**: By computing `cross_max` in $O(n)$ linear time rather than checking all $O(n^2)$ pairs, the entire algorithm achieves $O(n \log n)$ runtime.

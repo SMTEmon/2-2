@@ -1,11 +1,12 @@
 ---
 title: Greedy Algorithms
-date: 2026-08-12
+date: 2026-08-30
 tags:
   - algorithms
   - greedy
   - cs4403
   - lecture19-21
+  - final-exam
 aliases:
   - Greedy Method
   - Fractional Knapsack
@@ -17,77 +18,177 @@ aliases:
 
 # Greedy Algorithms
 
-> [!abstract] Overview & Paradigm
-> A **Greedy Algorithm** builds up a solution step by step, always choosing the option that looks best right now (the locally optimal choice), without reconsidering earlier decisions. It operates under the principle that making locally optimal choices at every stage leads to a globally optimal solution.
+> [!abstract] Overview & Core Philosophy
+> A **Greedy Algorithm** builds up a solution incrementally, step by step. At each decision point, it makes the choice that looks best at that exact moment (**the locally optimal choice**), without reconsidering earlier choices or looking ahead at future consequences.
+> 
+> The core hope of the greedy paradigm is that a sequence of locally optimal choices leads to a **globally optimal solution**.
+> 
+> *Greedy is simple, intuitive, and fast—typically $O(n)$ or $O(n \log n)$—but it does NOT work for every optimization problem.*
 
 ---
 
-## 0. Fundamental Concepts
+## 0. Fundamental Concepts & General Framework
 
 ### Core Properties Required for Greedy Optimality
 
-1. **Greedy Choice Property**: A globally optimal solution can be reached by choosing the locally optimal option at each step, without revisiting past choices.
-2. **Optimal Substructure**: An optimal solution to the overall problem contains within it optimal solutions to its subproblems.
+For a greedy algorithm to produce an optimal solution, the problem must exhibit two foundational mathematical properties:
 
-> [!info] General Greedy Strategy
-> 1. **Define the greedy criterion**: Pick a measure to rank candidates (e.g., value/weight ratio $\frac{v_i}{w_i}$, finish time $f_i$, profit $p_i$, start time $s_i$, frequency $f_i$).
-> 2. **Sort or order the input**: Arrange candidates by that criterion, usually in $O(n \log n)$ time.
-> 3. **Iterate and choose**: Walk through candidates in sorted order; take each one if it keeps the solution feasible.
-> 4. **Never reconsider**: Once a choice is made (or rejected), it is permanent and no backtracking is performed.
+1. **Greedy Choice Property**:
+   - A globally optimal solution can be arrived at by making locally optimal (greedy) choices at each step without ever needing to backtrack or revisit previous decisions.
+   - Unlike Dynamic Programming (which solves all subproblems first before deciding), Greedy makes its choice first before solving subproblems.
+2. **Optimal Substructure**:
+   - An optimal solution to the overall problem contains within it optimal solutions to its subproblems.
+   - After making the greedy choice, the remaining subproblem has the exact same structure as the original problem, just on a smaller input size.
+
+```
+       +-------------------------------------------------------------+
+       |                  Optimization Problem                       |
+       +-------------------------------------------------------------+
+                                      |
+                 Does local optimal choice guarantee global?
+                                      |
+                    +-----------------+-----------------+
+                    |                                   |
+                 [ YES ]                             [ NO ]
+                    |                                   |
+         +--------------------+              +--------------------+
+         |  Greedy Algorithm  |              | Dynamic Program. / |
+         | O(n) or O(n log n) |              | Branch & Bound /   |
+         | (No Backtracking)  |              | Backtracking       |
+         +--------------------+              +--------------------+
+```
+
+---
+
+### The 4-Step General Greedy Recipe
+
+Whenever formulating or executing a Greedy Algorithm (in class or during exams), follow this standardized 4-step framework:
+
+1. **Define the Greedy Criterion**:
+   - Pick a precise heuristic metric to rank candidates (e.g., value/weight ratio $v_i / w_i$, earliest finish time $f_i$, highest profit $p_i$, earliest start time $s_i$, or lowest frequency $f_i$).
+2. **Sort or Order the Input**:
+   - Arrange candidate items based on the chosen criterion. This sorting step typically dominates the time complexity at $O(n \log n)$.
+3. **Iterate and Choose Feasible Items**:
+   - Walk through the sorted candidates one by one. Include each candidate in the solution set if and only if it keeps the solution **feasible** (satisfies all problem constraints).
+4. **Never Reconsider (Irrevocability)**:
+   - Once a choice is made (committed or permanently rejected), it is final. There is zero backtracking.
 
 ---
 
 ## 1. Fractional Knapsack Problem
 
-> [!note] Problem Definition
-> Given $n$ items, each with a weight $w_i > 0$ and value $v_i > 0$, and a knapsack of capacity $W$. We want to choose how much of each item to carry (fractions $x_i \in [0, 1]$) to maximize the total value carried without exceeding capacity $W$.
+> [!note] Problem Formulation
+> - **Given**: $n$ items, where each item $i$ has an integer weight $w_i > 0$ and value $v_i > 0$. A knapsack of total weight capacity $W$.
+> - **Goal**: Maximize the total value carried in the knapsack.
+> - **Constraints**: Total weight $\le W$. Items may be broken into arbitrary continuous fractions ($x_i \in [0, 1]$).
 > 
-> $$\text{Maximize } \sum_{i=1}^{n} x_i v_i \quad \text{subject to} \quad \sum_{i=1}^{n} x_i w_i \le W \quad \text{where } 0 \le x_i \le 1$$
-
-> [!warning] Contrast: Fractional vs 0/1 Knapsack
-> - **Fractional Knapsack**: Items can be broken into arbitrary continuous fractions ($x_i \in [0, 1]$). Solvable greedily in $O(n \log n)$.
-> - **0/1 Knapsack**: Each item must be taken whole ($x_i = 1$) or left behind ($x_i = 0$). The greedy approach **fails**; Dynamic Programming ($O(nW)$) or Branch & Bound is required.
-
-### Greedy Criterion
-Calculate the value per unit weight $r_i = \frac{v_i}{w_i}$ for each item. Take items in descending order of $r_i$. When an item cannot fit completely, take whatever fraction fills the remaining knapsack capacity.
+> $$\text{Maximize } \sum_{i=1}^{n} x_i v_i \quad \text{subject to} \quad \sum_{i=1}^{n} x_i w_i \le W, \quad \text{where } 0 \le x_i \le 1$$
 
 ---
 
-### Worked Example (Step-by-Step)
+### Contrast: Fractional vs. 0/1 Knapsack
 
-> [!example]- 📊 Worked Example: Capacity $W = 50$
-> **Given Items:**
+> [!warning] Critical Exam Distinction
+> - **Fractional Knapsack (Greedy Works)**: Items can be divided continuously (e.g., gold dust, liquids, grains). Greedy choice by value-to-weight ratio achieves the exact global optimum in $O(n \log n)$.
+> - **0/1 Knapsack (Greedy Fails)**: Items must be taken whole ($x_i = 1$) or left behind ($x_i = 0$) (e.g., laptops, gold ingots). Greedy heuristics fail because taking a high-ratio item might leave unused capacity that cannot be filled. Dynamic Programming ($O(nW)$) or Branch & Bound is strictly required.
+
+> [!example]- ❌ Counter-Example: Why Greedy Fails on 0/1 Knapsack
+> Let capacity $W = 50$.
+> - Item 1: $w_1 = 10, v_1 = 60 \implies \text{ratio} = 6.0$
+> - Item 2: $w_2 = 20, v_2 = 100 \implies \text{ratio} = 5.0$
+> - Item 3: $w_3 = 30, v_3 = 120 \implies \text{ratio} = 4.0$
 > 
-> | Item | Weight ($w_i$) | Value ($v_i$) | Ratio ($v_i / w_i$) |
+> **Greedy approach for 0/1**:
+> - Takes Item 1 ($w=10, v=60$, remaining capacity $= 40$).
+> - Takes Item 2 ($w=20, v=100$, remaining capacity $= 20$).
+> - Cannot take Item 3 ($w=30 > 20$).
+> - **Total Greedy Value** $= 60 + 100 = \mathbf{160}$ (weight $= 30$).
+> 
+> **Optimal 0/1 Choice**:
+> - Take Item 2 and Item 3 ($w = 20 + 30 = 50$).
+> - **Optimal Total Value** $= 100 + 120 = \mathbf{220}$.
+> - *Greedy produced 160 vs Optimal 220 $\implies$ Greedy fails for 0/1 Knapsack.*
+
+---
+
+### Greedy Strategy & Criterion
+
+1. **Compute Ratios**: For each item $i$, calculate value per unit weight $r_i = \frac{v_i}{w_i}$.
+2. **Sort Descending**: Order items such that $r_1 \ge r_2 \ge \dots \ge r_n$ in $O(n \log n)$.
+3. **Fill Greedily**: Walk through items in descending ratio order. Take $100\%$ of each item as long as it fits within the remaining capacity.
+4. **Take Fraction**: When the next item cannot fit completely, take a fractional amount $x_i = \frac{\text{remaining capacity}}{w_i}$ to fill the knapsack completely, then terminate.
+
+---
+
+### Worked Example (From Lecture Slides)
+
+> [!example]- 📊 Simulation: Capacity $W = 50$
+> **Input Items:**
+> 
+> | Item | Weight ($w_i$) | Value ($v_i$) | Ratio ($r_i = v_i/w_i$) |
 > | :---: | :---: | :---: | :---: |
 > | **A** | 10 | 60 | 6.0 |
 > | **B** | 20 | 100 | 5.0 |
 > | **C** | 30 | 120 | 4.0 |
 > 
-> **Execution Steps:**
-> 1. **Compute Ratios & Sort**: 
->    - $r_A = 60/10 = 6.0$
->    - $r_B = 100/20 = 5.0$
->    - $r_C = 120/30 = 4.0$
->    - Sorted Order: Item A $\to$ Item B $\to$ Item C.
+> **Step-by-Step Execution Trace:**
+> 1. **Sort by Ratio**: Order is Item A ($6.0$) $\to$ Item B ($5.0$) $\to$ Item C ($4.0$).
 > 2. **Process Item A**:
->    - Weight $10 \le 50$ (fits completely).
->    - Take $100\%$ of A: Weight used $= 10$, Value earned $= 60$, Remaining capacity $= 50 - 10 = 40$.
+>    - Weight $w_A = 10 \le W = 50$.
+>    - Take $x_A = 1.0$ ($100\%$).
+>    - Value added $= 60$, Remaining capacity $= 50 - 10 = 40$.
 > 3. **Process Item B**:
->    - Weight $20 \le 40$ (fits completely).
->    - Take $100\%$ of B: Weight used $= 10 + 20 = 30$, Value earned $= 60 + 100 = 160$, Remaining capacity $= 40 - 20 = 20$.
+>    - Weight $w_B = 20 \le 40$.
+>    - Take $x_B = 1.0$ ($100\%$).
+>    - Value added $= 100$, Remaining capacity $= 40 - 20 = 20$.
 > 4. **Process Item C**:
->    - Weight $30 > 20$ (cannot fit whole).
->    - Take fraction $x_C = \frac{\text{Remaining Capacity}}{w_C} = \frac{20}{30} = \frac{2}{3} \approx 66.7\%$.
+>    - Weight $w_C = 30 > 20$ (cannot fit fully).
+>    - Take fraction $x_C = \frac{20}{30} = \frac{2}{3} \approx 66.7\%$.
 >    - Value added $= \frac{2}{3} \times 120 = 80$.
->    - Knapsack is now completely full (Weight $= 50$).
+>    - Remaining capacity $= 0$. Stop.
 > 
-> **Final Result:**
+> **Summary Table:**
+> 
+> | Item | Weight Taken | Fraction Taken ($x_i$) | Value Earned |
+> | :---: | :---: | :---: | :---: |
+> | **A** | 10 | $100\%$ | 60 |
+> | **B** | 20 | $100\%$ | 100 |
+> | **C** | 20 | $66.7\%$ | 80 |
+> | **Total** | **50 / 50** | — | **240** |
+> 
 > $$\text{Maximum Total Value} = 60 + 100 + 80 = \mathbf{240}$$
 
 ---
 
-### Code Implementation (C++)
+### Algorithmic Pseudocode & C++ Implementation
+
+> [!note]- 📜 Algorithmic Pseudocode
+> ```text
+> FRACTIONAL-KNAPSACK(items, W):
+>     //items is an array of structs with (id, weight, value)
+>     for each item i in items:
+>         i.ratio = i.value / i.weight
+>     
+>     SORT items in descending order of ratio
+>     
+>     current_weight = 0
+>     total_value = 0.0
+>     x = array of size n initialized to 0.0
+>     
+>     for i = 1 to n:
+>         if current_weight + items[i].weight <= W:
+>             x[items[i].id] = 1.0
+>             current_weight = current_weight + items[i].weight
+>             total_value = total_value + items[i].value
+>         else:
+>             remaining = W - current_weight
+>             x[items[i].id] = remaining / items[i].weight
+>             total_value = total_value + x[items[i].id] * items[i].value
+>             current_weight = W
+>             break
+>             
+>     return total_value, x
+> ```
 
 ```cpp
 #include <iostream>
@@ -103,10 +204,11 @@ struct Item {
     double ratio;
 };
 
+//fractional knapsack solver
 pair<double, vector<double>> fractionalKnapsack(vector<Item>& items, double capacity) {
     int n = items.size();
     
-    //compute value-to-weight ratios
+    //compute value to weight ratio
     for (int i = 0; i < n; i++) {
         items[i].ratio = items[i].value / items[i].weight;
     }
@@ -118,24 +220,24 @@ pair<double, vector<double>> fractionalKnapsack(vector<Item>& items, double capa
 
     vector<double> x(n, 0.0);
     double current_weight = 0.0;
-    double max_value = 0.0;
+    double total_value = 0.0;
 
-    //fill knapsack greedily
+    //greedily pick highest ratio items
     for (int i = 0; i < n; i++) {
         if (current_weight + items[i].weight <= capacity) {
             x[items[i].id] = 1.0;
             current_weight += items[i].weight;
-            max_value += items[i].value;
+            total_value += items[i].value;
         } else {
             double remaining = capacity - current_weight;
             x[items[i].id] = remaining / items[i].weight;
-            max_value += x[items[i].id] * items[i].value;
+            total_value += x[items[i].id] * items[i].value;
             current_weight = capacity;
             break; //knapsack full
         }
     }
 
-    return {max_value, x};
+    return {total_value, x};
 }
 ```
 
@@ -144,55 +246,73 @@ pair<double, vector<double>> fractionalKnapsack(vector<Item>& items, double capa
 ### Complexity Analysis & Step-by-Step Derivation
 
 #### Time Complexity: $O(n \log n)$
-1. **Ratio Computation**: Iterating through $n$ items to compute $r_i = \frac{v_i}{w_i}$ takes $n \times O(1) = O(n)$ time.
-2. **Sorting**: Sorting $n$ items by ratio takes $O(n \log n)$ time using comparison-based sorting (`std::sort`).
-3. **Greedy Loop**: We scan through the items at most once, performing $O(1)$ arithmetic operations per item, taking $O(n)$ time.
+1. **Ratio Computation**: Iterating through all $n$ items to compute $r_i = v_i / w_i$ takes $n \times O(1) = O(n)$ time.
+2. **Sorting**: Sorting $n$ items by ratio takes $O(n \log n)$ time using comparison sorting (`std::sort`).
+3. **Greedy Loop**: We scan through the items array at most once, performing $O(1)$ arithmetic operations per item, taking $O(n)$ time.
 4. **Total Time**:
    $$T(n) = O(n) + O(n \log n) + O(n) = O(n \log n)$$
 
 #### Space Complexity: $O(n)$
-- Storing the items, computed ratios, and the fraction solution vector $x$ takes $O(n)$ auxiliary space.
+- $O(n)$ auxiliary space to store item structs, computed ratios, and the resulting fraction array $x$.
 
 ---
 
 ## 2. Activity Selection Problem (Interval Scheduling)
 
-> [!note] Problem Definition
-> Given a single shared resource (e.g., a room or processor) and a set of $n$ activities, each with a start time $s_i$ and finish time $f_i$ (interval $[s_i, f_i)$). Select the **largest possible set of mutually compatible activities** (no two selected activities overlap).
-> 
-> Two activities $i$ and $j$ are compatible if $s_i \ge f_j$ or $s_j \ge f_i$.
+> [!note] Problem Formulation
+> - **Given**: A single shared resource (e.g., lecture hall, CPU) and a set of $n$ activities $S = \{a_1, a_2, \dots, a_n\}$. Each activity $i$ has a start time $s_i$ and finish time $f_i$, represented by interval $[s_i, f_i)$ with $s_i < f_i$.
+> - **Goal**: Select the **maximum-cardinality subset** of mutually compatible activities.
+> - **Constraint**: Activities $i$ and $j$ are **compatible** if they do not overlap:
+>   $$s_i \ge f_j \quad \text{or} \quad s_j \ge f_i$$
 
 ---
 
-### Exploring Greedy Criteria & Counter-Examples
+### Analysis of Sorting Options & Visual Counter-Examples
 
-Why does **Earliest Finish Time** work while other intuitive strategies fail?
+Why does **Earliest Finish Time** succeed while other intuitive greedy heuristics fail?
 
-> [!question]- ❌ Counter-Examples: Why Other Sorting Criteria Fail
-> 1. **Option 1: Earliest Start Time ($s_i$)**
->    - *Idea*: Pick the activity that starts first.
->    - *Counter-Example*: Activities $(1, 6), (2, 3), (4, 5)$.
->    - Earliest start picks $(1, 6)$, which blocks both $(2, 3)$ and $(4, 5)$.
->    - Result: 1 activity chosen vs optimal 2 activities $\{(2,3), (4,5)\}$.
+```
+1. Earliest Start Time Strategy (FAILS):
+   Long activity:   [===========================================]  (Picked: 1)
+   Short options:      [====]     [====]     [====]     [====]     (Optimal: 4)
+
+2. Shortest Duration Strategy (FAILS):
+   Option A & B:    [============]           [============]        (Optimal: 2)
+   Short activity:          [=============]                        (Picked: 1)
+
+3. Fewest Conflicts Strategy (FAILS):
+   Left clique (4):    === === === ===
+   Center activity:          [==================]                  (Picked: 1)
+   Right clique (4):                       === === === ===         (Optimal: 8)
+```
+
+> [!question]- ❌ Detailed Breakdown: The 3 Counter-Examples from Slide 15
 > 
-> 2. **Option 2: Shortest Activity Duration ($f_i - s_i$)**
->    - *Idea*: Pick the shortest activity to leave room for others.
->    - *Counter-Example*: Activities $(5, 8), (1, 6), (7, 15)$.
->    - Shortest duration is $(5, 8)$ (length 3). Picking it conflicts with both $(1, 6)$ and $(7, 15)$.
->    - Result: 1 activity chosen vs optimal 2 activities $\{(1,6), (7,15)\}$.
+> 1. **Option 1: Earliest Start Time ($s_i$)**
+>    - *Greedy Rule*: Pick the activity that starts earliest.
+>    - *Counter-Example*: Activities $(1, 10), (2, 3), (4, 5), (6, 7), (8, 9)$.
+>    - Earliest start chooses $(1, 10)$, which blocks all other 4 activities.
+>    - Result: $1$ activity selected vs. Optimal $4$ activities.
+> 
+> 2. **Option 2: Shortest Duration ($f_i - s_i$)**
+>    - *Greedy Rule*: Pick the shortest activity to leave as much room as possible.
+>    - *Counter-Example*: Activities $(1, 6), (5, 8), (7, 15)$.
+>    - The shortest interval is $(5, 8)$ of length $3$. Selecting $(5, 8)$ conflicts with both $(1, 6)$ and $(7, 15)$.
+>    - Result: $1$ activity selected vs. Optimal $2$ activities $\{(1, 6), (7, 15)\}$.
 > 
 > 3. **Option 3: Minimum Overlaps / Fewest Conflicts**
->    - *Idea*: Pick the activity that overlaps with the fewest remaining activities.
->    - *Counter-Example*: A central activity overlaps with 2 activities, while other activities on both sides form long overlapping chains. Picking the minimum conflict node can split the timeline in a way that destroys larger independent compatible chains.
+>    - *Greedy Rule*: Pick the activity that overlaps with the fewest remaining candidates.
+>    - *Counter-Example (11 intervals total)*: A single central interval overlaps with 2 flanking intervals (conflict count $= 2$). However, on the left side, the flanking interval overlaps with 3 other parallel intervals (forming a clique of 4); similarly on the right side.
+>    - Picking the minimum conflict node (count $= 2$) destroys both sides, yielding at most $2$ to $4$ total activities, whereas picking the cliques yields $8$ activities!
 > 
 > **✅ Correct Greedy Criterion: Earliest Finish Time ($f_i$)**
-> By picking the activity that finishes earliest, we free up the resource as soon as possible, leaving the maximum remaining time available for subsequent activities.
+> By picking the activity that finishes earliest, we free up the resource as early as possible, maximizing the remaining time available for future activities.
 
 ---
 
 ### Worked Example (From Lecture Slides)
 
-> [!example]- 📊 Worked Example: Scheduling 6 Activities
+> [!example]- 📊 Simulation: 6 Activities
 > **Given Activities:**
 > - Activity 1: $[2, 7)$
 > - Activity 2: $[3, 4)$
@@ -201,27 +321,44 @@ Why does **Earliest Finish Time** work while other intuitive strategies fail?
 > - Activity 5: $[3.9, 5.7)$
 > - Activity 6: $[5.9, 7.5)$
 > 
-> **Execution Steps:**
-> 1. **Sort ascending by finish time ($f_i$):**
->    - Activity 4: $[2.2, \mathbf{3.5})$
->    - Activity 2: $[3, \mathbf{4.0})$
->    - Activity 5: $[3.9, \mathbf{5.7})$
->    - Activity 3: $[4.5, \mathbf{6.5})$
->    - Activity 1: $[2, \mathbf{7.0})$
->    - Activity 6: $[5.9, \mathbf{7.5})$
-> 2. **Iterate and Select:**
->    - Always pick first: **Select Activity 4** $[2.2, 3.5)$. $\text{Last Finish} = 3.5$.
->    - Activity 2: Start $3.0 < 3.5$ (overlap $\implies$ skip).
->    - Activity 5: Start $3.9 \ge 3.5$ $\implies$ **Select Activity 5** $[3.9, 5.7)$. $\text{Last Finish} = 5.7$.
->    - Activity 3: Start $4.5 < 5.7$ (overlap $\implies$ skip).
->    - Activity 1: Start $2.0 < 5.7$ (overlap $\implies$ skip).
->    - Activity 6: Start $5.9 \ge 5.7$ $\implies$ **Select Activity 6** $[5.9, 7.5)$. $\text{Last Finish} = 7.5$.
+> **Step 1: Sort by Finish Time ($f_i$) Ascending:**
+> 1. **Activity 4**: $[2.2, \mathbf{3.5})$
+> 2. **Activity 2**: $[3.0, \mathbf{4.0})$
+> 3. **Activity 5**: $[3.9, \mathbf{5.7})$
+> 4. **Activity 3**: $[4.5, \mathbf{6.5})$
+> 5. **Activity 1**: $[2.0, \mathbf{7.0})$
+> 6. **Activity 6**: $[5.9, \mathbf{7.5})$
 > 
-> **Final Selected Set:** $\{4, 5, 6\}$ (Total = 3 activities).
+> **Step 2: Linear Greedy Scan:**
+> - **Select Activity 4** $[2.2, 3.5)$ $\implies \text{Last Finish} = 3.5$.
+> - **Check Activity 2**: Start $3.0 < 3.5$ (Conflict $\implies$ Skip).
+> - **Check Activity 5**: Start $3.9 \ge 3.5$ $\implies$ **Select Activity 5** $[3.9, 5.7)$, $\text{Last Finish} = 5.7$.
+> - **Check Activity 3**: Start $4.5 < 5.7$ (Conflict $\implies$ Skip).
+> - **Check Activity 1**: Start $2.0 < 5.7$ (Conflict $\implies$ Skip).
+> - **Check Activity 6**: Start $5.9 \ge 5.7$ $\implies$ **Select Activity 6** $[5.9, 7.5)$, $\text{Last Finish} = 7.5$.
+> 
+> **Final Optimal Subset**: $\{4, 5, 6\}$ (Total = 3 activities).
 
 ---
 
-### Code Implementation (C++)
+### Algorithmic Pseudocode & C++ Implementation
+
+> [!note]- 📜 Algorithmic Pseudocode
+> ```text
+> ACTIVITY-SELECTION(S):
+>     //S is a set of n activities with start time s_i and finish time f_i
+>     SORT S in ascending order of finish time f_i
+>     
+>     A = { S[1] }          //always select the earliest finishing activity
+>     last_finish = S[1].f
+>     
+>     for i = 2 to n:
+>         if S[i].s >= last_finish:
+>             A = A U { S[i] }
+>             last_finish = S[i].f
+>             
+>     return A
+> ```
 
 ```cpp
 #include <iostream>
@@ -236,22 +373,23 @@ struct Activity {
     double finish;
 };
 
+//activity selection via earliest finish time
 vector<int> activitySelection(vector<Activity>& activities) {
     int n = activities.size();
     if (n == 0) return {};
 
-    //sort activities by finish time ascending
+    //sort ascending by finish time
     sort(activities.begin(), activities.end(), [](const Activity& a, const Activity& b) {
         return a.finish < b.finish;
     });
 
     vector<int> selected;
     
-    //always take the earliest finishing activity
+    //always take the first activity
     selected.push_back(activities[0].id);
     double last_finish = activities[0].finish;
 
-    //scan through remaining activities
+    //scan remaining activities
     for (int i = 1; i < n; i++) {
         if (activities[i].start >= last_finish) {
             selected.push_back(activities[i].id);
@@ -268,40 +406,44 @@ vector<int> activitySelection(vector<Activity>& activities) {
 ### Complexity Analysis & Step-by-Step Derivation
 
 #### Time Complexity: $O(n \log n)$
-1. **Sorting**: Ordering $n$ activities by finish time takes $O(n \log n)$.
-2. **Linear Selection Pass**: We examine each activity once with an $O(1)$ comparison (`start >= last_finish`). Over $n$ items, this is $O(n)$.
+1. **Sorting**: Ordering $n$ activities by finish time takes $O(n \log n)$ using merge sort / quicksort (`std::sort`).
+2. **Linear Selection Pass**: A single pass through the $n$ sorted activities performs one comparison (`start >= last_finish`) per activity $\implies n \times O(1) = O(n)$.
 3. **Total Time**:
    $$T(n) = O(n \log n) + O(n) = O(n \log n)$$
-   *(If activities are pre-sorted, running time is $O(n)$).*
+   *(Note: If input activities are already pre-sorted by finish time, time complexity is strictly $O(n)$).*
 
 #### Space Complexity: $O(n)$
-- $O(n)$ auxiliary space to store input structures and the output array of selected activities.
+- $O(n)$ auxiliary space to store input structures and the array of selected activity IDs.
 
 ---
 
-### Proof of Correctness
+### Proof of Correctness (3 Versions)
 
 > [!info] 🧠 1. Intuitive Explanation (Plain English)
-> **The Free Time Analogy**: Imagine you want to watch as many movies as possible in a single day. If you pick a movie that ends at 10:00 AM instead of one that ends at 1:00 PM, you free up your schedule 3 hours earlier! 
-> By always choosing the movie that finishes earliest, you leave the **maximum possible remaining time** to fit in more movies later. Swapping an optimal schedule's first choice for our earliest-finishing choice can only free up more time, never less.
+> **The Free Time / Movie Marathon Analogy**: Imagine you want to watch as many movies as possible in a single day. If you choose a movie that ends at 10:00 AM instead of one that ends at 1:00 PM, you free up your schedule 3 hours earlier! 
+> By consistently selecting the activity that finishes earliest, you leave the **maximum possible remaining time** to fit in more activities later. Swapping an optimal schedule's first choice for our earliest-finishing choice can only free up more time, never less.
 
-> [!tip]- 📝 2. Exam-Ready Proof (Short & Concise)
-> - **Setup**: Let $G = \{g_1, g_2, \dots, g_m\}$ be the Greedy set and $O = \{r_1, r_2, \dots, r_n\}$ be an Optimal set, both sorted by finish times. Assume $G \ne O$ and $n \ge m$.
-> - **First Mismatch**: Let $k$ be the first index where $g_k \ne r_k$. Up to $k-1$, both sets are identical.
-> - **Exchange Argument**: Since Greedy picks the earliest finish time among compatible candidates, $f(g_k) \le f(r_k)$. Replacing $r_k$ with $g_k$ in $O$ gives $O' = (O \setminus \{r_k\}) \cup \{g_k\}$. Since $s(r_{k+1}) \ge f(r_k) \ge f(g_k)$, $g_k$ does not conflict with $r_{k+1}$. $O'$ remains valid, compatible, and optimal with $|O'| = n$.
-> - **Contradiction**: Repeat this exchange until $O$ contains all elements of $G$. If $n > m$, there must exist an activity $r_{m+1} \in O$ starting after $g_m$. But Greedy only stops when no compatible activity remains, so $r_{m+1}$ cannot exist.
+> [!tip]- 📝 2. Exam-Ready Proof (Rapid 2-Minute Version)
+> - **Setup**: Let $G = \{g_1, g_2, \dots, g_m\}$ be the Greedy set and $O = \{r_1, r_2, \dots, r_n\}$ be an Optimal set, both ordered by finish times ($n \ge m$).
+> - **First Difference**: Let $k$ be the first index where $g_k \ne r_k$. Up to $k-1$, both sets are identical.
+> - **Exchange Argument**:
+>   - By greedy choice, $g_k$ has the earliest finish time among all candidates compatible with $g_{k-1}$, so $f(g_k) \le f(r_k)$.
+>   - Since $r_{k+1}$ starts after $r_k$ finishes ($s(r_{k+1}) \ge f(r_k) \ge f(g_k)$), replacing $r_k$ with $g_k$ in $O$ creates no conflict with $r_{k+1}$.
+>   - The modified set $O' = (O \setminus \{r_k\}) \cup \{g_k\}$ is valid, compatible, and optimal with $|O'| = n$.
+> - **Contradiction**: Repeat this exchange until $O$ contains all elements of $G$. If $n > m$, there must exist an activity $r_{m+1} \in O$ starting after $g_m$. But Greedy only stops when no compatible activity remains, so $r_{m+1}$ would have been picked by Greedy. Contradiction!
 > - **Conclusion**: $m = n \implies |G| = |O|$. Greedy is optimal. $\blacksquare$
 
-> [!success]- 🔬 3. Rigorous Slide Proof (Step-by-Step Mathematical Proof)
+> [!success]- 🔬 3. Slide-Exact 5-Step Proof (Rigorous Lecture Version)
 > ##### Step 1: Setup
 > Let $G = \{g_1, g_2, \dots, g_m\}$ be the set of intervals selected by the greedy algorithm.
 > Let $O = \{r_1, r_2, \dots, r_n\}$ be the set of intervals in some optimal solution.
-> If $G = O$, then $G$ is already optimal. Assume $G \ne O$.
-> Since $O$ is optimal and $G$ is valid, $n \ge m$.
+> If $G = O$, then $G$ is already optimal. If $G \ne O$, since $O$ is optimal and $G$ is valid, $n \ge m$.
+> **Goal**: Prove by contradiction that $G$ and $O$ have the same size ($m = n$).
 > 
 > ##### Step 2: Ordered Sequences
-> Write both solutions ordered by finish time:
-> $$G = \{g_1, g_2, \dots, g_m\}, \quad O = \{r_1, r_2, \dots, r_n\}$$
+> Write both solutions as sequences, ordered by finish time:
+> $$G = \{g_1, g_2, \dots, g_m\}$$
+> $$O = \{r_1, r_2, \dots, r_n\} \quad (\text{where } n \ge m)$$
 > 
 > ##### Step 3: The First Mismatch
 > Let $k$ be the index of the first interval where the two sequences differ:
@@ -310,17 +452,19 @@ vector<int> activitySelection(vector<Activity>& activities) {
 > (The first $k-1$ intervals already agree).
 > 
 > ##### Step 4: The Exchange
-> Both $g_k$ and $r_k$ are compatible with $g_{k-1}$, so start times create no conflict with earlier choices.
-> By greedy choice, $g_k$ has the earliest finish time among available compatible intervals, so:
-> $$f_{g_k} \le f_{r_k}$$
-> Since $r_{k+1}$ starts after $r_k$ finishes ($s_{r_{k+1}} \ge f_{r_k} \ge f_{g_k}$), replacing $r_k$ with $g_k$ in $O$ creates no conflict with $r_{k+1}$.
+> Both $g_k$ and $r_k$ are compatible with $g_{k-1}$, so different start times create no conflict with earlier choices.
+> By greedy choice, $g_k$ has the earliest finish time among available compatible intervals:
+> $$f(g_k) \le f(r_k)$$
+> Since $r_{k+1}$ starts after $r_k$ finishes ($s(r_{k+1}) \ge f(r_k) \ge f(g_k)$), replacing $r_k$ with $g_k$ creates no conflict with $r_{k+1}$.
 > After replacement:
 > $$O' = \{g_1, g_2, \dots, g_{k-1}, g_k, r_{k+1}, \dots, r_n\}$$
+> $O'$ is valid, compatible, and $|O'| = |O| = n$.
 > 
 > ##### Step 5: Iteration & Contradiction
-> By repeating this process, we can replace all $g_i$ into $O$, yielding:
-> $$O = \{g_1, g_2, \dots, g_m, \dots, r_n\}$$
-> Suppose, for contradiction, that $O$ contains an interval after $g_m$ that does not conflict with it. By definition, greedy only terminates when no remaining interval is compatible with its last choice. Such an interval would have been selected by greedy and would already belong to $G$, contradicting that it is exclusive to $O$.
+> By repeating this process for all indices, we can replace all $g_i$ into the set $O$:
+> $$O = \{g_1, g_2, \dots, g_m, r_{m+1}, \dots, r_n\}$$
+> Suppose, for contradiction, that $O$ contains an interval after $g_m$ that does not conflict with it ($n > m$).
+> By definition, Greedy only terminates when no remaining interval is compatible with its last choice. So such an interval would have been selected by Greedy and would already belong to $G$, contradicting the assumption that it is exclusive to $O$.
 > Hence no such interval exists, and $O$ cannot extend past $G$.
 > 
 > $$\therefore |G| = |O| \implies \text{Greedy is Optimal.} \quad \blacksquare$$
@@ -329,16 +473,22 @@ vector<int> activitySelection(vector<Activity>& activities) {
 
 ## 3. Job Sequencing with Deadlines
 
-> [!note] Problem Definition
-> Given $n$ jobs, each taking **exactly 1 unit of time** to execute. Each job $i$ has a deadline $d_i \ge 1$ and a profit $p_i > 0$. At most one job can run in any time slot. A job earns its profit $p_i$ if and only if it completes on or before its deadline (scheduled in slot $t \le d_i$).
-> 
-> **Goal**: Maximize the total profit from completed jobs.
+> [!note] Problem Formulation
+> - **Given**: $n$ jobs, where each job $i$ takes **exactly 1 unit of time** to execute. Each job $i$ has an integer deadline $d_i \ge 1$ and a profit $p_i > 0$.
+> - **Resource**: A single machine/processor that can execute at most one job in any time slot $[t-1, t]$.
+> - **Goal**: Schedule a subset of jobs to **maximize total profit**.
+> - **Constraint**: A job earns its profit $p_i$ if and only if it finishes on or before its deadline (scheduled in slot $t \le d_i$).
 
-### Greedy Criterion
-1. **Sort all jobs by profit in descending order**.
-2. **Scan in profit order**: Take each job in turn (most profitable first).
-3. **Find the latest free slot**: Search for the latest available time slot $t$ such that $1 \le t \le d_i$.
-4. **Place or skip**: If a free slot exists, schedule the job in that slot; otherwise, skip the job (it cannot earn profit).
+---
+
+### Greedy Strategy & Criterion
+
+1. **Sort by Profit Descending**: Order all jobs such that $p_1 \ge p_2 \ge \dots \ge p_n$ in $O(n \log n)$.
+2. **Scan in Profit Order**: Process each job in turn, highest profit first.
+3. **Find the Latest Free Slot**: For job $j$ with deadline $d_j$, search for the latest available integer time slot $t$ such that $1 \le t \le \min(d_{\max}, d_j)$.
+4. **Place or Skip**:
+   - If a free slot $t$ exists, assign the job to slot $t$ and earn profit $p_j$.
+   - If all slots from $d_j$ down to $1$ are occupied, the job cannot be completed before its deadline $\implies$ **skip the job**.
 
 ---
 
@@ -347,34 +497,34 @@ vector<int> activitySelection(vector<Activity>& activities) {
 > [!example]- 📊 Worked Example 1: Four Jobs
 > **Input Jobs:**
 > 
-> | JobID | Deadline | Profit |
+> | Job | Deadline ($d_i$) | Profit ($p_i$) |
 > | :---: | :---: | :---: |
 > | $a$ | 4 | 20 |
 > | $b$ | 1 | 10 |
 > | $c$ | 1 | 40 |
 > | $d$ | 1 | 30 |
 > 
-> **Step 1: Sort by Profit Descending**
-> 1. Job $c$ (Deadline 1, Profit 40)
-> 2. Job $d$ (Deadline 1, Profit 30)
-> 3. Job $a$ (Deadline 4, Profit 20)
-> 4. Job $b$ (Deadline 1, Profit 10)
+> **Step 1: Sort by Profit Descending:**
+> 1. Job $c$ ($d=1, p=40$)
+> 2. Job $d$ ($d=1, p=30$)
+> 3. Job $a$ ($d=4, p=20$)
+> 4. Job $b$ ($d=1, p=10$)
 > 
 > Max deadline $d_{\max} = 4$. Time slots: `[Slot 1, Slot 2, Slot 3, Slot 4]`.
 > 
-> **Step 2: Slot Placement Trace**
-> - **Job $c$**: Deadline 1 $\to$ Slot 1 is free $\to$ **Assign $c$ to Slot 1**. Slots: `[c, empty, empty, empty]`.
-> - **Job $d$**: Deadline 1 $\to$ Slot 1 is occupied $\to$ No earlier slot $\to$ **Skip $d$**.
-> - **Job $a$**: Deadline 4 $\to$ Slot 4 is free $\to$ **Assign $a$ to Slot 4**. Slots: `[c, empty, empty, a]`.
-> - **Job $b$**: Deadline 1 $\to$ Slot 1 is occupied $\to$ No earlier slot $\to$ **Skip $b$**.
+> **Step 2: Slot Allocation Trace:**
+> - **Job $c$**: Deadline 1 $\to$ Slot 1 is free $\to$ **Assign $c$ to Slot 1**. Slots: `[c, -, -, -]`.
+> - **Job $d$**: Deadline 1 $\to$ Slot 1 is taken $\to$ No earlier slot $\to$ **Skip $d$**.
+> - **Job $a$**: Deadline 4 $\to$ Slot 4 is free $\to$ **Assign $a$ to Slot 4**. Slots: `[c, -, -, a]`.
+> - **Job $b$**: Deadline 1 $\to$ Slot 1 is taken $\to$ No earlier slot $\to$ **Skip $b$**.
 > 
 > **Output:** Scheduled jobs: $\{c, a\}$ in slots 1 and 4.
-> $$\text{Total Profit} = 40 + 20 = \mathbf{60}$$
+> $$\text{Total Maximum Profit} = 40 + 20 = \mathbf{60}$$
 
 > [!example]- 📊 Worked Example 2: Five Jobs
 > **Input Jobs:**
 > 
-> | JobID | Deadline | Profit |
+> | Job | Deadline ($d_i$) | Profit ($p_i$) |
 > | :---: | :---: | :---: |
 > | $a$ | 2 | 100 |
 > | $b$ | 1 | 19 |
@@ -382,28 +532,70 @@ vector<int> activitySelection(vector<Activity>& activities) {
 > | $d$ | 1 | 25 |
 > | $e$ | 3 | 15 |
 > 
-> **Step 1: Sort by Profit Descending**
-> 1. Job $a$ (Deadline 2, Profit 100)
-> 2. Job $c$ (Deadline 2, Profit 27)
-> 3. Job $d$ (Deadline 1, Profit 25)
-> 4. Job $b$ (Deadline 1, Profit 19)
-> 5. Job $e$ (Deadline 3, Profit 15)
+> **Step 1: Sort by Profit Descending:**
+> 1. Job $a$ ($d=2, p=100$)
+> 2. Job $c$ ($d=2, p=27$)
+> 3. Job $d$ ($d=1, p=25$)
+> 4. Job $b$ ($d=1, p=19$)
+> 5. Job $e$ ($d=3, p=15$)
 > 
 > Max deadline $d_{\max} = 3$. Time slots: `[Slot 1, Slot 2, Slot 3]`.
 > 
-> **Step 2: Slot Placement Trace**
-> - **Job $a$**: Deadline 2 $\to$ Slot 2 is free $\to$ **Assign $a$ to Slot 2**. Slots: `[empty, a, empty]`.
-> - **Job $c$**: Deadline 2 $\to$ Slot 2 is occupied $\to$ check Slot 1 $\to$ Slot 1 is free $\to$ **Assign $c$ to Slot 1**. Slots: `[c, a, empty]`.
-> - **Job $d$**: Deadline 1 $\to$ Slot 1 is occupied $\to$ **Skip $d$**.
-> - **Job $b$**: Deadline 1 $\to$ Slot 1 is occupied $\to$ **Skip $b$**.
-> - **Job $e$**: Deadline 3 $\to$ Slot 3 is free $\to$ **Assign $e$ to Slot 3**. Slots: `[c, a, e]`.
+> **Step 2: Slot Allocation Trace:**
+> - **Job $a$**: Deadline 2 $\to$ Slot 2 is free $\to$ **Assign $a$ to Slot 2**. Slots: `[-, a, -]`.
+> - **Job $c$**: Deadline 2 $\to$ Slot 2 taken $\to$ check Slot 1 $\to$ Slot 1 free $\to$ **Assign $c$ to Slot 1**. Slots: `[c, a, -]`.
+> - **Job $d$**: Deadline 1 $\to$ Slot 1 taken $\to$ **Skip $d$**.
+> - **Job $b$**: Deadline 1 $\to$ Slot 1 taken $\to$ **Skip $b$**.
+> - **Job $e$**: Deadline 3 $\to$ Slot 3 free $\to$ **Assign $e$ to Slot 3**. Slots: `[c, a, e]`.
 > 
 > **Output:** Scheduled jobs: $\{c, a, e\}$ in slots 1, 2, 3.
-> $$\text{Total Profit} = 27 + 100 + 15 = \mathbf{142}$$
+> $$\text{Total Maximum Profit} = 27 + 100 + 15 = \mathbf{142}$$
 
 ---
 
-### Code Implementation (C++)
+### Disjoint-Set Union (DSU) Optimization ($O(n \log n)$)
+
+In the naive approach, searching for the latest free slot involves a linear backward scan taking $O(d)$ per job, leading to $O(n \cdot d) = O(n^2)$ worst-case time.
+
+We can optimize slot allocation to **almost $O(1)$ per job** using a **Disjoint Set Union (DSU / Union-Find)** structure:
+1. **Initialize**: Create parent pointers for slots $0, 1, 2, \dots, d_{\max}$, where `parent[i] = i`.
+   - The root/representative of slot $i$ represents the **latest available free slot $\le i$**.
+2. **Find Available Slot**: To schedule a job with deadline $d$, query `k = find(d)`.
+   - If $k > 0$, slot $k$ is the latest available free slot!
+   - Assign the job to slot $k$.
+3. **Union / Update**: Mark slot $k$ as occupied by linking it to the slot before it:
+   $$\text{parent}[k] = \text{find}(k - 1)$$
+   With path compression, future queries jump over all occupied slots in $O(\alpha(n)) \approx O(1)$ time!
+   - If $k = 0$, no free slot $\ge 1$ exists $\implies$ skip the job.
+
+---
+
+### Algorithmic Pseudocode & C++ Implementation
+
+> [!note]- 📜 Algorithmic Pseudocode (Naive & DSU)
+> ```text
+> JOB-SEQUENCING-DSU(jobs):
+>     SORT jobs in descending order of profit
+>     dmax = MAX(job.deadline for all jobs)
+>     
+>     //initialize dsu
+>     parent = array of size dmax + 1 where parent[i] = i
+>     
+>     function FIND(i):
+>         if parent[i] == i: return i
+>         parent[i] = FIND(parent[i])   //path compression
+>         return parent[i]
+>         
+>     totalProfit = 0
+>     for each job j in jobs:
+>         availableSlot = FIND(MIN(dmax, j.deadline))
+>         if availableSlot > 0:
+>             schedule j in availableSlot
+>             totalProfit = totalProfit + j.profit
+>             parent[availableSlot] = FIND(availableSlot - 1)  //merge with previous
+>             
+>     return totalProfit
+> ```
 
 ```cpp
 #include <iostream>
@@ -418,38 +610,46 @@ struct Job {
     int profit;
 };
 
-pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
+//dsu structure for slot finding
+struct DSU {
+    vector<int> parent;
+    DSU(int n) {
+        parent.resize(n + 1);
+        for (int i = 0; i <= n; i++) parent[i] = i;
+    }
+    int find(int i) {
+        if (parent[i] == i) return i;
+        return parent[i] = find(parent[i]); //path compression
+    }
+    void unite(int u, int v) {
+        parent[u] = v;
+    }
+};
+
+pair<vector<char>, int> jobSequencingDSU(vector<Job>& jobs) {
     int n = jobs.size();
     
-    //step 1: sort jobs in descending profit order
+    //sort jobs descending by profit
     sort(jobs.begin(), jobs.end(), [](const Job& a, const Job& b) {
         return a.profit > b.profit;
     });
 
     int maxDeadline = 0;
-    for (const auto& j : jobs) {
-        maxDeadline = max(maxDeadline, j.deadline);
-    }
+    for (const auto& j : jobs) maxDeadline = max(maxDeadline, j.deadline);
 
-    //slots 1..maxDeadline (-1 means empty)
-    vector<char> slot(maxDeadline + 1, '-'); 
+    DSU dsu(maxDeadline);
+    vector<char> slot(maxDeadline + 1, '-');
     int totalProfit = 0;
-    int jobsScheduled = 0;
 
-    //step 2: scan jobs in profit order
     for (const auto& j : jobs) {
-        //step 3: find latest free slot i with i <= deadline
-        for (int i = min(maxDeadline, j.deadline); i >= 1; i--) {
-            if (slot[i] == '-') {
-                //step 4: place it
-                slot[i] = j.id;
-                totalProfit += j.profit;
-                jobsScheduled++;
-                break;
-            }
-            //else: slot taken, try next earlier slot
+        //find latest free slot <= deadline
+        int availableSlot = dsu.find(min(maxDeadline, j.deadline));
+        if (availableSlot > 0) {
+            slot[availableSlot] = j.id;
+            totalProfit += j.profit;
+            //link this slot to the previous slot
+            dsu.unite(availableSlot, dsu.find(availableSlot - 1));
         }
-        //if no free slot found, job is skipped
     }
 
     return {slot, totalProfit};
@@ -460,41 +660,36 @@ pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
 
 ### Complexity Analysis & Step-by-Step Derivation
 
-#### 1. Sorting Jobs: $O(n \log n)$
-- Sorting $n$ jobs by profit in descending order costs $O(n \log n)$.
-
-#### 2. Naive Slot Search: $O(n \cdot d)$
-- For each of the $n$ jobs, we perform a backward scan from $\min(d_{\max}, d_i)$ down to 1.
-- In the worst case, this linear backward scan takes $O(d)$ steps per job, where $d = \min(n, \max d_i)$.
-- Across all $n$ jobs:
-  $$T_{\text{naive}}(n) = O(n \log n) + O(n \cdot d) = O(n \cdot d)$$
-- If deadlines are large ($d \approx n$), worst-case time is **$O(n^2)$**.
-
-#### 3. Disjoint-Set Union (Union-Find) Speedup: $O(n \log n)$
-- We can maintain a Disjoint-Set (DSU) where the representative of slot $t$ points to the **latest available free slot $\le t$**.
-- When slot $t$ is filled, we union $t$ with $t - 1$.
-- Each slot lookup takes nearly $O(1)$ time ($O(\alpha(n))$ with path compression).
-- Total time with Union-Find speedup:
-  $$T_{\text{DSU}}(n) = O(n \log n) + O(n \cdot \alpha(n)) = O(n \log n)$$
+#### Time Complexity:
+1. **Sorting Jobs**: Sorting $n$ jobs descending by profit takes $O(n \log n)$.
+2. **Slot Search**:
+   - **Naive Backward Scan**: Scanning up to $d$ slots per job costs $O(d)$. Over $n$ jobs, this takes $O(n \cdot d)$ where $d = \min(n, \max d_i)$. In the worst case ($d \approx n$), naive runtime is **$O(n^2)$**.
+   - **With DSU (Union-Find)**: Each `find()` operation with path compression runs in $O(\alpha(n))$ (inverse Ackermann, $\le 4$). Over $n$ jobs, slot allocation takes $n \times O(\alpha(n)) = O(n \alpha(n))$.
+3. **Total Time (DSU Optimized)**:
+   $$T(n) = O(n \log n) + O(n \alpha(n)) = O(n \log n)$$
 
 #### Space Complexity: $O(n + d)$
-- $O(n)$ to store jobs $+ O(d)$ for slot tracking array/DSU.
+- $O(n)$ space for storing jobs $+ O(d)$ for slot array and DSU parent pointers ($d \le n$).
 
 ---
 
-### Proof of Correctness
+### Proof of Correctness (3 Versions)
 
 > [!info] 🧠 1. Intuitive Explanation (Plain English)
-> **The Procrastination Analogy**: To maximize earnings, you prioritize the highest-paying tasks. But **you shouldn't do a task earlier than necessary!** By postponing each high-paying task to the absolute latest available slot before its deadline, you lock in the big reward while leaving all earlier slots wide open for tighter-deadline tasks.
+> **The Procrastination Analogy**: To maximize total earnings, you obviously prioritize the highest-paying tasks. But **you shouldn't do a task earlier than necessary!** By postponing each high-paying task to the absolute latest available slot before its deadline, you lock in the big reward while leaving all earlier slots wide open for jobs with tighter deadlines.
 
-> [!tip]- 📝 2. Exam-Ready Proof (Short & Concise)
+> [!tip]- 📝 2. Exam-Ready Proof (Rapid 2-Minute Version)
 > - **Setup**: Let $I$ be Greedy's job set and $J$ be an Optimal set. Assume $I \ne J$.
-> - **Alignment**: Align shared jobs so every shared job occupies the exact same slot in both schedules (shifting to earlier slots is always deadline-safe).
-> - **Profit Comparison**: Let $a$ be the highest-profit job in $I \setminus J$ placed in slot $s$ of $I$, and let $b$ be the job in slot $s$ of $J$. Since Greedy processes jobs by descending profit, if $\text{profit}(b) > \text{profit}(a)$, Greedy would have considered $b$ before $a$. Since slot $s$ was free when Greedy placed $a$, it was also free when $b$ was examined, so Greedy would have placed $b$ in slot $s$, implying $b \in I$. Contradiction! Thus $\text{profit}(a) \ge \text{profit}(b)$.
-> - **Swap**: Replace $b$ with $a$ in slot $s$ of $J$. The new schedule $J' = (J \setminus \{b\}) \cup \{a\}$ has $\text{profit}(J') \ge \text{profit}(J)$.
-> - **Conclusion**: Repeat swaps for all differing jobs until $J = I$. $\text{profit}(I) = \text{profit}(J) \implies$ Greedy is optimal. $\blacksquare$
+> - **Alignment**: Align schedules $S_i$ and $S_j$ so every shared job occupies the exact same slot in both (shifting jobs to earlier slots never breaks deadlines).
+> - **Profit Comparison**:
+>   - Let $a$ be the highest-profit job in $I \setminus J$ placed in slot $s$ of $S_i$, and let $b$ be the job in slot $s$ of $S_j$.
+>   - Suppose $\text{profit}(b) > \text{profit}(a)$. Then Greedy would have examined $b$ before $a$.
+>   - Since slot $s$ was free when Greedy placed $a$, it was also free earlier when $b$ was examined. Since $s \le \text{deadline}(b)$, Greedy would have placed $b$ in slot $s$, implying $b \in I$. Contradiction!
+>   - Therefore, $\mathbf{\text{profit}(a) \ge \text{profit}(b)}$.
+> - **Swap Sequence**: Replacing $b$ with $a$ in $J$ gives $J' = (J \setminus \{b\}) \cup \{a\}$ with $\text{profit}(J') \ge \text{profit}(J)$. Repeating this converts $J$ to $I$ without decreasing profit.
+> - **Conclusion**: $\text{profit}(I) = \text{profit}(J) \implies$ Greedy is optimal. $\blacksquare$
 
-> [!success]- 🔬 3. Rigorous Slide Proof (Step-by-Step Mathematical Proof)
+> [!success]- 🔬 3. Slide-Exact 5-Step Proof (Rigorous Lecture Version)
 > ##### Slide 1/5: Setup
 > Let $J =$ the set of jobs in an optimal solution.
 > Let $I =$ the set of jobs selected by the greedy method.
@@ -503,27 +698,27 @@ pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
 > **Goal**: Show $\text{profit}(I) = \text{profit}(J)$, so $I$ is optimal too.
 > 
 > ##### Slide 2/5: Why a Mismatch Must Exist
-> - **Fact**: If a set of jobs can all be scheduled without missing a deadline, then any smaller subset of them can too (removing a job never makes scheduling harder).
-> - **$J$ cannot be missing something $I$ has**: If $I$ contained every job of $J$ plus extra profitable jobs, $I$ would earn strictly more than $J$, contradicting $J$'s optimality.
-> - **$I$ cannot be missing something $J$ has**: Greedy only skips a job when there is truly no room left for it. If $J$ can fit that job in, greedy never turns down a job it could still fit.
-> - **Conclusion**: Neither set can fully contain the other. There must be some job $a$ only in $I$, and some job $b$ only in $J$.
+> - **Fact**: If a set of jobs can all be scheduled without missing a deadline, then any smaller subset of them can too because removing a job never makes scheduling harder.
+> - **$J$ cannot be missing something $I$ has**: If $I$ contained every job of $J$ plus extra profitable jobs, $I$ would earn strictly more than $J$. But $J$ was assumed optimal. Contradiction.
+> - **$I$ cannot be missing something $J$ has**: Greedy only skips a job when there is truly no room left for it. If $J$ can fit that job in, Greedy never turns down a job it could still fit.
+> - **Conclusion**: Neither set can fully contain the other. There must be some job $a$ that is only in $I$, and some job $b$ that is only in $J$.
 > 
 > ##### Slide 3/5: Aligning the Schedules
 > A job common to both $I$ and $J$ might sit in a different time slot in each schedule.
-> Let $S_i$ be the schedule for $I$, and $S_j$ be the schedule for $J$. We can always rearrange $S_i$ and $S_j$ without changing either one's total profit so that every shared job sits in the same slot in both:
+> Let $S_i$ be the schedule (slot assignment) for $I$, and $S_j$ be the schedule for $J$. We can always rearrange $S_i$ and $S_j$ without changing either one's total profit so that every shared job sits in the same slot in both:
 > - If job $a$ is scheduled in slot 2 in $I$ but slot 4 in $J$, move $a$ to slot 4 in $I$ as well.
-> - If some other job occupies slot 4 in $I$, move that job to slot 2 instead. Shifting a job to an earlier slot never breaks its deadline, so this is always safe.
-> Repeating this produces aligned schedules $S_i$ and $S_j'$ where every common job occupies the same slot.
+> - If some other job already occupies slot 4 in $I$, move that job to slot 2 instead. Shifting a job to an earlier slot never breaks its own deadline, so this is always safe.
+> - If slot 4 in $I$ is empty, $a$ simply moves there directly.
+> Repeating this produces two aligned schedules $S_i$ and $S_j'$ where every common job occupies the same slot.
 > 
 > ##### Slide 4/5: Comparing Profits
 > Let $a$ be the highest-profit job in $I$ but not $J$. After aligning, let $s$ be the slot where $a$ sits in $S_i$, and let $b$ be whichever job (if any) sits in that same slot $s$ in $S_j'$.
 > Both placements are valid, so $s \le \text{deadline}(a)$ and $s \le \text{deadline}(b)$.
-> 
-> Greedy fills slots permanently (the set of occupied slots only grows over time).
+> Greedy fills slots permanently. Once taken, a slot never frees up.
 > Suppose $\text{profit}(b) > \text{profit}(a)$:
-> - Then greedy reached $b$ before $a$.
+> - Then Greedy reaches $b$ before $a$.
 > - Since slot $s$ is free later at $a$'s turn, it must already have been free earlier at $b$'s turn.
-> - Since $s \le \text{deadline}(b)$, greedy would have placed $b$ there.
+> - Since $s \le \text{deadline}(b)$, Greedy would have placed $b$ there.
 > - But $b \notin I$, which is a contradiction!
 > Therefore, $\mathbf{\text{profit}(a) \ge \text{profit}(b)}$.
 > 
@@ -531,16 +726,17 @@ pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
 > Since $\text{profit}(a) \ge \text{profit}(b)$, replacing $b$ with $a$ in slot $s$ cannot reduce total profit:
 > $$J' = J \setminus \{b\} \cup \{a\} \quad \text{has } \text{profit}(J') \ge \text{profit}(J)$$
 > Repeat this swap for every job that differs between $I$ and $J$. Each swap keeps profit the same or increases it, and after enough swaps, $J$ becomes identical to $I$.
-> 
-> Since profit never decreased and $J$ was optimal to begin with:
+> Since profit never decreased along the way and $J$ was optimal:
 > $$\text{profit}(I) = \text{profit}(J) \implies I \text{ must be optimal too.} \quad \blacksquare$$
 
 ---
 
 ## 4. Interval Partitioning (Classroom Scheduling)
 
-> [!note] Problem Definition
-> Given $n$ lectures, each with a start time $s_i$ and finish time $f_i$, schedule **all** lectures using the **minimum number of classrooms**, such that no two lectures assigned to the same room overlap in time.
+> [!note] Problem Formulation
+> - **Given**: $n$ lectures/events, each with a start time $s_i$ and finish time $f_i$ (interval $[s_i, f_i)$).
+> - **Goal**: Schedule **all** $n$ lectures using the **minimum number of classrooms**.
+> - **Constraint**: No two lectures assigned to the same classroom may overlap in time.
 > 
 > **Depth Definition**: The **depth** $d$ of a set of intervals is the maximum number of lectures that are mutually overlapping at any single point in time.
 
@@ -548,13 +744,13 @@ pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
 
 ### Naive Solution Idea & Why It Fails
 
-> [!danger] Counter-Example: Naive Room-by-Room Approach Fails
-> **Naive Idea**:
+> [!danger] Counter-Example from Slide 11: Room-by-Room Strategy Fails
+> **The Naive Idea**:
 > 1. Apply Activity Selection to find the maximum set of non-overlapping lectures for Room 1.
-> 2. Repeat Activity Selection on the leftover lectures for Room 2.
+> 2. Repeat Activity Selection on leftover lectures for Room 2.
 > 3. Continue opening new rooms until all lectures are scheduled.
 > 
-> **Counter-Example from Lecture**:
+> **Counter-Example**:
 > Lectures: $(3, 7), (5, 9), (8, 11), (12, 13), (10, 14), (16, 18), (13, 20)$.
 > 
 > - **Room 1** picks max non-overlapping: $\{(3, 7), (8, 11), (12, 13), (16, 18)\}$
@@ -562,24 +758,64 @@ pair<vector<char>, int> jobSequencing(vector<Job>& jobs) {
 > - **Room 3** takes remaining: $\{(13, 20)\}$
 > $\implies$ **3 rooms used by Naive approach!**
 > 
-> **Why it's suboptimal**:
-> The maximum depth at any single point in time is only **$\text{depth} = 2$**. Only **2 rooms** are actually needed:
+> **Why it's Suboptimal**:
+> At no single point in time do more than 2 lectures overlap (**$\text{depth} = 2$**). Only **2 rooms** are actually needed:
 > - Room 1: $(3, 7), (8, 11), (12, 13), (13, 20)$
 > - Room 2: $(5, 9), (10, 14), (16, 18)$
 > 
-> The naive approach greedily hoards compatible lectures for Room 1, leaving fragments that force an unnecessary 3rd room.
+> *The naive approach greedily hoards compatible lectures for Room 1, leaving fragments that force an unnecessary 3rd room.*
 
 ---
 
 ### Correct Greedy Strategy
-1. **Sort all lectures by start time ascending ($s_i$)**.
-2. **Scan in order**: Take each lecture in turn, earliest start first.
-3. **Reuse a free room**: If some already-open room is free (its last lecture finished $\le s_i$), assign the lecture there.
-4. **Open a new room**: If no open room is free, allocate a brand-new room for this lecture.
+
+1. **Sort by Start Time Ascending**: Order all lectures such that $s_1 \le s_2 \le \dots \le s_n$.
+2. **Scan in Start-Time Order**: Take each lecture in turn, earliest start first.
+3. **Reuse a Free Room**: If some already-open room is free (its last lecture finished $\le s_i$), assign the lecture there.
+4. **Open a New Room**: If no open room is free, allocate a brand-new room for this lecture.
 
 ---
 
-### Code Implementation (C++)
+### Step-by-Step Simulation & Min-Heap Room Tracking
+
+To efficiently find a free room, maintain a **Min-Heap** storing the `last_finish_time` of each currently open room.
+
+For the 7 lectures sorted by start time:
+1. $(3, 7) \to$ Heap empty $\to$ Open Room 1 $\to$ Heap: `[R1: 7]`
+2. $(5, 9) \to$ Earliest finish $7 > 5 \to$ Open Room 2 $\to$ Heap: `[R1: 7, R2: 9]`
+3. $(8, 11) \to$ Top finish $7 \le 8 \to$ Reuse Room 1 $\to$ Update R1 finish to 11 $\to$ Heap: `[R2: 9, R1: 11]`
+4. $(10, 14) \to$ Top finish $9 \le 10 \to$ Reuse Room 2 $\to$ Update R2 finish to 14 $\to$ Heap: `[R1: 11, R2: 14]`
+5. $(12, 13) \to$ Top finish $11 \le 12 \to$ Reuse Room 1 $\to$ Update R1 finish to 13 $\to$ Heap: `[R1: 13, R2: 14]`
+6. $(13, 20) \to$ Top finish $13 \le 13 \to$ Reuse Room 1 $\to$ Update R1 finish to 20 $\to$ Heap: `[R2: 14, R1: 20]`
+7. $(16, 18) \to$ Top finish $14 \le 16 \to$ Reuse Room 2 $\to$ Update R2 finish to 18 $\to$ Heap: `[R2: 18, R1: 20]`
+
+$$\text{Total Rooms Used} = \mathbf{2} \quad (\text{Optimal!})$$
+
+---
+
+### Algorithmic Pseudocode & C++ Implementation
+
+> [!note]- 📜 Algorithmic Pseudocode
+> ```text
+> INTERVAL-PARTITIONING(lectures):
+>     SORT lectures in ascending order of start time s_i
+>     
+>     H = MIN-PRIORITY-QUEUE()   //stores (last_finish_time, room_id)
+>     room_count = 0
+>     assignment = map()
+>     
+>     for each lecture j in lectures:
+>         if H is not empty and H.TOP().last_finish_time <= j.s:
+>             room = H.EXTRACT-MIN().room_id
+>         else:
+>             room_count = room_count + 1
+>             room = room_count
+>             
+>         assignment[j.id] = room
+>         H.INSERT((j.f, room))
+>         
+>     return assignment, room_count
+> ```
 
 ```cpp
 #include <iostream>
@@ -596,11 +832,12 @@ struct Lecture {
     int finish;
 };
 
+//interval partitioning using min-heap
 pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lectures) {
     int n = lectures.size();
     if (n == 0) return {{}, 0};
 
-    //step 1: sort lectures by start time ascending
+    //sort lectures ascending by start time
     sort(lectures.begin(), lectures.end(), [](const Lecture& a, const Lecture& b) {
         return a.start < b.start;
     });
@@ -610,16 +847,15 @@ pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lecture
     unordered_map<int, int> roomAssignment;
     int roomCount = 0;
 
-    //step 2: scan each lecture in start-time order
     for (int i = 0; i < n; i++) {
         if (!minHeap.empty() && minHeap.top().first <= lectures[i].start) {
-            //step 3: reuse free room (earliest finishing room)
+            //reuse room with earliest finish time
             auto topRoom = minHeap.top();
             minHeap.pop();
             roomAssignment[lectures[i].id] = topRoom.second;
             minHeap.push({lectures[i].finish, topRoom.second});
         } else {
-            //step 4: open brand new room
+            //allocate new room
             roomCount++;
             roomAssignment[lectures[i].id] = roomCount;
             minHeap.push({lectures[i].finish, roomCount});
@@ -637,32 +873,34 @@ pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lecture
 #### Time Complexity: $O(n \log n)$
 1. **Sorting by Start Time**: Ordering $n$ lectures takes $O(n \log n)$.
 2. **Min-Heap Operations**:
-   - For each lecture, checking `minHeap.top()` is $O(1)$.
-   - `pop()` and `push()` take $O(\log d)$, where $d$ is the number of active rooms ($d \le n$).
-   - Across $n$ lectures, heap operations take $O(n \log d) \le O(n \log n)$.
+   - For each of the $n$ lectures, checking `minHeap.top()` is $O(1)$.
+   - `pop()` and `push()` take $O(\log d)$, where $d$ is the number of active classrooms ($d \le n$).
+   - Across all $n$ lectures: $n \times O(\log d) = O(n \log d) \le O(n \log n)$.
 3. **Total Time**:
-   $$T(n) = O(n \log n) + O(n \log n) = O(n \log n)$$
+   $$T(n) = O(n \log n) + O(n \log d) = O(n \log n)$$
 
 #### Space Complexity: $O(n)$
-- Min-heap holds at most $d \le n$ rooms $\implies O(d)$.
-- `roomAssignment` map takes $O(n)$ space.
-- Total Auxiliary Space: $S(n) = O(n)$.
+- Min-heap stores at most $d \le n$ elements $\implies O(d)$.
+- `roomAssignment` map takes $O(n)$ space. Total auxiliary space is $O(n)$.
 
 ---
 
-### Proof of Correctness
+### Proof of Correctness (3 Versions)
 
 > [!info] 🧠 1. Intuitive Explanation (Plain English)
-> **The Bottleneck Analogy**: If at 2:00 PM there are 5 classes happening simultaneously, you physically cannot get away with fewer than 5 rooms. The peak concurrent overlap (depth $d$) is an unavoidable physical limit. 
-> Because Greedy sorts by start time and reuses rooms whenever a room finishes, it **only opens a new room when every single open room is currently in use**. Therefore, it never opens more rooms than the peak simultaneous overlap ($d$).
+> **The Peak Traffic / Bottleneck Analogy**: If at 2:00 PM there are 5 classes happening simultaneously, you physically cannot get away with fewer than 5 rooms. The peak concurrent overlap (depth $d$) is an unavoidable physical bottleneck.
+> Because Greedy sorts by start time and reuses rooms whenever a room finishes, it **only opens a new room when every single open room is currently occupied**. Therefore, it never opens more rooms than the peak simultaneous overlap ($d$).
 
-> [!tip]- 📝 2. Exam-Ready Proof (Short & Concise)
-> - **Lower Bound**: Let $d$ be the depth (maximum concurrent overlapping lectures). Any valid solution must use at least $d$ rooms because $d$ mutually overlapping lectures cannot share a room.
-> - **Upper Bound**: Suppose Greedy uses $d + 1$ rooms, opening room $d + 1$ for lecture $j$.
-> - **Contradiction**: Greedy only opens room $d + 1$ if all $d$ existing rooms are currently occupied by lectures that started before $s_j$ and finish after $s_j$. This means lecture $j$ plus $d$ active lectures are running at time $s_j$, creating $d + 1$ mutually overlapping lectures. But the maximum depth is $d$, a contradiction!
-> - **Conclusion**: Greedy uses exactly $d$ rooms, matching the theoretical lower bound. $\blacksquare$
+> [!tip]- 📝 2. Exam-Ready Proof (Rapid 2-Minute Version)
+> - **Lower Bound**: Let $d = \text{depth}(R)$ be the maximum number of mutually overlapping lectures at any single point in time. Any valid schedule requires at least $d$ rooms: $\text{Rooms} \ge d$.
+> - **Upper Bound via Greedy**:
+>   - Suppose Greedy allocates $d + 1$ rooms, and let lecture $j$ be the first lecture assigned to room $d + 1$.
+>   - Since lectures are processed by start time, when lecture $j$ starts at time $s_j$, all $d$ previously opened rooms must already be occupied by lectures that started $\le s_j$ and finish $> s_j$.
+>   - This means lecture $j$ plus the $d$ active lectures are all mutually overlapping at time $s_j$, meaning $d + 1$ lectures overlap simultaneously.
+>   - This contradicts that the maximum depth is $d$!
+> - **Conclusion**: Greedy never uses more than $d$ rooms. $\text{Greedy Rooms} = d = \text{Optimal Rooms}$. $\blacksquare$
 
-> [!success]- 🔬 3. Rigorous Slide Proof (Step-by-Step Mathematical Proof)
+> [!success]- 🔬 3. Slide-Exact 2-Step Proof (Rigorous Lecture Version)
 > ##### Slide 1/2: Lower Bound
 > **Claim**: For any set of lectures $R$, the number of classrooms required is at least the depth of $R$:
 > $$\text{Rooms needed} \ge \text{depth}(R)$$
@@ -672,10 +910,10 @@ pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lecture
 > Let $d$ be the depth of $R$.
 > **Claim**: The greedy algorithm uses exactly $d$ rooms.
 > **Proof**:
-> 1. Suppose, for contradiction, greedy used more than $d$ rooms. Let $j$ be the first lecture scheduled into room $d+1$.
-> 2. Since lectures are processed in order of start time, there must already be $d$ lectures underway at that moment ($s_j$), one occupying each of the other $d$ rooms, all in conflict with $j$.
+> 1. Suppose, for contradiction, Greedy used more than $d$ rooms. Let $j$ be the first lecture scheduled into room $d+1$.
+> 2. Since lectures are processed in order of start time, there must already be $d$ lectures underway at that moment, one occupying each of the other $d$ rooms, all in conflict with $j$.
 > 3. But that means $d+1$ lectures are mutually in conflict at once, contradicting the fact that the depth is only $d$.
-> 4. So greedy never needs more than $d$ rooms, matching the lower bound exactly.
+> 4. So Greedy never needs more than $d$ rooms, matching the lower bound exactly.
 > 
 > $$\therefore \text{Greedy Room Count} = d = \text{Optimal Room Count.} \quad \blacksquare$$
 
@@ -683,53 +921,54 @@ pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lecture
 
 ## 5. Huffman Encoding
 
-> [!note] Problem Definition
-> Given a text string of symbols with known frequencies $C = \{c_1, c_2, \dots, c_n\}$, find a variable-length **prefix-free binary code** for each symbol that minimizes the total length of the encoded string:
+> [!note] Problem Formulation
+> - **Given**: An alphabet/character set $C$ with known frequencies $f(c)$ for each $c \in C$.
+> - **Goal**: Construct a variable-length **prefix-free binary code** for each character that **minimizes the total length (weighted bit length)** of the encoded text:
 > 
-> $$\text{Minimize } B(T) = \sum_{c \in C} \text{freq}(c) \cdot d_T(c)$$
-> where $d_T(c)$ is the depth (code length) of character $c$ in binary tree $T$.
+> $$\text{Minimize } B(T) = \sum_{c \in C} f(c) \cdot d_T(c)$$
+> where $d_T(c)$ is the depth (code word length in bits) of character $c$ in the binary tree $T$.
 
 ---
 
-### Key Concepts
+### Core Principles & Foundations
 
-> [!info] Why Prefix-Free Matters
-> A **prefix-free code** ensures that no code word is a prefix of any other code word. This allows immediate, unambiguous decoding without special delimiter characters.
+> [!info] Why Prefix-Free Matters (Slide Example)
+> A **prefix-free code** (or prefix code) is one where no valid code word is a prefix of any other code word.
 > 
-> *Example of Ambiguity without Prefix-Free:*
+> *Consider Ambiguous Encoding (Not Prefix-Free):*
 > - Let $a = 0, b = 1, c = 01$.
 > - Decode message: `0101`
-> - Ambiguous decodings: Is it `a, b, a, b` ($0, 1, 0, 1$) or `c, c` ($01, 01$)? Both are valid!
-> - A prefix-free code guarantees every message decodes to **exactly one** answer.
+> - Ambiguity: Is it `a, b, a, b` ($0, 1, 0, 1$) or `c, c` ($01, 01$)? Both are valid! The decoder cannot know without delimiters.
+> - **A prefix-free code guarantees every message decodes unambiguously into exactly one answer.**
 
-> [!example] Comparing Encodings for Text "abcc"
+> [!example] Comparing Encodings for Text "abcc" (Slide 18)
 > - **Encoding 1**: $a = 0, b = 10, c = 11 \implies \text{String: } 0101111$ (7 bits)
 > - **Encoding 2**: $c = 0, a = 10, b = 11 \implies \text{String: } 101100$ (6 bits)
-> - *Takeaway*: Both are prefix-free, but Encoding 2 is shorter because the more frequent symbol ($c$) gets the shortest code ($0$).
+> - *Key Takeaway*: High-frequency characters ($c$) must receive shorter bit lengths.
 
-> [!abstract] Optimal Tree Structure
-> - To be prefix-free, **characters must sit only at the leaves** of the binary tree. Internal nodes never represent characters.
-> - High-frequency characters sit closer to the root (shorter codes).
-> - Low-frequency characters sit deeper in the tree (longer codes).
+> [!abstract] Optimal Tree Structure (Slide 19)
+> 1. **Characters sit strictly at the leaves**: Internal nodes only guide prefix navigation and never represent characters.
+> 2. **Full Binary Tree**: Every non-leaf node has exactly 2 children (no single-child nodes).
+> 3. **High frequency $\to$ Shallow depth (short code)**; **Low frequency $\to$ Deep depth (longer code)**.
 
 ---
 
 ### The Greedy Algorithm
-1. **Build leaves**: Create a leaf node for each character with its frequency, insert all into a min-priority queue (min-heap).
-2. **Extract two smallest**: Repeatedly remove the two nodes with the lowest frequencies.
-3. **Merge into a parent**: Create a new internal node whose frequency is their sum, make the two extracted nodes its children, and insert it back into the heap.
-4. **Repeat $n - 1$ times**: When only one node remains, it is the root of the Huffman tree. (Left branch = `0`, Right branch = `1`).
+
+1. **Build the Leaves**: Create a leaf node for each character $c$ with its frequency $f(c)$ and insert all $n$ nodes into a Min-Priority Queue (Min-Heap).
+2. **Extract the Two Smallest**: Repeatedly remove the two nodes $x$ and $y$ with the lowest frequencies.
+3. **Merge into a Parent**: Create a new internal node $z$ with frequency $z.\text{freq} = x.\text{freq} + y.\text{freq}$, set $z.\text{left} = x$ and $z.\text{right} = y$, and insert $z$ back into the heap.
+4. **Repeat $n - 1$ Times**: When only 1 node remains in the heap, it is the root of the Huffman tree. (Left branch $= 0$, Right branch $= 1$).
 
 ---
 
 ### Worked Example (6 Characters from Lecture Slides)
 
-> [!example]- 📊 Worked Example: 6 Characters (Total Frequency = 100)
-> **Given Character Frequencies:**
+> [!example]- 📊 Simulation: 6 Characters (Total Frequency = 100)
+> **Given Frequencies:**
 > $f: 45, \quad e: 16, \quad d: 13, \quad c: 12, \quad b: 9, \quad a: 5$
 > 
-> **Step-by-Step Merges:**
-> 
+> **Step-by-Step Merge Sequence:**
 > 1. **Initial Min-Heap**: $\{a(5), b(9), c(12), d(13), e(16), f(45)\}$
 > 2. **Merge 1**: Extract $a(5)$ and $b(9) \to$ Create parent $(14)$ with children $a, b$.
 >    - Heap: $\{c(12), d(13), (14), e(16), f(45)\}$
@@ -739,29 +978,29 @@ pair<unordered_map<int, int>, int> intervalPartitioning(vector<Lecture>& lecture
 >    - Heap: $\{(25), (30), f(45)\}$
 > 5. **Merge 4**: Extract $(25)$ and $(30) \to$ Create parent $(55)$ with children $(25), (30)$.
 >    - Heap: $\{f(45), (55)\}$
-> 6. **Merge 5**: Extract $f(45)$ and $(55) \to$ Create Root $(100)$.
+> 6. **Merge 5**: Extract $f(45)$ and $(55) \to$ Create Root node $(100)$.
 
 ```mermaid
 graph TD
-    Root["(100)"] -->|0| f["f : 45"]
-    Root -->|1| N55["(55)"]
+    Root["(100)"] -->|"0"| f["f : 45"]
+    Root -->|"1"| N55["(55)"]
     
-    N55 -->|0| N25["(25)"]
-    N55 -->|1| N30["(30)"]
+    N55 -->|"0"| N25["(25)"]
+    N55 -->|"1"| N30["(30)"]
     
-    N25 -->|0| c["c : 12"]
-    N25 -->|1| d["d : 13"]
+    N25 -->|"0"| c["c : 12"]
+    N25 -->|"1"| d["d : 13"]
     
-    N30 -->|0| N14["(14)"]
-    N30 -->|1| e["e : 16"]
+    N30 -->|"0"| N14["(14)"]
+    N30 -->|"1"| e["e : 16"]
     
-    N14 -->|0| a["a : 5"]
-    N14 -->|1| b["b : 9"]
+    N14 -->|"0"| a["a : 5"]
+    N14 -->|"1"| b["b : 9"]
 ```
 
-> **Final Code Table & Bit Length Calculation:**
+> **Final Code Table & Weighted Bit Length Calculation:**
 > 
-> | Character | Frequency | Code | Bits (Depth) | Weighted Bits ($\text{Freq} \times \text{Bits}$) |
+> | Character | Frequency | Code Word | Bits (Depth $d_T$) | Weighted Bits ($\text{freq} \times d_T$) |
 > | :---: | :---: | :---: | :---: | :---: |
 > | **f** | 45 | `0` | 1 | $45 \times 1 = 45$ |
 > | **e** | 16 | `111` | 3 | $16 \times 3 = 48$ |
@@ -769,13 +1008,61 @@ graph TD
 > | **c** | 12 | `100` | 3 | $12 \times 3 = 36$ |
 > | **b** | 9 | `1101` | 4 | $9 \times 4 = 36$ |
 > | **a** | 5 | `1100` | 4 | $5 \times 4 = 20$ |
-> | **Total** | **100** | | | **224 bits** |
+> | **Total** | **100** | — | — | **224 bits** |
 > 
-> *(Contrast with fixed-length 3-bit encoding: $100 \times 3 = 300$ bits. Huffman saves $76$ bits, a $25.3\%$ reduction!)*
+> *(Contrast with fixed-length 3-bit encoding: $100 \times 3 = 300$ bits. Huffman saves $76$ bits, a $25.3\%$ compression ratio!)*
 
 ---
 
-### Code Implementation (C++)
+### Algorithmic Pseudocode (From Slide 26-29) & C++ Implementation
+
+> [!note]- 📜 Slide Pseudocode (Exact Exam Form)
+> ```text
+> Main(text):
+>     freq = COMPUTE-FREQUENCIES(text)
+>     C = { NODE(char, f) for (char, f) in freq }
+>     root = HUFFMAN(C)
+>     codeTable = {}
+>     ASSIGN-CODES(root, "", codeTable)
+>     encoded = ""
+>     for ch in text:
+>         encoded = encoded + codeTable[ch]
+>     decoded = DECODE(root, encoded)
+>     return codeTable, encoded, decoded
+> 
+> HUFFMAN(C):
+>     n = |C|
+>     Q = MIN-PRIORITY-QUEUE(C)    //keyed by freq, built in O(n)
+>     for i = 1 to n - 1:
+>         z = new NODE()
+>         x = EXTRACT-MIN(Q)
+>         y = EXTRACT-MIN(Q)
+>         z.left = x
+>         z.right = y
+>         z.freq = x.freq + y.freq
+>         INSERT(Q, z)
+>     return EXTRACT-MIN(Q)         //root of Huffman tree
+> 
+> ASSIGN-CODES(node, code, codeTable):
+>     if node is a LEAF:
+>         codeTable[node.char] = (code == "" ? "0" : code)
+>         return
+>     ASSIGN-CODES(node.left,  code + "0", codeTable)
+>     ASSIGN-CODES(node.right, code + "1", codeTable)
+> 
+> DECODE(root, bitstring):
+>     result = ""
+>     node = root
+>     for bit in bitstring:
+>         if bit == "0":
+>             node = node.left
+>         else:
+>             node = node.right
+>         if node is a LEAF:
+>             result = result + node.char
+>             node = root          //restart at root for next character
+>     return result
+> ```
 
 ```cpp
 #include <iostream>
@@ -805,19 +1092,19 @@ struct Compare {
     }
 };
 
-//step 2: build huffman tree using min-heap
+//build huffman tree using min-heap
 Node* buildHuffmanTree(const unordered_map<char, int>& freqMap) {
     priority_queue<Node*, vector<Node*>, Compare> minHeap;
 
-    //step 1: create leaf nodes and push to heap - O(n)
+    //insert leaf nodes into heap - O(n)
     for (auto pair : freqMap) {
         minHeap.push(new Node(pair.first, pair.second));
     }
 
     //perform n - 1 merges - O(n log n)
     while (minHeap.size() > 1) {
-        Node* x = minHeap.top(); minHeap.pop(); //lowest-freq
-        Node* y = minHeap.top(); minHeap.pop(); //2nd lowest-freq
+        Node* x = minHeap.top(); minHeap.pop(); //lowest freq
+        Node* y = minHeap.top(); minHeap.pop(); //2nd lowest freq
 
         Node* z = new Node('\0', x->freq + y->freq);
         z->left = x;
@@ -826,10 +1113,10 @@ Node* buildHuffmanTree(const unordered_map<char, int>& freqMap) {
         minHeap.push(z);
     }
 
-    return minHeap.top(); //root of huffman tree
+    return minHeap.top(); //root of tree
 }
 
-//step 3: generate prefix codes via tree traversal - O(n)
+//traverse tree to generate prefix codes - O(n)
 void assignCodes(Node* root, string code, unordered_map<char, string>& codeTable) {
     if (!root) return;
 
@@ -842,7 +1129,7 @@ void assignCodes(Node* root, string code, unordered_map<char, string>& codeTable
     assignCodes(root->right, code + "1", codeTable);
 }
 
-//step 5: decode bitstring bit by bit
+//decode bitstring back to text
 string decodeBitstring(Node* root, const string& bitstring) {
     string result = "";
     Node* curr = root;
@@ -869,34 +1156,34 @@ string decodeBitstring(Node* root, const string& bitstring) {
 1. **Building Initial Heap**: Inserting $n$ leaf nodes into a priority queue takes $O(n)$ using bottom-up heapify (or $O(n \log n)$ via $n$ pushes).
 2. **Merging Loop**:
    - The loop runs exactly $n - 1$ times to create $n - 1$ internal nodes.
-   - In each iteration: 2 `pop` operations $+ 1$ `push` operation on a heap of size $\le n \implies O(\log n)$.
+   - In each iteration: 2 `EXTRACT-MIN` operations $+ 1$ `INSERT` operation on a heap of size $\le n \implies O(\log n)$.
    - Merging cost: $(n - 1) \times O(\log n) = O(n \log n)$.
-3. **Code Assignment Traversal**: A DFS traversal of a binary tree with $2n - 1$ nodes takes $O(n)$ time.
+3. **Prefix Code Generation**: A DFS traversal of a binary tree with $2n - 1$ nodes takes $O(n)$ time.
 4. **Encoding/Decoding Text of Length $N$**: Takes $O(N)$ time.
 5. **Total Tree Construction Time**:
    $$T(n) = O(n \log n)$$
 
 #### Space Complexity: $O(n)$
-- Tree has $n$ leaves $+ (n - 1)$ internal nodes $= 2n - 1$ total nodes $\implies O(n)$ memory.
-- Min-heap stores at most $n$ nodes $\implies O(n)$.
-- Code lookup map has $n$ entries $\implies O(n)$.
-- Total Auxiliary Space: $S(n) = O(n)$.
+- Tree contains $n$ leaves $+ (n - 1)$ internal nodes $= 2n - 1$ total nodes $\implies O(n)$ memory.
+- Min-heap holds at most $n$ pointers $\implies O(n)$.
+- Code lookup map has $n$ entries $\implies O(n)$. Total auxiliary space is $O(n)$.
 
 ---
 
-### Proof of Correctness
+### Proof of Correctness (3 Versions)
 
 > [!info] 🧠 1. Intuitive Explanation (Plain English)
-> **The Deepest Sibling Analogy**: Highly frequent letters (like 'E') should stay at the top with 1 or 2 bits, while rare letters (like 'Z') can go deep down. 
+> **The Deepest Sibling Analogy**: Highly frequent letters (like 'E') should stay near the root with 1 or 2 bits, while rare letters (like 'Z') can go deep down.
 > Huffman pairs the two absolute rarest characters together at the bottom of the tree as sibling leaves. Merging them into a single combined symbol reduces the problem size by 1. By induction, doing this recursively builds the optimal tree shape at every scale.
 
-> [!tip]- 📝 2. Exam-Ready Proof (Short & Concise)
-> - **Sibling Lemma**: Let $x, y$ be the two lowest frequency characters. There exists an optimal tree where $x$ and $y$ are sibling leaves at maximum depth. (Swapping $x, y$ with any deeper leaves cannot increase cost because $x, y$ have the smallest frequencies).
-> - **Cost Recurrence**: Let $T$ be the tree for $n$ symbols, and $T'$ be the tree after replacing sibling leaves $x, y$ with parent $z$ of frequency $f(x) + f(y)$. Then:
+> [!tip]- 📝 2. Exam-Ready Proof (Rapid 2-Minute Version)
+> - **Sibling Lemma**: Let $x, y$ be the two lowest frequency characters. There exists an optimal prefix tree where $x$ and $y$ are sibling leaves at maximum depth.
+>   *(Proof: Swapping $x, y$ with any deeper leaves in an optimal tree cannot increase cost because $x, y$ have the smallest frequencies).*
+> - **Cost Recurrence**: Let $T$ be a tree for $n$ symbols, and $T'$ be the tree obtained by replacing sibling leaves $x, y$ with a single composite leaf $z$ of frequency $f(x) + f(y)$. Then:
 >   $$\text{Cost}(T) = \text{Cost}(T') + f(x) + f(y)$$
-> - **Induction Step**: By induction hypothesis, Huffman produces an optimal tree $T'$ for the $n-1$ symbols. Since $\text{Cost}(T) = \text{Cost}(T') + f(x) + f(y)$, the resulting tree $T$ must also be optimal for $n$ symbols. $\blacksquare$
+> - **Induction Step**: By induction hypothesis on $n-1$ symbols, Huffman builds an optimal tree $T'$ for the reduced alphabet. Since $\text{Cost}(T) = \text{Cost}(T') + f(x) + f(y)$, the resulting tree $T$ is strictly optimal for $n$ symbols. $\blacksquare$
 
-> [!success]- 🔬 3. Rigorous Slide Proof (Step-by-Step Mathematical Proof)
+> [!success]- 🔬 3. Slide-Exact 3-Step Proof (Rigorous Lecture Version)
 > ##### Slide 1/3: Setup
 > Proof by induction on the number of symbols $n$:
 > - **Base case**: $n \le 2$ (with only 1 or 2 symbols, only one possible tree shape exists, which is trivially optimal).
@@ -925,12 +1212,30 @@ string decodeBitstring(Node* root, const string& bitstring) {
 
 ---
 
-## 6. Summary Comparison Table
+## 6. Master Summary & Exam Comparison Matrix
 
-| Algorithm | Greedy Criterion | Time Complexity | Space Complexity | Optimality Proof Method |
-| :--- | :--- | :--- | :--- | :--- |
-| **Fractional Knapsack** | Ratio $v_i / w_i$ descending | $O(n \log n)$ | $O(n)$ | Greedy choice property |
-| **Activity Selection** | Finish time $f_i$ ascending | $O(n \log n)$ | $O(n)$ | Exchange argument (contradiction) |
-| **Job Sequencing** | Profit $p_i$ descending (latest slot) | $O(n \log n)$ with DSU | $O(n + d)$ | 5-step swap & alignment argument |
-| **Interval Partitioning** | Start time $s_i$ ascending | $O(n \log n)$ | $O(n)$ | Lower bound vs tight bound (depth $d$) |
-| **Huffman Encoding** | Frequency $f_i$ ascending (merge lowest 2) | $O(n \log n)$ | $O(n)$ | Structural induction & sibling lemma |
+| Algorithm | Greedy Criterion | Sorting Order | Time Complexity | Auxiliary Space | Key Optimality Proof Technique |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Fractional Knapsack** | Ratio $v_i / w_i$ | Descending | $O(n \log n)$ | $O(n)$ | Greedy Choice Property |
+| **Activity Selection** | Finish time $f_i$ | Ascending | $O(n \log n)$ *(or $O(n)$ if sorted)* | $O(n)$ | Exchange argument with contradiction |
+| **Job Sequencing** | Profit $p_i$ | Descending (latest slot) | $O(n \log n)$ with DSU | $O(n + d)$ | 5-step schedule alignment & profit swap |
+| **Interval Partitioning** | Start time $s_i$ | Ascending | $O(n \log n)$ | $O(n)$ | Lower bound $\ge d$ vs tight allocation |
+| **Huffman Encoding** | Frequency $f_i$ | Ascending (merge lowest 2) | $O(n \log n)$ | $O(n)$ | Induction on $n-1$ + 3-case Sibling Lemma |
+
+---
+
+### High-Yield Exam Strategies & Simulation Traps
+
+> [!tip] 🎯 Exam Room Checklist for Greedy Questions (120 Marks, 2 Hours)
+> 1. **Activity Selection vs. Interval Partitioning**:
+>    - If the problem asks for the **maximum activities on 1 room** $\implies$ Sort by **Finish Time** ($f_i$).
+>    - If the problem asks for the **minimum rooms for all lectures** $\implies$ Sort by **Start Time** ($s_i$).
+> 2. **Job Sequencing Simulation**:
+>    - Always determine $d_{\max} = \max(d_i)$ first and draw the slot boxes `[Slot 1, Slot 2, ...]`.
+>    - Remember slots are 1-indexed. Place jobs in the **furthest right available slot $\le d_i$**.
+> 3. **Huffman Simulation**:
+>    - When drawing the tree, always write the combined frequency inside internal parent nodes.
+>    - Convention: Left edge $= 0$, Right edge $= 1$.
+>    - Double check your bit cost calculation: $\text{Total Bits} = \sum (\text{freq}_i \times \text{bits}_i)$.
+> 4. **When Asked for a Proof**:
+>    - Use the **Exam-Ready Version** (Format: *Setup $\to$ Mismatch / Lemma $\to$ Exchange / Contradiction $\to$ Conclusion*). It scores full marks while saving crucial minutes!
