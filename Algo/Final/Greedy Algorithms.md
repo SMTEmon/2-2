@@ -655,7 +655,11 @@ pair<vector<char>, int> jobSequencingDSU(vector<Job>& jobs) {
     return {slot, totalProfit};
 }
 ```
-
+2. **Naive Slot Search Approach**:
+   - For each of the $n$ jobs, we scan backward from $\min(d_i, d_{\max})$ down to slot $1$.
+   - In the worst case, searching for a free slot takes $O(d)$ time, where $d = \min(n, \max d_i)$.
+   - Performing this backward search for all $n$ jobs gives:
+     $$T_{\text{naive}}(n) = O(n \log n) + O(n \cdot d) = O(n \cdot d)$$
 ---
 
 ### Complexity Analysis & Step-by-Step Derivation
