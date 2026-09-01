@@ -400,10 +400,6 @@ Conceptually, this forms a **3-Dimensional Geometric Cube**:
 
 ![[dwh_3d_cube_model.png|600]]
 
-We can slice this 3-D cube into 2-D planar projections or view individual cell coordinates:
-
-![[dwh_3d_cube_projections.png|600]]
-
 - A single point in this 3-D space is identified by a tuple: 
   $$\langle \text{time} = \text{"Q1"}, \text{item} = \text{"computer"}, \text{location} = \text{"Vancouver"} \rangle \implies \text{dollars\_sold} = 605\text{K}$$
 
@@ -454,8 +450,6 @@ The lattice forms a hierarchy spanning 5 distinct dimensionality levels ($0\text
 ---
 
 ## 5.2 Base Cuboid vs. Apex Cuboid (Slide 26)
-
-![[dwh_base_vs_apex_cuboid.png|600]]
 
 Two cuboids sit at the absolute extremes of the lattice:
 
