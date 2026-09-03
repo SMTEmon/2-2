@@ -1,0 +1,419 @@
+\documentclass[9pt,a4paper]{extarticle}
+\usepackage[margin=0.35in,top=0.35in,bottom=0.35in]{geometry}
+\usepackage{multicol}
+\usepackage{microtype}
+\usepackage[most]{tcolorbox}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+
+% Compact layout settings
+\setlength{\columnsep}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.5pt}
+\setlist{nosep,leftmargin=12pt}
+
+% Colors
+\definecolor{primary}{RGB}{16, 44, 87}
+\definecolor{secondary}{RGB}{53, 95, 142}
+\definecolor{accent}{RGB}{204, 0, 0}
+\definecolor{darkgreen}{RGB}{0, 102, 51}
+\definecolor{boxbg}{RGB}{248, 250, 252}
+\definecolor{boxborder}{RGB}{203, 213, 225}
+\definecolor{lawbg}{RGB}{254, 242, 242}
+\definecolor{lawborder}{RGB}{239, 68, 68}
+
+% Custom tcolorbox styles
+\tcbset{
+  compact/.style={
+    boxrule=0.5pt,
+    arc=2pt,
+    left=4pt,
+    right=4pt,
+    top=3pt,
+    bottom=3pt,
+    boxsep=1pt,
+    colback=boxbg,
+    colframe=boxborder,
+    coltitle=white,
+    fonttitle=\bfseries\footnotesize,
+    titlerule=0pt,
+    title filled
+  },
+  casebox/.style={
+    compact,
+    colback=white,
+    colframe=secondary,
+    fonttitle=\bfseries\footnotesize,
+    top=2.5pt,bottom=2.5pt
+  },
+  alertbox/.style={
+    compact,
+    colback=lawbg,
+    colframe=lawborder,
+    coltitle=white,
+    fonttitle=\bfseries\footnotesize
+  },
+  theorybox/.style={
+    compact,
+    colback=white,
+    colframe=primary,
+    fonttitle=\bfseries\footnotesize
+  }
+}
+
+% Section styling
+\titleformat{\section}{\color{primary}\bfseries\small\uppercase}{}{0pt}{}[\titlerule]
+\titlespacing*{\section}{0pt}{4pt}{2pt}
+\titleformat{\subsection}{\color{secondary}\bfseries\footnotesize}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{3pt}{1pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\lhead{\textbf{HUM 4441: Engineering Ethics — Final Exam Master Cheat Sheet}}
+\rhead{\textbf{IUT CSE SWE | 2 Hours | 120 Marks (1 Mark/Min)}}
+\lfoot{\footnotesize Authorized Open-Book Exam Single Stapled Reference}
+\rfoot{\footnotesize Page \thepage}
+
+\begin{document}
+
+\begin{center}
+  {\color{primary}\large\bfseries HUM 4441: ENGINEERING ETHICS — FINAL EXAM MASTER CHEAT SHEET}\\[1.5pt]
+  {\footnotesize\textbf{Core Reference Blueprint} $\bullet$ 20 Canonical Case Studies $\bullet$ Core Ethical Theories $\bullet$ Decision Trees \& Diagnostic Recipes $\bullet$ NSPE Canon 1 $\bullet$ Answering Scaffolds}
+\end{center}
+\vspace{-6pt}
+
+\begin{multicols}{2}
+
+% ==============================================================================
+% EXAM QUICK REFERENCE & RUBRIC MAPPING
+% ==============================================================================
+\begin{tcolorbox}[compact,colback=primary!5!white,colframe=primary,title={EXAM ARCHITECTURE \& MARKING BLUEPRINT}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Rule}: Open-book exam; single book + \textbf{single stapled document}.
+  \item \textbf{Format}: Exactly 4 compulsory questions $\times$ 30 marks = \textbf{120 marks} total. Time: 120 min $\rightarrow$ \textbf{1 mark per minute pace}.
+  \item \textbf{OBE Mapping}: \textbf{PO6 (The Engineer and Society)} = 78 marks (65\%); \textbf{PO8 (Ethics)} = 42 marks (35\%). CO1: Safety/Problem Solving (43\%), CO2: Professional Duty (24\%), CO5: Code Hierarchy (16\%), CO3: Issue Sorting (8\%), CO4: Distributive Justice (8\%).
+  \item \textbf{Core Scoring Mandate}: Pure abstract moralizing without linking to engineering failure modes, code canons, or vulnerable populations triggers 40--60\% deductions.
+\end{itemize}
+\end{tcolorbox}
+
+% ==============================================================================
+% SECTION 1: MASTER CASE STUDY MATRIX (20 CASES)
+% ==============================================================================
+\section{1. Master Case Study Matrix (20 Cases)}
+
+\begin{tcolorbox}[casebox,title={1. Citicorp Center (1978)}]
+\textbf{Actors}: William LeMessurier (PE), Diane Hartley, Walter Wriston (Citibank CEO), Leslie Robertson.\\
+\textbf{Technical Dilemma}: Stilt columns placed at center of faces; diagonal chevron wind bracing designed for perpendicular winds; contractor substituted welded joints with bolted joints without recalculating quartering (diagonal) winds; 40\% increase in member stress, 160\% in joints; 16-year storm failure threshold without Tuned Mass Damper (TMD); Hurricane Ella approaching NYC.\\
+\textbf{Ethical Violation}: Initial failure to calculate quartering winds; press blackout during repairs concealed catastrophic collapse hazard from 200,000 residents.\\
+\textbf{Resolution}: LeMessurier confessed to Citibank, insurers, building dept; 2-inch steel plates welded over 200+ bolted joints at night; \$2M insurance liability cap paid.\\
+\textbf{Takeaway}: Construction substitutions (bolted vs welded) are design changes requiring full re-analysis. Public safety trumps professional reputation.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={2. GE Sealed-Beam Headlamp (1930s)}]
+\textbf{Actors}: Daniel Wright (GE lamp inventor), Val Roper, Corning Glass, Guide Lamp, C.M. Hall, Corcoran Brown, SAE.\\
+\textbf{Technical Dilemma}: Unsealed headlamps tarnished, fogged, and corroded in months, cutting lighting by 50\%+ and causing severe night highway fatalities.\\
+\textbf{Ethical Core}: Positive ethics \& supererogation. GE resisted monopolizing its patented sealed-beam design for corporate profit; openly shared tooling and cross-licensed to competitors.\\
+\textbf{Resolution}: SAE adopted nationwide standard sealed-beam headlamp in 1940; night driving fatalities dropped dramatically across the United States.\\
+\textbf{Takeaway}: Life-safety technology transcends commercial monopoly; engineering leadership standardizes public protections industry-wide.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={3. GM Daytime Running Lamps (DRLs) (2001)}]
+\textbf{Actors}: General Motors (GM), NHTSA, AIAM.\\
+\textbf{Technical Dilemma}: DRLs reduce two-lane collision risk by 5--10\% in northern latitudes (Canada, Scandinavia). GM petitioned NHTSA to mandate DRLs across all US vehicles.\\
+\textbf{Ethical Core}: Rent-seeking disguised as safety advocacy. GM had already installed DRL production lines; lower US latitudes suffered headlight glare and motorcycle conspicuity loss.\\
+\textbf{Resolution}: NHTSA denied GM's mandate petition in 2001, permitting DRLs as optional equipment only due to questionable net benefits.\\
+\textbf{Takeaway}: Distinguish genuine universal safety mandates from corporate rent-seeking; safety claims must be empirically proven across diverse environments.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={4. Automotive Crash Testing: NHTSA vs. IIHS}]
+\textbf{Actors}: NHTSA (FMVSS 208 full-frontal rigid barrier at 35 mph), IIHS (Insurance Institute for Highway Safety, 40\% moderate offset deformable barrier crash test at 40 mph).\\
+\textbf{Technical Dilemma}: Automakers engineered cars to pass the legal minimum NHTSA full-frontal test by channeling loads through both longitudinal frame rails. Real-world crashes are offset, bypassing frame rails and crushing the passenger cabin.\\
+\textbf{Ethical Violation}: Compliance as ethical floor. Automakers treated regulatory minimums as design ceilings, selling 5-star NHTSA cars that catastrophically collapsed in 40\% offset crash tests.\\
+\textbf{Resolution}: IIHS publicly shamed automakers with offset crash test videos; manufacturers redesigned unibody cabins with high-strength steel cages.\\
+\textbf{Takeaway}: Legal compliance is the bare floor of engineering ethics, never the ceiling. Engineers must design for real physical crash dynamics, not test artifacts.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={5. COMPAS Recidivism Algorithm (2016)}]
+\textbf{Actors}: Northpointe (Equivant), ProPublica (Julia Angwin, Jeff Larson), Wisconsin Courts (\textit{State v. Loomis}).\\
+\textbf{Technical Dilemma}: 137-item questionnaire predicting 2-year recidivism. Black defendants suffered double the False Positive Rate (44.9\% vs 23.5\%); White defendants had double False Negative Rate (47.7\% vs 28.0\%).\\
+\textbf{Ethical Violation}: Violates error rate parity. Trade Secret defense concealed proprietary scoring formula from criminal defendants, violating procedural due process.\\
+\textbf{Resolution}: Courts allowed advisory use only with warning caveats; Kleinberg's Impossibility Theorem proved calibration and error rate parity cannot co-exist with unequal base rates.\\
+\textbf{Takeaway}: Algorithmic fairness is mathematically constrained by base rates; proprietary opacity in sentencing violates fundamental human rights.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={6. Amazon AI Recruitment Tool (2014--2018)}]
+\textbf{Actors}: Amazon Machine Learning Team, HR Recruitment division.\\
+\textbf{Technical Dilemma}: Resume scoring hiring tool and resume filter (1--5 stars) trained on 10 years of historical resumes submitted to Amazon (predominantly male engineers).\\
+\textbf{Ethical Violation}: Historical \& Representation bias. Model actively penalized resumes containing ``women's'' (e.g. ``women's chess club'') and downgraded graduates of all-women's colleges; picked up gendered proxy verbs.\\
+\textbf{Resolution}: Project abandoned and disbanded in 2018; tool never deployed as sole hiring decider.\\
+\textbf{Takeaway}: Machine learning automates and amplifies past societal discrimination. Removing explicit protected attributes fails when correlated proxy features remain.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={7. Gender Shades (2018)}]
+\textbf{Actors}: Joy Buolamwini (MIT Media Lab), Timnit Gebru (Stanford), IBM, Microsoft, Face++.\\
+\textbf{Technical Dilemma}: Commercial facial analysis APIs achieved 99\%+ accuracy on lighter males, but error rates reached 34.7\% on darker females in Pilot Parliaments Benchmark.\\
+\textbf{Ethical Violation}: Intersectional erasure, representation bias, and evaluation bias. Datasets were $>$75\% lighter-skinned and $>$60\% male; aggregate accuracy masked subgroup failures.\\
+\textbf{Resolution}: IBM and Microsoft retrained models on diverse datasets; later suspended facial recognition sales to law enforcement.\\
+\textbf{Takeaway}: Aggregate accuracy metrics mask catastrophic subgroup failure modes; algorithmic audits must evaluate intersectional demographic performance.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={8. Obermeyer Healthcare Risk Tool (2019)}]
+\textbf{Actors}: Ziad Obermeyer et al., commercial healthcare insurer tool affecting $\sim$200M US patients.\\
+\textbf{Technical Dilemma}: Algorithm predicted future healthcare \textbf{costs} (expenditure) as a proxy for healthcare \textbf{need} (health risk) to enroll patients in specialized care management.\\
+\textbf{Ethical Violation}: Measurement bias. Systemic barriers mean less money is spent on Black patients; equal-cost Black patients were substantially sicker than White patients, denying care.\\
+\textbf{Resolution}: Switching target variable from cost to actual health metrics (chronic conditions, lab results) increased Black patient enrollment from 17.7\% to 46.5\%.\\
+\textbf{Takeaway}: Flawed proxy metrics embed structural inequities into algorithms; engineers must ensure proxy variables genuinely reflect latent health constructs.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={9. YouTube Inciting Violence / Myanmar (2012--2018)}]
+\textbf{Actors}: Google/YouTube (\textit{Innocence of Muslims}), Meta/Facebook (Myanmar military propaganda against Rohingya), Cindy Lee Garcia, UN Human Rights Council.\\
+\textbf{Technical Dilemma}: Engagement-maximizing recommender systems amplified inflammatory, dehumanizing hate speech 6.5x faster than truth, driving communal riots and ethnic cleansing.\\
+\textbf{Ethical Violation}: Algorithmic amplification of lethal violence; causal distance defense (``we are neutral conduits''); failure to invest in local language content moderation (Burmese).\\
+\textbf{Resolution}: Google temporarily geo-blocked video; UN declared Facebook played a ``determining role'' in Rohingya genocide; platforms faced global regulatory crackdowns.\\
+\textbf{Takeaway}: Algorithmic curation is active editorial distribution, not neutral conveyance; platforms possess a moral duty of care when recommenders amplify violence.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={10. Social Media Adolescent Mental Health}]
+\textbf{Actors}: Meta (Instagram), Frances Haugen (whistleblower), Jonathan Haidt, US Senate Commerce Committee.\\
+\textbf{Technical Dilemma}: Recommender systems optimized for engagement directed vulnerable teenagers into self-harm, eating disorder, and depression rabbit holes; adolescent self-harm and depression surged after 2010.\\
+\textbf{Ethical Violation}: Corporate concealment. Meta's internal research revealed 32\% of teen girls felt Instagram worsened body image; prioritized ad revenue over child welfare.\\
+\textbf{Resolution}: Frances Haugen leaked internal files (2021); ongoing state AG lawsuits; introduction of parental controls.\\
+\textbf{Takeaway}: Kant's Formula of Humanity forbids treating children as mere instruments of ad revenue; platforms owe heightened fiduciary duty to protect developing minds.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={11. Therac-25 Radiation Overdoses (1985--1987)}]
+\textbf{Actors}: AECL (Atomic Energy of Canada Limited), software developer, hospital operators, Ray Cox (victim).\\
+\textbf{Technical Dilemma}: Linear accelerator replaced physical hardware interlocks with software control. Race condition during rapid operator keystrokes; cryptic ``Malfunction 54''.\\
+\textbf{Ethical Violation}: AECL dismissed hospital complaints, insisted machine was safe, blamed operators; delivered 25,000 rad overdoses (100x lethal dose) killing/injuring 6 patients.\\
+\textbf{Resolution}: FDA recalled machine; AECL mandated hardware microswitch interlocks, software checksums, independent safety audits.\\
+\textbf{Takeaway}: Never rely solely on software for life-critical safety; physical hardware interlocks are mandatory; investigate cryptic error codes with extreme urgency.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={12. Space Shuttle Challenger (1986)}]
+\textbf{Actors}: Roger Boisjoly, Arnie Thompson (Thiokol), Bob Lund (VP Engg), Jerald Mason (Thiokol GM), Larry Mulloy (NASA).\\
+\textbf{Technical Dilemma}: O-ring rubber lost resiliency at sub-freezing launch temperatures ($36^\circ\text{F}$ ambient, $18^\circ\text{F}$ joint), causing primary and secondary seal blowby.\\
+\textbf{Ethical Violation}: Reversing burden of proof (``prove it will fail'' vs ``prove it is safe''); Mason ordered Lund: \textit{``Take off your engineering hat and put on your management hat''}; NASA schedule pressure.\\
+\textbf{Resolution}: Disintegrated 73s post-launch; 7 astronauts killed; Feynman ice-water demonstration; redesign of solid rocket joints.\\
+\textbf{Takeaway}: Engineers must never subordinate professional safety judgment to management schedule pressure; lack of failure data does not prove safety.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={13. Ford Pinto Fuel Tank Fires (1971--1978)}]
+\textbf{Actors}: Ford Motor Company, Lee Iacocca, Harley Copp (whistleblower), NHTSA.\\
+\textbf{Technical Dilemma}: Fuel tank placed 6 inches ahead of bumper behind rear axle without protective bladder; differential flange bolts punctured tank in $\ge 20$ mph rear collisions.\\
+\textbf{Ethical Violation}: Monetized cost-benefit analysis. Ford calculated fixing tank (\$11/car = \$137M) exceeded value of 180 burn deaths + 180 burn injuries (\$49.5M valuing life at \$200,000); delayed fix for 8 years.\\
+\textbf{Resolution}: \textit{Grimshaw v. Ford Motor Co.} landmark \$128M punitive damages; criminal indictment in Indiana; recall of 1.5 million Pintos.\\
+\textbf{Takeaway}: Cost-benefit analysis cannot monetize human lives to justify marketing known lethal product flaws. Public safety trumps corporate profit.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={14. Bhopal Chemical Disaster (1984)}]
+\textbf{Actors}: Union Carbide Corporation (UCC), UCIL, Warren Anderson (CEO), Bhopal plant operators.\\
+\textbf{Technical Dilemma}: Tank E610 stored 42 tons of methyl isocyanate (MIC); water entered during washing; exothermic runaway reaction blew relief valve; toxic cloud hit city.\\
+\textbf{Ethical Violation}: Disabling safety safeguards to cut costs (\$30/day freon refrigeration turned off; vent gas scrubber disabled; flare tower unlit); double standards (India plant lacked US sister plant redundancies).\\
+\textbf{Resolution}: $>$3,800 immediate deaths, $>$15,000 long-term deaths, $>$500,000 injured; UCC paid \$470M settlement; site remains toxic.\\
+\textbf{Takeaway}: Safety standards are non-negotiable globally; cost-cutting that disables safety barriers in hazardous facilities is criminal negligence.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={15. ValuJet Flight 592 (1996)}]
+\textbf{Actors}: ValuJet Airlines, SabreTech (contractor), FAA, 110 victims.\\
+\textbf{Technical Dilemma}: 144 expired chemical oxygen generators unthreaded without safety caps, wrapped in bubble wrap, labeled ``empty canisters'', placed next to tires in DC-9 cargo hold lacking smoke/fire detection.\\
+\textbf{Ethical Violation}: Systemic accident: subcontracted cost-cutting, lack of hazmat training, falsified maintenance logs (``ghost sign-offs''), non-redundant cargo hold fire suppression.\\
+\textbf{Resolution}: Mid-air fire, crashed into Everglades at 500 mph; all 110 perished; SabreTech criminally convicted; FAA mandated fire suppression.\\
+\textbf{Takeaway}: Safety depends on the entire socio-technical chain. If a design requires 100\% human procedural perfection to avoid catastrophe, the engineering design is defective.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={16. BART Automated Train Control (1970s)}]
+\textbf{Actors}: Holger Hjortsvang, Max Blankenzee, Robert Bruder (BART engineers), BART Management, IEEE.\\
+\textbf{Technical Dilemma}: World's first automated train control (ATC) transit system had flawed software, undetected ghost trains, and insufficient fail-safe braking logic.\\
+\textbf{Ethical Violation}: Engineers raised warnings internally for a year; management fired all three for ``insubordination'' and blacklisted them; train later overshot Fremont station into sandbank.\\
+\textbf{Resolution}: IEEE filed historic \textit{amicus curiae} brief supporting engineers; BART settled out of court; established whistleblowing protection precedents.\\
+\textbf{Takeaway}: Public safety takes absolute precedence over employer loyalty under NSPE Canon 1; technical dissent regarding safety hazards is never insubordination.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={17. Denver Airport Runway Concrete (1990s)}]
+\textbf{Actors}: 3Bs Paving Contractor, Empire Laboratories (testing lab), City of Denver inspectors.\\
+\textbf{Technical Dilemma}: Concrete mix for DIA runways diluted with excess water for easy pumping; failed compressive strength specifications and suffered alkali-silica reactivity (ASR) cracking.\\
+\textbf{Ethical Violation}: Data falsification. Technicians altered computer break test reports, defending deliberate fabrication as ``engineering judgment.''\\
+\textbf{Resolution}: Core drill samples revealed sub-standard runways; federal criminal prosecution; contractor executives convicted and sent to federal prison for wire/mail fraud.\\
+\textbf{Takeaway}: ``Engineering judgment'' cannot alter or falsify empirical testing data; manipulating quality assurance records to hide non-conformance is criminal fraud.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={18. Paradyne Computers RFP Fraud (1980)}]
+\textbf{Actors}: Paradyne Corporation, Social Security Administration (SSA), former SSA procurement insider.\\
+\textbf{Technical Dilemma}: SSA issued \$115M RFP requiring an existing, off-the-shelf distributed network computer system (``P8400'').\\
+\textbf{Ethical Violation}: Paradyne bid a non-existent system; bought competitor DEC PDP 11/23, pasted Paradyne labels over DEC logos, added dummy parts, and hired ex-SSA insider to rig the benchmark test.\\
+\textbf{Resolution}: Whistleblower exposed fraud; SEC and DOJ filed civil and criminal charges; Paradyne paid millions in settlements.\\
+\textbf{Takeaway}: Misrepresenting product maturity, rebadging competitor hardware, and exploiting revolving-door conflicts of interest corrupt competitive procurement.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={19. Theranos Medical Diagnostic Fraud}]
+\textbf{Actors}: Elizabeth Holmes, Sunny Balwani, Tyler Shultz, Erika Cheung, CMS, John Carreyrou.\\
+\textbf{Technical Dilemma}: Claimed proprietary ``Edison'' finger-prick machine could run 200+ blood diagnostic tests from a single drop; microfluidic physics made tests wildly unreliable and inaccurate.\\
+\textbf{Ethical Violation}: Secretly diluted patient samples and ran them on commercial Siemens machines; faked QC validation; issued false cancer/HIV/diabetes tests; silenced staff with NDAs.\\
+\textbf{Resolution}: Whistleblowers Shultz and Cheung reported to CMS and WSJ; lab shut down; Holmes and Balwani convicted of criminal wire fraud, sentenced to prison.\\
+\textbf{Takeaway}: ``Fake it till you make it'' is criminal fraud in medical/safety engineering; engineers have a moral obligation to whistleblow when false claims endanger health.
+\end{tcolorbox}
+
+\begin{tcolorbox}[casebox,title={20. Coatzacoalcos Petrochemical Blast (2016)}]
+\textbf{Actors}: PMV (Mexichem/Pemex joint venture), Clorados 3 VCM plant, Indigenous communities in Veracruz.\\
+\textbf{Technical Dilemma}: Ruptured corroded pipe in vinyl chloride monomer (VCM) feed line released massive flammable gas cloud; exploded with TNT force; 32 killed, 136 injured, 2,000 evacuated.\\
+\textbf{Ethical Violation}: Deferred maintenance (18-month inspection cycles due to oil price collapse cost-cutting); untrained inspectors lacking NDT tools; environmental racism near Indigenous communities.\\
+\textbf{Resolution}: Government investigated; plant rebuilt under strict Safety Management System (SMS) oversight; demonstrated catastrophic cost of deferred maintenance.\\
+\textbf{Takeaway}: Cost-cutting maintenance deferral on hazardous chemical lines guarantees catastrophe; environmental justice mandates equal safety protection for fence-line communities.
+\end{tcolorbox}
+
+% ==============================================================================
+% SECTION 2: CORE ETHICAL THEORIES
+% ==============================================================================
+\section{2. Core Ethical Theories}
+
+\begin{tcolorbox}[theorybox,title={Comparative Ethical Frameworks}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Act Utilitarianism} (Bentham): Maximize net aggregate utility ($\Delta U = \sum B - \sum H$) for this specific act. \textit{Pitfall}: \textbf{Tyranny of the Majority} (sacrifices vulnerable minorities; Ford Pinto).
+  \item \textbf{Rule Utilitarianism} (Mill): Follow universal rules maximizing societal utility over time. Avoids ad-hoc corruption; supports engineering safety codes.
+  \item \textbf{Kantian Deontology / Duty Ethics} (Kant):
+    \begin{itemize}[leftmargin=8pt]
+      \item \textbf{CI-1 (Universalizability)}: Can the maxim be willed as universal law without contradiction? (Model collapse, emissions test cheating).
+      \item \textbf{CI-2 (Formula of Humanity)}: Never treat persons merely as a means, but always as ends. (Autonomy, child data protection).
+    \end{itemize}
+    \textit{Pitfall}: Inflexible; struggles with conflicting absolute duties.
+  \item \textbf{Rights Ethics} (Locke): Inalienable negative rights (non-injury, non-poisoning) act as trumps over collective utility. Negative rights bound cost-benefit optimization.
+  \item \textbf{Virtue Ethics} (Aristotle): Ethics based on moral character, practical wisdom (\textit{phronesis}), and \textbf{professional virtue}. \textbf{Aristotelian Golden Mean}: Courage is the mean between cowardice and recklessness.
+  \item \textbf{Social Contract Theory} (Rawls): \textbf{Veil of Ignorance} \& \textbf{Difference Principle}: Rules are just if agreed upon when personal status, race, and wealth are unknown.
+\end{itemize}
+\end{tcolorbox}
+
+% ==============================================================================
+% SECTION 3: DECISION TREES & QUICK RECIPES
+% ==============================================================================
+\section{3. Decision Trees \& Quick Recipes}
+
+\begin{tcolorbox}[compact,colframe=darkgreen,title={3.1 Line-Drawing Technique}]
+\textbf{Purpose}: Arbitrating borderline, ethically ambiguous cases.\\
+\textbf{Step 1}: Define \textbf{Positive Paradigm (PP / A)} (100\% ethical, fully transparent, safety-validated, informed consent).\\
+\textbf{Step 2}: Define \textbf{Negative Paradigm (NP / G)} (100\% unethical, fraudulent, reckless endangerment, active coverup).\\
+\textbf{Step 3}: Select 4--6 evaluative features (Transparency, Severity of Harm, User Consent, Regulatory Compliance, Data Integrity).\\
+\textbf{Step 4}: Assign weights (Public Safety features receive 3x--5x weight).\\
+\textbf{Step 5}: Score test cases ($A \leftrightarrow G$ or $1 \leftrightarrow 10$). If weighted centroid falls closer to NP than PP, action is \textbf{impermissible}.
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=darkgreen,title={3.2 Accident Classification (3 Types)}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Procedural Accident}: Operator error, checklist omission, failure to follow operational rules (e.g. Three Mile Island valve misread, pilot deviation).
+  \item \textbf{Engineered Accident}: Flawed physical design, material failure, uncalculated stress load, edge cases (e.g. Citicorp bolted joint omission, Hyatt Regency hanger rod redesign).
+  \item \textbf{Systemic Accident}: Complex interaction of organizational culture, cost pressures, fragmented subcontractors, and normalization of deviance (e.g. ValuJet 592, Challenger, Bhopal, Coatzacoalcos).
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[alertbox,title={3.3 Whistleblowing: 4 Conditions (Harris/Pritchard/Rabins)}]
+\begin{enumerate}[leftmargin=10pt]
+  \item \textbf{Need}: Clear, serious, and imminent harm to the public, consumers, or workers (documented severe injury/death).
+  \item \textbf{Proximity}: Firsthand knowledge, direct observation, or official technical oversight (not rumor/hearsay).
+  \item \textbf{Capability}: Realistic competence, documentation, and authority to halt or mitigate the harm.
+  \item \textbf{Last Resort}: Internal escalation channels exhausted, or internal reporting is clearly futile, obstructed, or dangerous.
+\end{enumerate}
+\textbf{Permissible vs. Obligatory}: Permissible when 1--4 met; \textbf{Morally Obligatory} when catastrophic loss of human life is certain without immediate external disclosure (NSPE Canon 1).
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=secondary,title={3.4 Conflict of Interest (COI) Diagnostic}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Actual COI}: Personal or financial interests directly impair professional judgment or fiduciary duty. \textbf{Remedy}: Mandatory disclosure, recusal, and divestment.
+  \item \textbf{Potential COI}: Interests do not currently impair judgment, but could reasonably do so as project evolves. \textbf{Remedy}: Formal disclosure, independent oversight firewall.
+  \item \textbf{Apparent COI}: No actual bias, but a reasonable outside observer would reasonably doubt objectivity. \textbf{Remedy}: Disclosure, peer review, recusal if trust damaged.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=secondary,title={3.5 The 7 Core AI Bias Types}]
+\begin{enumerate}[leftmargin=10pt]
+  \item \textbf{Historical Bias}: World data accurately reflects existing social discrimination (Amazon hiring tool).
+  \item \textbf{Representation Bias}: Certain demographic subgroups underrepresented in training set (Gender Shades darker females).
+  \item \textbf{Measurement Bias}: Flawed or noisy proxy features chosen to measure latent construct (Obermeyer healthcare cost vs illness).
+  \item \textbf{Aggregation Bias}: Monolithic model fails across distinct subpopulation dynamics (diabetes models).
+  \item \textbf{Evaluation Bias}: Benchmarks disproportionately represent majority group, masking subgroup errors.
+  \item \textbf{Deployment Bias}: Model used in context differing from training conditions (sentencing tool used for pre-trial cash bail).
+  \item \textbf{Feedback Loop Bias}: Predictions shape user actions that generate retrain data reinforcing initial bias (recommenders).
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=primary,title={3.6 Fair Use 4-Factor Test (17 U.S.C. \S~107)}]
+\begin{enumerate}[leftmargin=10pt]
+  \item \textbf{Purpose \& Character}: Transformative use (adds new expression, meaning, or functional insight) vs commercial duplication.
+  \item \textbf{Nature of Work}: Factual/scientific (thinner copyright) vs highly creative/artistic/fictional (thick copyright).
+  \item \textbf{Amount \& Substantiality}: Quantity used and qualitative ``heart of the work''.
+  \item \textbf{Market Effect (Decisive Factor)}: Does the use substitute for the original work or cannibalize its commercial licensing market?
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=primary,title={3.7 IP Protection Selector}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Copyright}: Original expression fixed in medium; automatic. Lasts author life + 70y (or 95y corp). Protects literal source code, object code, UI. No public disclosure required.
+  \item \textbf{Patent (Utility)}: Novel, non-obvious process/machine; overcomes \textit{Alice} two-step. Lasts \textbf{20 Years}. Protects ``faster way for computer to do X'', hardware optimizations. Mandatory public disclosure.
+  \item \textbf{Trademark}: Distinctive marks identifying commercial source. Indefinite (10y renewable). Protects brand names, logos, distinctive product trade dress.
+  \item \textbf{Trade Secret}: Secret info giving economic edge; reasonable security measures. Indefinite until leaked. Protects ML weights, training recipes, private search ranking algorithms.
+\end{itemize}
+\end{tcolorbox}
+
+% ==============================================================================
+% SECTION 4: NSPE CANON 1 PARAMOUNTCY CLAUSE
+% ==============================================================================
+\section{4. NSPE Canon 1 vs Loyalty}
+
+\begin{tcolorbox}[alertbox,title={The Lexicographical Supremacy Principle}]
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{NSPE Canon 1}: \textit{``Hold paramount the safety, health, and welfare of the public.''}
+  \item \textbf{NSPE Canon 4}: \textit{``Act for each employer or client as faithful agents or trustees.''}
+  \item \textbf{Supremacy Rule}: Canon 1 is the supreme, non-negotiable trump card. An engineer's duty to an employer is bounded (\textit{prima facie}); an employer has no authority to order an engineer to compromise public safety.
+  \item \textbf{Management Pressure}: Reject the ``management hat'' trap (Lund/Challenger). An engineer cannot shed safety responsibility by assuming a management title.
+  \item \textbf{Dissent vs Insubordination}: Documented safety dissent is mandatory professional duty, never insubordination.
+\end{itemize}
+\end{tcolorbox}
+
+% ==============================================================================
+% SECTION 5: RAPID ANSWERING SCAFFOLDS
+% ==============================================================================
+\section{5. Universal Answering Scaffolds}
+
+\begin{tcolorbox}[compact,colframe=secondary,title={Scaffold 1: 2--4 Mark Questions (2--4 Min)}]
+\textbf{Structure (3 Sentences)}:
+\begin{enumerate}[leftmargin=10pt]
+  \item \textbf{Direct Answer}: Definitive Yes/No stating the primary ethical rule.
+  \item \textbf{Ethical Anchor}: Quote or define governing doctrine (e.g. Negative Rights, NSPE Canon 1, Procedural Accident).
+  \item \textbf{Case Link}: Apply directly to scenario facts with specific actors/numbers.
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=secondary,title={Scaffold 2: 5--8 Mark Questions (IRAC, 5--8 Min)}]
+\textbf{Structure}:
+\begin{itemize}[leftmargin=9pt]
+  \item \textbf{Issue}: Frame the conflict (e.g. Canon 1 public safety vs Canon 4 deadline pressure).
+  \item \textbf{Rule}: Define governing code canon, ethical theory test, or legal statute.
+  \item \textbf{Application}: Apply rule systematically to facts; address counter-arguments (commercial cost, schedule pressure).
+  \item \textbf{Conclusion}: State definitive moral verdict and actionable engineering mandate.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=primary,title={Scaffold 3: 10--12 Mark Questions (10--12 Min)}]
+\textbf{Option A: Six-Step Safety Design}:
+1. Define Problem (failure mode \& root cause) $\rightarrow$ 2. Generate at least 2 distinct solutions (Hardware/Automation vs Institutional/Inspection) $\rightarrow$ 3. Multi-criteria analysis (reliability, cost, human error) $\rightarrow$ 4. Testing/simulation $\rightarrow$ 5. Select best hybrid $\rightarrow$ 6. Implementation \& feedback.\\
+\textbf{Option B: Multi-Lens Comparison}:
+Utilitarianism ($\Delta U$, aggregate traps) vs Kantian Deontology (Universalizability, Mere Means) vs Rights Ethics (Negative inalienable rights). Select superior lens with justification.
+\end{tcolorbox}
+
+\begin{tcolorbox}[compact,colframe=primary,title={Scaffold 4: 15 Mark Questions (15 Min)}]
+\textbf{Line-Drawing Matrix}:
+1. Define Positive Paradigm (PP / A) \& Negative Paradigm (NP / G).\\
+2. Construct 5-row table (Test Case, Action, Spectrum Position A--G, Score 1--10, Justification).\\
+3. Identify distinguishing discriminative factors for each case.\\
+4. Threshold synthesis: Draw boundary where commercial ambition crosses into criminal fraud and public endangerment.
+\end{tcolorbox}
+
+\end{multicols}
+
+\end{document}
